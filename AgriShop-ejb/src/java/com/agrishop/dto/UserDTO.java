@@ -3,14 +3,14 @@ package com.agrishop.dto;
 import java.io.Serializable;
 
 public class UserDTO implements Serializable {
-    private Integer id;
+    private Long id;
     private String userCode;
     private String username;
     private String fullName;
     private String role;
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     public String getUserCode() { return userCode; }
     public void setUserCode(String userCode) { this.userCode = userCode; }
     public String getUsername() { return username; }

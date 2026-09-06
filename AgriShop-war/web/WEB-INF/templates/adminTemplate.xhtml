@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title><ui:insert name="title">Quản trị - AgriShop</ui:insert></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- PrimeFlex CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.1/primeflex.min.css" />
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            background-color: var(--surface-ground);
+            color: var(--text-color);
+        }
+        .layout-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .layout-sidebar {
+            width: 250px;
+            background-color: var(--surface-overlay);
+            border-right: 1px solid var(--surface-border);
+            padding: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+        .layout-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .layout-topbar {
+            height: 60px;
+            background-color: var(--surface-overlay);
+            border-bottom: 1px solid var(--surface-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            z-index: 1;
+        }
+        .layout-content {
+            padding: 2rem;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            padding-left: 1rem;
+        }
+    </style>
+    <ui:insert name="head" />
+</h:head>
+<h:body>
+    <div class="layout-wrapper">
+        <!-- Sidebar -->
+        <div class="layout-sidebar">
+            <h:link outcome="/admin/dashboard.xhtml" class="logo-text">
+                <i class="pi pi-box"></i> AgriShop
+            </h:link>
+            
+            <h:form id="menuForm">
+                <p:menu style="width: 100%; border: none; background: transparent;">
+                    <p:submenu label="Tổng quan">
+                        <p:menuitem value="Dashboard" outcome="/admin/dashboard.xhtml" icon="pi pi-home" />
+                    </p:submenu>
+                    <p:submenu label="Cửa hàng">
+                        <p:menuitem value="Danh mục" outcome="/admin/category.xhtml" icon="pi pi-tags" />
+                        <p:menuitem value="Nhà cung cấp" outcome="/admin/supplier.xhtml" icon="pi pi-truck" />
+                        <p:menuitem value="Sản phẩm" outcome="/admin/product.xhtml" icon="pi pi-shopping-bag" />
+                    </p:submenu>
+                    <p:submenu label="Bán hàng">
+                        <p:menuitem value="Đơn hàng" url="#" icon="pi pi-shopping-cart" />
+                        <p:menuitem value="Khuyến mãi" url="#" icon="pi pi-ticket" />
+                    </p:submenu>
+                    <p:submenu label="Hệ thống">
+                        <p:menuitem value="Người dùng" url="#" icon="pi pi-users" />
+                        <p:menuitem value="Cài đặt" url="#" icon="pi pi-cog" />
+                    </p:submenu>
+                </p:menu>
+            </h:form>
+        </div>
+
+        <!-- Main Area -->
+        <div class="layout-main">
+            <!-- Topbar -->
+            <div class="layout-topbar">
+                <div class="topbar-left">
+                    <h2 style="margin:0; font-size:1.25rem; font-weight:600;"><ui:insert name="pageTitle">Trang Quản trị</ui:insert></h2>
+                </div>
+                <div class="topbar-right flex align-items-center gap-3">
+                    <h:form id="topbarForm">
+                        <h:outputText value="Xin chào, #{loginBean.currentUser.fullName != null ? loginBean.currentUser.fullName : 'Admin'}" styleClass="font-bold mr-3" />
+                        <p:commandButton value="Đăng xuất" action="#{loginBean.logout()}" icon="pi pi-sign-out" styleClass="ui-button-danger ui-button-flat" />
+                    </h:form>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="layout-content">
+                <p:growl id="growlMessages" showDetail="true" globalOnly="false" life="5000">
+                    <p:autoUpdate />
+                </p:growl>
+                <ui:insert name="content">
+                    <!-- Nơi chứa nội dung các trang con -->
+                </ui:insert>
+            </div>
+        </div>
+    </div>
+</h:body>
+</html>

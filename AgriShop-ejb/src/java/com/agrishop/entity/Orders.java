@@ -11,7 +11,7 @@ import java.util.List;
 public class Orders implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "order_code", unique = true, nullable = false, length = 50)
     private String orderCode;
@@ -44,8 +44,8 @@ public class Orders implements Serializable {
     private List<OrderDetail> orderDetails;
 
     // Getters và Setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     public String getOrderCode() { return orderCode; }
     public void setOrderCode(String orderCode) { this.orderCode = orderCode; }
     public User getUser() { return user; }

@@ -10,7 +10,7 @@ import java.util.Date;
 public class Product implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "product_code", unique = true, nullable = false, length = 20)
     private String productCode;
@@ -18,6 +18,10 @@ public class Product implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
 
     @Column(nullable = false, length = 150)
     private String name;
@@ -48,12 +52,14 @@ public class Product implements Serializable {
     private Date updatedAt;
 
     // Getters và Setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     public String getProductCode() { return productCode; }
     public void setProductCode(String productCode) { this.productCode = productCode; }
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+    public Supplier getSupplier() { return supplier; }
+    public void setSupplier(Supplier supplier) { this.supplier = supplier; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getUnit() { return unit; }

@@ -2,20 +2,23 @@ package com.agrishop.web.bean;
 
 import com.agrishop.dto.CategoryDTO;
 import com.agrishop.dto.ProductDTO;
+import com.agrishop.dto.PageRequestDTO;
+import com.agrishop.dto.PageResponseDTO;
 import com.agrishop.service.CategoryServiceLocal;
 import com.agrishop.service.ProductServiceLocal;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
-import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
+import org.primefaces.model.FilterMeta;
+import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.SortMeta;
 
 @Named("productBean")
 @ViewScoped
-public class ProductBean implements Serializable {
+public class ProductBean extends AbstractCrudBean<ProductDTO> {
 
     @EJB
     private ProductServiceLocal productService;
@@ -23,65 +26,73 @@ public class ProductBean implements Serializable {
     @EJB
     private CategoryServiceLocal categoryService;
 
-    private List<ProductDTO> products;
+    @EJB
+    private com.agrishop.service.SupplierServiceLocal supplierService;
+
     private List<CategoryDTO> categories;
-    private ProductDTO currentProduct;
-    private boolean isEditMode;
+    private List<com.agrishop.dto.SupplierDTO> suppliers;
+    private Long categoryIdFilter;
 
     @PostConstruct
     public void init() {
-        loadData();
-        resetForm();
-    }
-
-    private void loadData() {
-        products = productService.getAllActiveProducts();
         categories = categoryService.getAllActiveCategories();
-    }
-
-    public void resetForm() {
-        currentProduct = new ProductDTO();
-        isEditMode = false;
-    }
-
-    public void prepareEdit(ProductDTO product) {
-        this.currentProduct = product;
-        this.isEditMode = true;
-    }
-
-    public void save() {
-        try {
-            if (isEditMode) {
-                productService.updateProduct(currentProduct);
-                addMessage(FacesMessage.SEVERITY_INFO, "Cập nhật sản phẩm thành công!");
-            } else {
-                productService.createProduct(currentProduct);
-                addMessage(FacesMessage.SEVERITY_INFO, "Thêm sản phẩm thành công!");
+        suppliers = supplierService.getAllActiveSuppliers();
+        openNew();
+        lazyModel = new LazyDataModel<ProductDTO>() {
+            @Override
+            public int count(Map<String, FilterMeta> filterBy) {
+                return 0;
             }
-            loadData();
-            resetForm();
-        } catch (Exception e) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Lỗi: " + e.getMessage());
+
+            @Override
+            public List<ProductDTO> load(int first, int pageSize, Map<String, SortMeta> sortBy, Map<String, FilterMeta> filterBy) {
+                PageRequestDTO request = new PageRequestDTO();
+                int size = pageSize > 0 ? pageSize : 10;
+                request.setPageIndex(first / size);
+                request.setPageSize(size);
+                request.setSearchKeyword(globalFilter);
+                
+                if (sortBy != null && !sortBy.isEmpty()) {
+                    SortMeta sm = sortBy.values().iterator().next();
+                    request.setSortField(sm.getField());
+                    request.setSortOrder(sm.getOrder().isAscending() ? "ASC" : "DESC");
+                }
+                
+                PageResponseDTO<ProductDTO> response = productService.getProductsWithPagination(request, categoryIdFilter);
+                this.setRowCount((int) response.getTotalRecords());
+                return response.getData();
+            }
+        };
+    }
+
+    @Override
+    protected void initItem() {
+        this.currentItem = new ProductDTO();
+    }
+
+    @Override
+    protected void performSave() throws Exception {
+        if (editMode) {
+            productService.updateProduct(currentItem);
+        } else {
+            productService.createProduct(currentItem);
         }
     }
 
-    public void delete(Integer id) {
-        try {
-            productService.deleteProduct(id);
-            loadData();
-            addMessage(FacesMessage.SEVERITY_INFO, "Xóa sản phẩm thành công!");
-        } catch (Exception e) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Lỗi khi xóa: " + e.getMessage());
-        }
+    @Override
+    protected void performDelete(ProductDTO item) throws Exception {
+        productService.deleteProduct(item.getId());
     }
 
-    private void addMessage(FacesMessage.Severity severity, String message) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, message, null));
+    @Override
+    protected String getItemName() {
+        return "Sản phẩm";
     }
 
-    public List<ProductDTO> getProducts() { return products; }
     public List<CategoryDTO> getCategories() { return categories; }
-    public ProductDTO getCurrentProduct() { return currentProduct; }
-    public void setCurrentProduct(ProductDTO currentProduct) { this.currentProduct = currentProduct; }
-    public boolean getIsEditMode() { return isEditMode; }
+    public void setCategories(List<CategoryDTO> categories) { this.categories = categories; }
+    public List<com.agrishop.dto.SupplierDTO> getSuppliers() { return suppliers; }
+    public void setSuppliers(List<com.agrishop.dto.SupplierDTO> suppliers) { this.suppliers = suppliers; }
+    public Long getCategoryIdFilter() { return categoryIdFilter; }
+    public void setCategoryIdFilter(Long categoryIdFilter) { this.categoryIdFilter = categoryIdFilter; }
 }

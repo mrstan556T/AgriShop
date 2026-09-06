@@ -1,70 +1,147 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core">
-<h:head>
-    <title>Quản lý Sản phẩm</title>
-</h:head>
-<h:body>
-    <h2>Quản lý Nông sản</h2>
-    <h:link outcome="/admin/dashboard.xhtml" value="Quay lại Dashboard" />
-    <hr/>
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
 
-    <h:messages globalOnly="true" style="color: blue;" />
+<ui:composition template="/WEB-INF/templates/adminTemplate.xhtml">
+    <ui:define name="title">Sản phẩm - AgriShop</ui:define>
+    <ui:define name="pageTitle">Quản lý Sản phẩm</ui:define>
 
-    <h:form id="productForm">
-        <h:panelGrid columns="2">
-            <h:outputLabel value="Mã SP (Business Code):" />
-            <h:inputText value="#{productBean.currentProduct.productCode}" required="true" disabled="#{productBean.isEditMode}" />
+    <ui:define name="content">
+        <h:form id="mainForm">
+            <p:card>
+                <p:toolbar styleClass="mb-4">
+                    <p:toolbarGroup>
+                        <p:commandButton value="Thêm Mới" icon="pi pi-plus" actionListener="#{productBean.openNew()}"
+                                         update=":crudForm:crudContent" oncomplete="PF('crudDialog').show()"
+                                         styleClass="ui-button-success mr-2" />
+                    </p:toolbarGroup>
+                    <p:toolbarGroup align="right">
+                        <div class="ui-inputgroup flex align-items-center">
+                            <p:selectOneMenu value="#{productBean.categoryIdFilter}" styleClass="mr-2">
+                                <f:selectItem itemLabel="Tất cả danh mục" itemValue="" />
+                                <f:selectItems value="#{productBean.categories}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat.id}" />
+                            </p:selectOneMenu>
+                            <p:inputText value="#{productBean.globalFilter}" placeholder="Mã, tên..." />
+                            <p:commandButton icon="pi pi-search" update="dataTable" />
+                            <p:commandButton icon="pi pi-refresh" actionListener="#{productBean.init()}" update="dataTable @previous" styleClass="ui-button-secondary" />
+                        </div>
+                    </p:toolbarGroup>
+                </p:toolbar>
 
-            <h:outputLabel value="Danh mục:" />
-            <h:selectOneMenu value="#{productBean.currentProduct.categoryId}" required="true">
-                <f:selectItem itemLabel="-- Chọn danh mục --" itemValue="#{null}" noSelectionOption="true" />
-                <f:selectItems value="#{productBean.categories}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat.id}" />
-            </h:selectOneMenu>
+                <p:dataTable id="dataTable" var="prod" value="#{productBean.lazyModel}" 
+                             lazy="true" paginator="true" rows="10" paginatorPosition="bottom"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,20,50" emptyMessage="Không có dữ liệu."
+                             rowIndexVar="index" styleClass="mt-2">
+                             
+                    <p:column headerText="STT" style="width:3rem; text-align:center;">
+                        <h:outputText value="#{index + 1}" />
+                    </p:column>
+                    
+                    <p:column headerText="Mã" sortBy="#{prod.productCode}" style="width:8rem;">
+                        <h:outputText value="#{prod.productCode}" />
+                    </p:column>
+                    
+                    <p:column headerText="Sản phẩm" sortBy="#{prod.name}">
+                        <h:outputText value="#{prod.name}" styleClass="font-bold" />
+                        <br/>
+                        <h:outputText value="#{prod.categoryName}" style="font-size:0.85rem; color:gray;" />
+                    </p:column>
+                    
+                    <p:column headerText="Nhà cung cấp" sortBy="#{prod.supplierName}">
+                        <h:outputText value="#{prod.supplierName}" />
+                    </p:column>
+                    
+                    <p:column headerText="Giá" sortBy="#{prod.price}" style="width:10rem; text-align:right;">
+                        <h:outputText value="#{prod.price}" styleClass="font-bold text-primary">
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputText> đ
+                    </p:column>
+                    
+                    <p:column headerText="Tồn kho" sortBy="#{prod.stockQuantity}" style="width:6rem; text-align:right;">
+                        <h:outputText value="#{prod.stockQuantity} #{prod.unit}" />
+                    </p:column>
+                    
+                    <p:column headerText="Thao tác" style="width:10rem; text-align:center;">
+                        <p:commandButton icon="pi pi-eye" actionListener="#{productBean.prepareView(prod)}" 
+                                         update=":crudForm:crudContent" oncomplete="PF('crudDialog').show()"
+                                         styleClass="ui-button-info rounded-button mr-2" title="Xem chi tiết" />
+                        <p:commandButton icon="pi pi-pencil" actionListener="#{productBean.prepareEdit(prod)}" 
+                                         update=":crudForm:crudContent" oncomplete="PF('crudDialog').show()"
+                                         styleClass="ui-button-warning rounded-button mr-2" title="Sửa" />
+                        <p:commandButton icon="pi pi-trash" actionListener="#{productBean.delete(prod)}" 
+                                         update=":mainForm:dataTable" styleClass="ui-button-danger rounded-button">
+                            <p:confirm header="Xác nhận" message="Bạn muốn xóa sản phẩm này?" icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:card>
+        </h:form>
 
-            <h:outputLabel value="Tên Sản phẩm:" />
-            <h:inputText value="#{productBean.currentProduct.name}" required="true" />
+        <h:form id="crudForm">
+            <p:dialog id="crudDialog" widgetVar="crudDialog" header="#{productBean.editMode ? 'Chi tiết Sản phẩm' : 'Sản phẩm Mới'}" 
+                      showEffect="fade" hideEffect="fade" modal="true" responsive="true" width="600">
+                <p:messages id="messages" closable="true" />
+                <p:outputPanel id="crudContent" class="ui-fluid">
+                    <div class="formgrid grid">
+                        <div class="field col-6">
+                            <p:outputLabel for="code" value="Mã Sản phẩm" />
+                            <p:inputText id="code" value="#{productBean.currentItem.productCode}" required="true" disabled="#{productBean.viewMode or productBean.editMode}" />
+                        </div>
+                        <div class="field col-6">
+                            <p:outputLabel for="cat" value="Danh mục" />
+                            <p:selectOneMenu id="cat" value="#{productBean.currentItem.categoryId}" required="true" disabled="#{productBean.viewMode}">
+                                <f:selectItem itemLabel="Chọn danh mục" itemValue="" noSelectionOption="true" />
+                                <f:selectItems value="#{productBean.categories}" var="c" itemLabel="#{c.name}" itemValue="#{c.id}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="field col-6 mt-2">
+                            <p:outputLabel for="supplier" value="Nhà cung cấp" />
+                            <p:selectOneMenu id="supplier" value="#{productBean.currentItem.supplierId}" disabled="#{productBean.viewMode}">
+                                <f:selectItem itemLabel="Chọn nhà cung cấp" itemValue="" noSelectionOption="true" />
+                                <f:selectItems value="#{productBean.suppliers}" var="s" itemLabel="#{s.name}" itemValue="#{s.id}" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="field col-6 mt-2">
+                            <p:outputLabel for="name" value="Tên Sản phẩm" />
+                            <p:inputText id="name" value="#{productBean.currentItem.name}" required="true" disabled="#{productBean.viewMode}" />
+                        </div>
+                        <div class="field col-4 mt-2">
+                            <p:outputLabel for="unit" value="Đơn vị tính" />
+                            <p:inputText id="unit" value="#{productBean.currentItem.unit}" required="true" disabled="#{productBean.viewMode}" />
+                        </div>
+                        <div class="field col-4 mt-2">
+                            <p:outputLabel for="price" value="Giá (VND)" />
+                            <p:inputNumber id="price" value="#{productBean.currentItem.price}" required="true" decimalPlaces="0" disabled="#{productBean.viewMode}" />
+                        </div>
+                        <div class="field col-4 mt-2">
+                            <p:outputLabel for="stock" value="Tồn kho" />
+                            <p:inputNumber id="stock" value="#{productBean.currentItem.stockQuantity}" required="true" decimalPlaces="0" disabled="#{productBean.viewMode}" />
+                        </div>
+                        <div class="field col-12 mt-2">
+                            <p:outputLabel for="desc" value="Mô tả" />
+                            <p:inputTextarea id="desc" value="#{productBean.currentItem.description}" rows="3" disabled="#{productBean.viewMode}" />
+                        </div>
+                    </div>
+                </p:outputPanel>
+                
+                <f:facet name="footer">
+                    <p:commandButton value="Lưu" icon="pi pi-check" actionListener="#{productBean.save()}" 
+                                     update="crudContent messages" process="crudContent @this" rendered="#{not productBean.viewMode}" />
+                    <p:commandButton value="Đóng" icon="pi pi-times" onclick="PF('crudDialog').hide()" 
+                                     class="ui-button-secondary" type="button" />
+                </f:facet>
+            </p:dialog>
+        </h:form>
 
-            <h:outputLabel value="Đơn vị tính:" />
-            <h:inputText value="#{productBean.currentProduct.unit}" required="true" />
-
-            <h:outputLabel value="Giá:" />
-            <h:inputText value="#{productBean.currentProduct.price}" required="true">
-                <f:convertNumber pattern="#,##0.00" />
-            </h:inputText>
-
-            <h:outputLabel value="Tồn kho:" />
-            <h:inputText value="#{productBean.currentProduct.stockQuantity}" required="true" />
-
-            <h:outputLabel value="Mô tả:" />
-            <h:inputTextarea value="#{productBean.currentProduct.description}" rows="3" cols="30" />
-
-            <h:commandButton value="#{productBean.isEditMode ? 'Cập nhật' : 'Thêm mới'}" action="#{productBean.save}" />
-            <h:commandButton value="Hủy" action="#{productBean.resetForm}" immediate="true" rendered="#{productBean.isEditMode}" />
-        </h:panelGrid>
-    </h:form>
-    
-    <hr/>
-
-    <h:form id="listForm">
-        <h:dataTable value="#{productBean.products}" var="prod" border="1" cellpadding="5">
-            <h:column><f:facet name="header">Mã SP</f:facet>#{prod.productCode}</h:column>
-            <h:column><f:facet name="header">Tên</f:facet>#{prod.name}</h:column>
-            <h:column><f:facet name="header">Danh mục</f:facet>#{prod.categoryName}</h:column>
-            <h:column><f:facet name="header">ĐVT</f:facet>#{prod.unit}</h:column>
-            <h:column><f:facet name="header">Giá</f:facet>
-                <h:outputText value="#{prod.price}"><f:convertNumber type="currency" currencySymbol="VND" /></h:outputText>
-            </h:column>
-            <h:column><f:facet name="header">Tồn kho</f:facet>#{prod.stockQuantity}</h:column>
-            <h:column>
-                <f:facet name="header">Hành động</f:facet>
-                <h:commandButton value="Sửa" action="#{productBean.prepareEdit(prod)}" />
-                &#160;
-                <h:commandButton value="Xóa" action="#{productBean.delete(prod.id)}" onclick="return confirm('Xóa sản phẩm này?');" />
-            </h:column>
-        </h:dataTable>
-    </h:form>
-</h:body>
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+            <p:commandButton value="Hủy" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+            <p:commandButton value="Đồng ý" type="button" styleClass="ui-confirmdialog-yes" />
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>
 </html>
