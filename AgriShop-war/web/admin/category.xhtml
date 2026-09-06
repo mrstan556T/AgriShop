@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:pt="jakarta.faces.passthrough">
+<h:head>
+    <title>Quản lý Danh mục - AgriShop</title>
+    <style>
+        .error-msg { color: red; font-size: 0.9em; margin-left: 10px; }
+        .system-msg { color: blue; font-weight: bold; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { border: 1px solid #ddd; padding: 8px; }
+        .search-box { margin-bottom: 15px; }
+    </style>
+</h:head>
+<h:body>
+    <h2>Quản lý Danh mục Nông sản</h2>
+    <h:link outcome="/admin/dashboard.xhtml" value="Quay lại Dashboard" />
+    <hr/>
+
+    <h:form id="categoryForm">
+        <h:messages globalOnly="true" class="system-msg" />
+        <h:panelGrid columns="3">
+            <h:outputLabel value="Tên Danh mục:" />
+            <h:inputText id="catName" value="#{categoryBean.currentCategory.name}" 
+                         required="true" requiredMessage="Tên danh mục là bắt buộc"
+                         pt:placeholder="Nhập tên danh mục (VD: Củ quả)"/>
+            <h:message for="catName" class="error-msg" />
+
+            <h:outputLabel value="Mô tả:" />
+            <h:inputTextarea id="catDesc" value="#{categoryBean.currentCategory.description}" 
+                             rows="3" cols="30" pt:placeholder="Nhập mô tả chi tiết" />
+            <h:message for="catDesc" class="error-msg" />
+            
+            <h:panelGroup />
+            <h:panelGroup>
+                <h:commandButton value="#{categoryBean.isEditMode ? 'Cập nhật' : 'Thêm mới'}" action="#{categoryBean.save}" />
+                &#160;
+                <h:commandButton value="Hủy" action="#{categoryBean.resetForm}" immediate="true" rendered="#{categoryBean.isEditMode}" />
+            </h:panelGroup>
+        </h:panelGrid>
+    </h:form>
+    
+    <hr/>
+
+    <!-- Khu vực Tìm kiếm -->
+    <h:form id="searchForm" class="search-box">
+        <h:inputText value="#{categoryBean.searchQuery}" pt:placeholder="Tìm kiếm theo mã hoặc tên..." />
+        &#160;
+        <h:commandButton value="Tìm kiếm" action="#{categoryBean.filterData}" />
+        &#160;
+        <h:commandButton value="Tải lại" action="#{categoryBean.init}" immediate="true" />
+    </h:form>
+
+    <!-- Danh sách Danh mục -->
+    <h:form id="listForm">
+        <h:dataTable value="#{categoryBean.filteredCategories}" var="cat" varStatus="status" class="data-table">
+            <h:column>
+                <f:facet name="header">STT</f:facet>
+                <h:outputText value="#{status.index + 1}" />
+            </h:column>
+            <h:column>
+                <f:facet name="header">Mã Danh mục</f:facet>
+                <h:outputText value="#{cat.code}" />
+            </h:column>
+            <h:column>
+                <f:facet name="header">Tên Danh mục</f:facet>
+                <h:outputText value="#{cat.name}" />
+            </h:column>
+            <h:column>
+                <f:facet name="header">Mô tả</f:facet>
+                <h:outputText value="#{cat.description}" />
+            </h:column>
+            <h:column>
+                <f:facet name="header">Hành động</f:facet>
+                <h:commandButton value="Sửa" action="#{categoryBean.prepareEdit(cat)}" />
+                &#160;
+                <h:commandButton value="Xóa" action="#{categoryBean.delete(cat.id)}" onclick="return confirm('Xóa danh mục này?');" />
+            </h:column>
+        </h:dataTable>
+    </h:form>
+
+</h:body>
+</html>

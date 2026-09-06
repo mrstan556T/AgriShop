@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+<h:head>
+    <title>Quản lý Sản phẩm</title>
+</h:head>
+<h:body>
+    <h2>Quản lý Nông sản</h2>
+    <h:link outcome="/admin/dashboard.xhtml" value="Quay lại Dashboard" />
+    <hr/>
+
+    <h:messages globalOnly="true" style="color: blue;" />
+
+    <h:form id="productForm">
+        <h:panelGrid columns="2">
+            <h:outputLabel value="Mã SP (Business Code):" />
+            <h:inputText value="#{productBean.currentProduct.productCode}" required="true" disabled="#{productBean.isEditMode}" />
+
+            <h:outputLabel value="Danh mục:" />
+            <h:selectOneMenu value="#{productBean.currentProduct.categoryId}" required="true">
+                <f:selectItem itemLabel="-- Chọn danh mục --" itemValue="#{null}" noSelectionOption="true" />
+                <f:selectItems value="#{productBean.categories}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat.id}" />
+            </h:selectOneMenu>
+
+            <h:outputLabel value="Tên Sản phẩm:" />
+            <h:inputText value="#{productBean.currentProduct.name}" required="true" />
+
+            <h:outputLabel value="Đơn vị tính:" />
+            <h:inputText value="#{productBean.currentProduct.unit}" required="true" />
+
+            <h:outputLabel value="Giá:" />
+            <h:inputText value="#{productBean.currentProduct.price}" required="true">
+                <f:convertNumber pattern="#,##0.00" />
+            </h:inputText>
+
+            <h:outputLabel value="Tồn kho:" />
+            <h:inputText value="#{productBean.currentProduct.stockQuantity}" required="true" />
+
+            <h:outputLabel value="Mô tả:" />
+            <h:inputTextarea value="#{productBean.currentProduct.description}" rows="3" cols="30" />
+
+            <h:commandButton value="#{productBean.isEditMode ? 'Cập nhật' : 'Thêm mới'}" action="#{productBean.save}" />
+            <h:commandButton value="Hủy" action="#{productBean.resetForm}" immediate="true" rendered="#{productBean.isEditMode}" />
+        </h:panelGrid>
+    </h:form>
+    
+    <hr/>
+
+    <h:form id="listForm">
+        <h:dataTable value="#{productBean.products}" var="prod" border="1" cellpadding="5">
+            <h:column><f:facet name="header">Mã SP</f:facet>#{prod.productCode}</h:column>
+            <h:column><f:facet name="header">Tên</f:facet>#{prod.name}</h:column>
+            <h:column><f:facet name="header">Danh mục</f:facet>#{prod.categoryName}</h:column>
+            <h:column><f:facet name="header">ĐVT</f:facet>#{prod.unit}</h:column>
+            <h:column><f:facet name="header">Giá</f:facet>
+                <h:outputText value="#{prod.price}"><f:convertNumber type="currency" currencySymbol="VND" /></h:outputText>
+            </h:column>
+            <h:column><f:facet name="header">Tồn kho</f:facet>#{prod.stockQuantity}</h:column>
+            <h:column>
+                <f:facet name="header">Hành động</f:facet>
+                <h:commandButton value="Sửa" action="#{productBean.prepareEdit(prod)}" />
+                &#160;
+                <h:commandButton value="Xóa" action="#{productBean.delete(prod.id)}" onclick="return confirm('Xóa sản phẩm này?');" />
+            </h:column>
+        </h:dataTable>
+    </h:form>
+</h:body>
+</html>
