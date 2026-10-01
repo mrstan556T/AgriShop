@@ -13,6 +13,7 @@ public interface CategoryRepositoryLocal {
     void create(Category category);
     void update(Category category);
     void delete(Category category);
+    List<Category> searchByName(String keyword);
     List<Category> findWithPagination(PageRequestDTO request);
     long countWithPagination(PageRequestDTO request);
 }

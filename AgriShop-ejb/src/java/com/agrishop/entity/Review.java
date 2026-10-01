@@ -27,6 +27,13 @@ public class Review implements Serializable {
     @Column(length = 20)
     private String status;
 
+    @Column(name = "admin_reply", length = 1000)
+    private String adminReply;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "admin_reply_at")
+    private Date adminReplyAt;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", insertable = false, updatable = false)
     private Date createdAt;
@@ -47,6 +54,10 @@ public class Review implements Serializable {
     public void setComment(String comment) { this.comment = comment; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getAdminReply() { return adminReply; }
+    public void setAdminReply(String adminReply) { this.adminReply = adminReply; }
+    public Date getAdminReplyAt() { return adminReplyAt; }
+    public void setAdminReplyAt(Date adminReplyAt) { this.adminReplyAt = adminReplyAt; }
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
     public Date getUpdatedAt() { return updatedAt; }

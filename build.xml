@@ -58,4 +58,13 @@
     nbproject/build-impl.xml file. 
 
     -->
+
+    <target name="pre-run-deploy">
+        <delete quiet="true">
+            <fileset dir="${basedir}/AgriShop-war/build/web/WEB-INF/classes" includes="*.class"/>
+        </delete>
+        <delete quiet="true">
+            <fileset dir="${basedir}/dist/gfdeploy/AgriShop/AgriShop-war_war/WEB-INF/classes" includes="*.class"/>
+        </delete>
+    </target>
 </project>

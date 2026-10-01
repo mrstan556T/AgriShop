@@ -1,0 +1,538 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/adminTemplate.xhtml">
+
+    <ui:define name="title">Quản Lý Đơn Hàng - AgriShop</ui:define>
+    <ui:define name="breadcrumb">
+        <h:link outcome="/admin/order.xhtml">Bán Hàng</h:link>
+        <span class="separator">/</span>
+        <span class="active">Đơn Hàng</span>
+    </ui:define>
+    <ui:define name="pageTitle">Đơn Đặt Hàng &amp; Vận Chuyển</ui:define>
+
+    <ui:define name="head">
+        <style>
+            /* Order Page Specific Layout Optimization */
+            .order-table-box .ui-datatable,
+            .order-table-box .ui-datatable table {
+                width: 100% !important;
+                table-layout: fixed !important;
+            }
+            .order-table-box .ui-datatable-tablewrapper {
+                overflow-x: hidden !important;
+            }
+            .order-table-box .ui-datatable thead th {
+                padding: 0.65rem 0.4rem !important;
+                font-size: 0.72rem !important;
+                letter-spacing: 0.04em !important;
+            }
+            .order-table-box .ui-datatable tbody td {
+                padding: 0.5rem 0.4rem !important;
+                font-size: 0.8rem !important;
+            }
+            .order-table-box .status-pill {
+                padding: 0.15rem 0.4rem !important;
+                font-size: 0.68rem !important;
+            }
+        </style>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="mainForm">
+            <!-- Header Actions Row -->
+            <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="font-heading font-semibold text-xl text-gray-900 m-0">Xử Lý &amp; Giao Nhận Đơn Hàng</h2>
+                    <span class="text-xs text-500">Theo dõi quy trình tiếp nhận, đóng gói và vận chuyển nông sản</span>
+                </div>
+            </div>
+
+            <!-- Main TabView: Orders, Cancellation Requests, Refunds -->
+            <p:tabView id="orderTabs" activeIndex="#{orderManagementBean.activeTabIndex}">
+                <p:ajax event="tabChange" listener="#{orderManagementBean.onTabChange}" update="orderTabs" />
+
+                <!-- TAB 1: ALL ORDERS -->
+                <p:tab title="Tất Cả Đơn Hàng">
+                    <div class="admin-table-box order-table-box border-0 shadow-none p-0 mt-2">
+                        <!-- Toolbar Filter Section -->
+                        <div class="flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom-1 border-gray-100">
+                            <div class="flex flex-wrap align-items-center gap-2">
+                                <!-- Search Box -->
+                                <div class="ui-inputgroup" style="width: 210px;">
+                                    <p:inputText value="#{orderManagementBean.orderCodeFilter}" placeholder="Tìm theo mã đơn..." styleClass="w-full text-xs" />
+                                    <p:commandButton icon="pi pi-search" update="dataTable" styleClass="ui-button-secondary text-xs" />
+                                </div>
+                                
+                                <!-- Status Filter Dropdown -->
+                                <div style="width: 185px;">
+                                    <p:selectOneMenu value="#{orderManagementBean.statusFilter}" styleClass="w-full text-xs">
+                                        <f:selectItem itemLabel="Tất cả trạng thái" itemValue="#{null}" />
+                                        <f:selectItem itemLabel="PENDING (Chờ xác nhận)" itemValue="PENDING" />
+                                        <f:selectItem itemLabel="CONFIRMED (Đã xác nhận)" itemValue="CONFIRMED" />
+                                        <f:selectItem itemLabel="PROCESSING (Đang xử lý)" itemValue="PROCESSING" />
+                                        <f:selectItem itemLabel="SHIPPED (Đang giao)" itemValue="SHIPPED" />
+                                        <f:selectItem itemLabel="DELIVERED (Hoàn tất)" itemValue="DELIVERED" />
+                                        <f:selectItem itemLabel="CANCELLED (Đã hủy)" itemValue="CANCELLED" />
+                                        <p:ajax update="dataTable" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+
+                            <p:commandButton icon="pi pi-refresh" actionListener="#{orderManagementBean.resetFilters()}" 
+                                             update="dataTable @form" styleClass="ui-button-secondary ui-button-flat btn-toolbar-refresh text-xs" 
+                                             title="Tải lại bảng dữ liệu" />
+                        </div>
+
+                        <!-- DataTable -->
+                        <p:dataTable id="dataTable" widgetVar="dtOrders" var="order" value="#{orderManagementBean.lazyModel}"
+                                     lazy="true" paginator="true" rows="10" rowKey="#{order.id}"
+                                     paginatorPosition="bottom" emptyMessage="Không có đơn hàng nào."
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Hiển thị {startRecord} - {endRecord} / {totalRecords} đơn hàng"
+                                     rowsPerPageTemplate="10,20,50" rowIndexVar="index" 
+                                     tableStyle="width: 100%; table-layout: fixed;" styleClass="ui-datatable-sm">
+
+                            <p:column headerText="#" style="width: 2.25rem; text-align: center;">
+                                <span class="text-xs text-500">#{index + 1}</span>
+                            </p:column>
+
+                            <p:column headerText="Ảnh" style="width: 3.5rem; text-align: center;">
+                                <h:panelGroup rendered="#{not empty order.firstProductImageUrl}">
+                                    <img src="#{order.firstProductImageUrl.startsWith('http') ? order.firstProductImageUrl : (order.firstProductImageUrl.startsWith('/') ? request.contextPath.concat(order.firstProductImageUrl) : request.contextPath.concat('/').concat(order.firstProductImageUrl))}" 
+                                         style="width: 36px; height: 36px; object-fit: contain; border-radius: 6px; border: 1px solid #E5E7EB;" 
+                                         class="bg-stone-50 p-0.5 inline-block align-middle shadow-xs" alt="Ảnh SP" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{empty order.firstProductImageUrl}">
+                                    <div style="width: 36px; height: 36px; border-radius: 6px; border: 1px solid #E5E7EB;" 
+                                         class="bg-stone-50 flex align-items-center justify-content-center mx-auto text-400">
+                                        <i class="pi pi-image text-xs"></i>
+                                    </div>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Mã Đơn" sortBy="#{order.orderCode}" style="width: 9.5rem;">
+                                <span class="text-xs font-mono text-gray-700 bg-stone-100 px-1 py-0.5 border-round-xs white-space-nowrap">
+                                    #{order.orderCode}
+                                </span>
+                                <h:panelGroup rendered="#{order.cancellationRequested}">
+                                    <span class="block text-xs font-semibold text-orange-600 mt-0.5">
+                                        <i class="pi pi-exclamation-circle text-xs"></i> Chờ duyệt hủy
+                                    </span>
+                                </h:panelGroup>
+                            </p:column>
+                            
+                            <p:column headerText="Sản Phẩm">
+                                <div class="font-medium text-xs text-gray-900 text-overflow-ellipsis overflow-hidden white-space-nowrap" title="#{order.firstProductName}">
+                                    #{order.firstProductName}
+                                </div>
+                                <h:panelGroup rendered="#{order.extraItemsCount > 0}">
+                                    <span class="text-xs text-500 bg-stone-100 px-1 py-0.5 border-round-xs mt-1 inline-block">
+                                        +#{order.extraItemsCount} SP khác
+                                    </span>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Khách Hàng" style="width: 7.5rem;">
+                                <div class="font-medium text-xs text-gray-900 text-overflow-ellipsis overflow-hidden white-space-nowrap">#{order.customerName}</div>
+                                <span class="text-xs text-500 font-mono">#{order.phone}</span>
+                            </p:column>
+                            
+                            <p:column headerText="Ngày Đặt" sortBy="#{order.createdAt}" style="width: 7.5rem; text-align: center;">
+                                <span class="text-xs text-500 white-space-nowrap">
+                                    <h:outputText value="#{order.createdAt}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
+                                    </h:outputText>
+                                </span>
+                            </p:column>
+                            
+                            <p:column headerText="Tổng Tiền" sortBy="#{order.totalAmount}" style="text-align: right; width: 6rem;">
+                                <span class="font-semibold text-xs text-gray-900 white-space-nowrap">
+                                    <h:outputText value="#{order.totalAmount}">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputText>₫
+                                </span>
+                            </p:column>
+                            
+                            <p:column headerText="Trạng Thái" sortBy="#{order.status}" style="text-align: center; width: 6.5rem;">
+                                <span class="status-pill pill-#{order.status.toLowerCase()} white-space-nowrap">
+                                    #{order.status}
+                                </span>
+                            </p:column>
+                            
+                            <p:column headerText="Thao Tác" exportable="false" style="width: 3.5rem; text-align: center;">
+                                <p:commandButton icon="pi pi-sliders-h" update=":crudForm:crudContent" oncomplete="PF('crudDialog').show()"
+                                                 styleClass="row-action-btn btn-view"
+                                                 action="#{orderManagementBean.viewOrderDetails(order.id)}"
+                                                 title="Xem &amp; Xử lý" />
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </p:tab>
+
+                <!-- TAB 2: CANCELLATION REQUESTS -->
+                <p:tab title="Yêu Cầu Hủy Đơn (#{orderManagementBean.pendingCancellationCount})">
+                    <div class="admin-table-box border-0 shadow-none p-0 mt-2">
+                        <div class="mb-3 flex justify-content-between align-items-center">
+                            <span class="text-xs text-500">Danh sách các yêu cầu hủy đơn hàng do khách hàng gửi từ giai đoạn Đã xác nhận/Đang xử lý</span>
+                            <p:commandButton icon="pi pi-refresh" actionListener="#{orderManagementBean.loadCancellationRequests()}" 
+                                             update="@form" styleClass="ui-button-secondary ui-button-flat text-xs" />
+                        </div>
+
+                        <p:dataTable id="dtCancelReqs" var="req" value="#{orderManagementBean.pendingCancellationRequests}" 
+                                     emptyMessage="Hiện không có yêu cầu hủy đơn nào cần xét duyệt." 
+                                     rowIndexVar="idx" styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;">
+                            
+                            <p:column headerText="#" style="width: 2.5rem; text-align: center;">
+                                <span class="text-xs text-500">#{idx + 1}</span>
+                            </p:column>
+
+                            <p:column headerText="Mã Đơn" style="width: 9.5rem;">
+                                <span class="text-xs font-mono font-semibold text-gray-800">#{req.orderCode}</span>
+                            </p:column>
+
+                            <p:column headerText="Khách Hàng" style="width: 9rem;">
+                                <div class="font-medium text-xs text-gray-900">#{req.customerName}</div>
+                                <span class="text-xs text-500 font-mono">#{req.phone}</span>
+                            </p:column>
+
+                            <p:column headerText="Số Tiền" style="width: 6.5rem; text-align: right;">
+                                <span class="font-semibold text-xs text-gray-900">
+                                    <h:outputText value="#{req.totalAmount}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                </span>
+                            </p:column>
+
+                            <p:column headerText="Lý Do Hủy Của Khách">
+                                <div class="text-xs text-gray-800 line-height-2 p-1 border-round-xs bg-stone-50 border-1 border-gray-200">
+                                    <i class="pi pi-comment text-orange-500 mr-1"></i> #{req.reason}
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Thời Gian Gửi" style="width: 8rem; text-align: center;">
+                                <span class="text-xs text-500">
+                                    <h:outputText value="#{req.createdAt}"><f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" /></h:outputText>
+                                </span>
+                            </p:column>
+
+                            <p:column headerText="Thao Tác" style="width: 9rem; text-align: center;">
+                                <div class="flex justify-content-center gap-1">
+                                    <p:commandButton value="Duyệt Hủy" icon="pi pi-check" 
+                                                     action="#{orderManagementBean.approveCancellation(req.id)}" 
+                                                     update=":mainForm :growlMessages" 
+                                                     styleClass="cta-btn text-xs px-2 py-1">
+                                        <p:confirm header="Xác nhận duyệt hủy" 
+                                                   message="Chấp thuận hủy đơn #{req.orderCode}? Đơn sẽ chuyển CANCELLED và giải phóng tồn kho." 
+                                                   icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
+                                    <p:commandButton value="Từ Chối" icon="pi pi-times" 
+                                                     action="#{orderManagementBean.rejectCancellation(req.id)}" 
+                                                     update=":mainForm :growlMessages" 
+                                                     styleClass="ui-button-danger ui-button-outlined text-xs px-2 py-1">
+                                        <p:confirm header="Xác nhận từ chối" 
+                                                   message="Từ chối yêu cầu hủy đơn #{req.orderCode}? Đơn hàng sẽ tiếp tục quy trình đóng gói/giao hàng." 
+                                                   icon="pi pi-info-circle" />
+                                    </p:commandButton>
+                                </div>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </p:tab>
+
+                <!-- TAB 3: REFUND MANAGEMENT -->
+                <p:tab title="Quản Lý Hoàn Tiền (#{orderManagementBean.refundPendingCount})">
+                    <div class="admin-table-box border-0 shadow-none p-0 mt-2">
+                        <div class="mb-3 flex justify-content-between align-items-center">
+                            <span class="text-xs text-500">Danh sách các đơn hàng đã thanh toán trực tuyến (PAID) bị hủy hoặc trả hàng, cần hoàn tiền thủ công cho khách</span>
+                            <p:commandButton icon="pi pi-refresh" actionListener="#{orderManagementBean.loadRefundOrders()}" 
+                                             update="@form" styleClass="ui-button-secondary ui-button-flat text-xs" />
+                        </div>
+
+                        <p:dataTable id="dtRefunds" var="ref" value="#{orderManagementBean.refundOrders}" 
+                                     emptyMessage="Hiện không có đơn hàng nào cần xử lý hoàn tiền." 
+                                     rowIndexVar="idx" styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;">
+                            
+                            <p:column headerText="#" style="width: 2.5rem; text-align: center;">
+                                <span class="text-xs text-500">#{idx + 1}</span>
+                            </p:column>
+
+                            <p:column headerText="Mã Đơn" style="width: 9.5rem;">
+                                <span class="text-xs font-mono font-semibold text-gray-800">#{ref.orderCode}</span>
+                            </p:column>
+
+                            <p:column headerText="Khách Hàng" style="width: 9rem;">
+                                <div class="font-medium text-xs text-gray-900">#{ref.customerName}</div>
+                                <span class="text-xs text-500 font-mono">#{ref.phone}</span>
+                            </p:column>
+
+                            <p:column headerText="Số Tiền Cần Hoàn" style="width: 7.5rem; text-align: right;">
+                                <span class="font-semibold text-xs text-red-600">
+                                    <h:outputText value="#{ref.totalAmount}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                </span>
+                            </p:column>
+
+                            <p:column headerText="Cổng TT" style="width: 5.5rem; text-align: center;">
+                                <span class="text-xs font-medium bg-stone-100 px-1 py-0.5 border-round-xs">
+                                    #{ref.paymentMethod != null ? ref.paymentMethod : 'VNPAY'}
+                                </span>
+                            </p:column>
+
+                            <p:column headerText="Trạng Thái Đơn" style="width: 6.5rem; text-align: center;">
+                                <span class="status-pill pill-#{ref.status.toLowerCase()}">#{ref.status}</span>
+                            </p:column>
+
+                            <p:column headerText="Trạng Thái Hoàn" style="width: 8.5rem; text-align: center;">
+                                <h:panelGroup rendered="#{ref.paymentStatus eq 'REFUND_PENDING'}">
+                                    <span class="text-xs px-2 py-0.5 border-round-xs font-semibold bg-orange-100 text-orange-800">
+                                        <i class="pi pi-clock text-xs mr-1"></i> CHỜ HOÀN TIỀN
+                                    </span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{ref.paymentStatus eq 'REFUNDED'}">
+                                    <span class="text-xs px-2 py-0.5 border-round-xs font-semibold bg-purple-100 text-purple-800">
+                                        <i class="pi pi-check text-xs mr-1"></i> ĐÃ HOÀN TIỀN
+                                    </span>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Thao Tác" style="width: 9.5rem; text-align: center;">
+                                <h:panelGroup rendered="#{ref.paymentStatus eq 'REFUND_PENDING'}">
+                                    <p:commandButton value="Xác Nhận Đã Hoàn" icon="pi pi-money-bill" 
+                                                     action="#{orderManagementBean.confirmRefund(ref.id)}" 
+                                                     update=":mainForm :growlMessages" 
+                                                     styleClass="cta-btn text-xs px-2 py-1">
+                                        <p:confirm header="Xác nhận hoàn tiền" 
+                                                   message="Bạn xác nhận đã chuyển khoản hoàn tiền #{ref.totalAmount}₫ cho khách hàng của đơn #{ref.orderCode}?" 
+                                                   icon="pi pi-info-circle" />
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{ref.paymentStatus eq 'REFUNDED'}">
+                                    <span class="text-xs text-500 italic"><i class="pi pi-check text-xs text-green-600"></i> Hoàn tất</span>
+                                </h:panelGroup>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </p:tab>
+            </p:tabView>
+        </h:form>
+
+        <!-- Order Detail & Processing Dialog -->
+        <p:dialog id="crudDialog" widgetVar="crudDialog" header="Chi Tiết Đơn Hàng: #{orderManagementBean.selectedOrder.orderCode}" 
+                  showEffect="fade" hideEffect="fade" modal="true" responsive="true" width="820" height="520" fitViewport="true">
+            <h:form id="crudForm">
+                
+                <p:messages id="messages" closable="true" styleClass="mb-3" />
+                
+                <p:outputPanel id="crudContent" styleClass="overflow-y-auto" style="max-height: 480px; padding-right: 4px;">
+                    <h:panelGroup rendered="#{not empty orderManagementBean.selectedOrder}">
+                        <!-- Top Status & Payment Bar -->
+                        <div class="bg-stone-50 border-1 border-gray-200 p-3 border-round-sm flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+                            <div class="flex align-items-center gap-3">
+                                <div>
+                                    <span class="text-xs text-500 block mb-1">Trạng thái đơn:</span>
+                                    <span class="status-pill pill-#{orderManagementBean.selectedOrder.status.toLowerCase()} font-medium">
+                                        #{orderManagementBean.selectedOrder.status}
+                                    </span>
+                                </div>
+                                <div class="border-left-1 border-gray-300 pl-3">
+                                    <span class="text-xs text-500 block mb-1">Thanh toán:</span>
+                                    <span class="text-xs font-semibold px-2 py-0.5 border-round-xs #{orderManagementBean.selectedOrder.paymentStatus eq 'PAID' ? 'bg-green-100 text-green-800' : (orderManagementBean.selectedOrder.paymentStatus eq 'REFUNDED' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800')}">
+                                        #{orderManagementBean.selectedOrder.paymentStatus}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-500 block mb-1">Thời gian đặt:</span>
+                                <span class="font-medium text-gray-800 text-xs font-mono">
+                                    <h:outputText value="#{orderManagementBean.selectedOrder.createdAt}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
+                                    </h:outputText>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Customer & Delivery Info -->
+                        <div class="grid mb-3">
+                            <div class="col-12 sm:col-6">
+                                <div class="p-3 border-round-sm border-1 border-gray-200 bg-white h-full">
+                                    <div class="text-xs text-500 font-medium uppercase mb-1">Người Đặt Hàng</div>
+                                    <div class="font-medium text-xs text-gray-900">#{orderManagementBean.selectedOrder.customerName}</div>
+                                    <div class="text-xs text-500 mt-1">SĐT: #{orderManagementBean.selectedOrder.phone}</div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 sm:col-6">
+                                <div class="p-3 border-round-sm border-1 border-gray-200 bg-white h-full">
+                                    <div class="text-xs text-500 font-medium uppercase mb-1">Địa Chỉ Nhận Hàng</div>
+                                    <div class="text-xs text-gray-700 line-height-2">
+                                        #{orderManagementBean.selectedOrder.shippingAddress}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Items Table with Snapshot Columns -->
+                        <div class="mb-3">
+                            <div class="text-xs text-500 font-medium uppercase mb-2">Danh Sách Nông Sản (Snapshot Giao Dịch)</div>
+                            <p:dataTable value="#{orderManagementBean.selectedOrder.orderDetails}" var="item" size="small" 
+                                         lazy="false" styleClass="border-1 border-gray-200">
+                                
+                                <p:column headerText="Sản Phẩm">
+                                    <div class="flex align-items-center gap-2 py-1">
+                                        <h:panelGroup rendered="#{not empty item.imageUrl}">
+                                            <img src="#{item.imageUrl.startsWith('http') ? item.imageUrl : (item.imageUrl.startsWith('/') ? request.contextPath.concat(item.imageUrl) : request.contextPath.concat('/').concat(item.imageUrl))}" 
+                                                 style="width: 40px; height: 40px; object-fit: contain; border-radius: 4px; border: 1px solid #E5E7EB;" 
+                                                 class="bg-stone-50 p-1 flex-shrink-0" alt="Ảnh SP" />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{empty item.imageUrl}">
+                                            <div style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #E5E7EB;" 
+                                                 class="bg-stone-50 flex align-items-center justify-content-center text-400 flex-shrink-0">
+                                                <i class="pi pi-image text-xs"></i>
+                                            </div>
+                                        </h:panelGroup>
+                                        <div>
+                                            <div class="font-semibold text-xs text-gray-900">#{item.productName}</div>
+                                            <span class="text-xs font-mono text-gray-500">SKU: #{item.productCode}</span>
+                                        </div>
+                                    </div>
+                                </p:column>
+
+                                <p:column headerText="ĐVT" style="width: 4.5rem; text-align: center;">
+                                    <span class="text-xs text-gray-600">#{item.unit}</span>
+                                </p:column>
+
+                                <p:column headerText="SL" style="width: 3.5rem; text-align: center;">
+                                    <span class="text-xs font-mono font-semibold">#{item.quantity}</span>
+                                </p:column>
+
+                                <p:column headerText="Đơn Giá Mua" style="text-align: right; width: 7.5rem;">
+                                    <span class="text-xs text-gray-600 font-mono">
+                                        <h:outputText value="#{item.unitPrice}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                    </span>
+                                </p:column>
+
+                                <p:column headerText="Thành Tiền" style="text-align: right; width: 8rem;">
+                                    <span class="text-xs font-semibold text-gray-900 font-mono">
+                                        <h:outputText value="#{item.itemTotal}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                    </span>
+                                </p:column>
+                            </p:dataTable>
+
+                            <!-- Financial Breakdown Summary in Dialog -->
+                            <div class="mt-2 p-3 border-round-sm bg-stone-50 border-1 border-gray-200">
+                                <div class="flex justify-content-between align-items-center py-1 text-xs text-gray-600">
+                                    <span>Tạm tính (Tiền hàng):</span>
+                                    <span class="font-mono font-medium">
+                                        <h:outputText value="#{orderManagementBean.selectedOrder.subtotal}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>₫
+                                    </span>
+                                </div>
+                                <div class="flex justify-content-between align-items-center py-1 text-xs text-green-700" rendered="#{orderManagementBean.selectedOrder.discountAmount gt 0}">
+                                    <span>Giảm giá khuyến mãi <h:outputText value="(Voucher: #{orderManagementBean.selectedOrder.couponCode})" rendered="#{not empty orderManagementBean.selectedOrder.couponCode}" />:</span>
+                                    <span class="font-mono font-medium">
+                                        -<h:outputText value="#{orderManagementBean.selectedOrder.discountAmount}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>₫
+                                    </span>
+                                </div>
+                                <div class="flex justify-content-between align-items-center py-1 text-xs text-gray-600">
+                                    <span>Phí giao hàng:</span>
+                                    <span class="font-mono font-medium">
+                                        <h:outputText value="#{orderManagementBean.selectedOrder.shippingFee eq 0 ? 'Miễn phí' : orderManagementBean.selectedOrder.shippingFee}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>
+                                        <h:outputText value="₫" rendered="#{orderManagementBean.selectedOrder.shippingFee gt 0}" />
+                                    </span>
+                                </div>
+                                <div class="border-top-1 border-gray-300 mt-2 pt-2 flex justify-content-between align-items-center">
+                                    <span class="font-semibold text-xs text-gray-900">TỔNG CỘNG THANH TOÁN:</span>
+                                    <span class="font-heading font-bold text-base text-primary font-mono">
+                                        <h:outputText value="#{orderManagementBean.selectedOrder.totalAmount}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>₫
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Action Controls -->
+                        <div class="pt-3 border-top-1 border-gray-200">
+                            <span class="text-xs text-500 font-medium uppercase tracking-wider block mb-2">
+                                Thao tác nghiệp vụ:
+                            </span>
+
+                            <div class="flex flex-wrap gap-2">
+                                <h:panelGroup rendered="#{orderManagementBean.selectedOrder.status eq 'PENDING'}">
+                                    <p:commandButton value="Duyệt Đơn (Chuyển sang PROCESSING)" icon="pi pi-check" 
+                                                     action="#{orderManagementBean.updateStatus}" 
+                                                     update=":mainForm:dataTable :crudForm:crudContent" 
+                                                     styleClass="cta-btn text-xs px-3 py-1">
+                                        <f:setPropertyActionListener value="PROCESSING" target="#{orderManagementBean.newStatus}" />
+                                    </p:commandButton>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{orderManagementBean.selectedOrder.status eq 'PROCESSING'}">
+                                    <p:commandButton value="Giao Hàng (SHIPPED)" icon="pi pi-truck" 
+                                                     action="#{orderManagementBean.updateStatus}" 
+                                                     update=":mainForm:dataTable :crudForm:crudContent" 
+                                                     styleClass="ui-button-secondary text-xs px-3 py-1">
+                                        <f:setPropertyActionListener value="SHIPPED" target="#{orderManagementBean.newStatus}" />
+                                    </p:commandButton>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{orderManagementBean.selectedOrder.status eq 'SHIPPED'}">
+                                    <p:commandButton value="Xác Nhận Đã Giao (DELIVERED)" icon="pi pi-check-circle" 
+                                                     action="#{orderManagementBean.updateStatus}" 
+                                                     update=":mainForm:dataTable :crudForm:crudContent" 
+                                                     styleClass="cta-btn text-xs px-3 py-1">
+                                        <f:setPropertyActionListener value="DELIVERED" target="#{orderManagementBean.newStatus}" />
+                                    </p:commandButton>
+                                </h:panelGroup>
+
+                                <!-- Return / Refund actions for DELIVERED / RETURN_REQUESTED -->
+                                <h:panelGroup rendered="#{orderManagementBean.selectedOrder.status eq 'DELIVERED' or orderManagementBean.selectedOrder.status eq 'RETURN_REQUESTED'}">
+                                    <p:commandButton value="Hoàn Hàng Tốt (Nhập lại kho)" icon="pi pi-replay" 
+                                                     action="#{orderManagementBean.processReturn(true)}" 
+                                                     update=":mainForm:dataTable :crudForm:crudContent" 
+                                                     styleClass="ui-button-warning ui-button-outlined text-xs px-3 py-1">
+                                        <p:confirm header="Xác nhận hoàn hàng" message="Nông sản còn tốt và sẽ được cộng lại vào Tồn Kho. Tiếp tục?" icon="pi pi-info-circle" />
+                                    </p:commandButton>
+                                    <p:commandButton value="Hoàn Hàng Hỏng (Hủy hàng dập)" icon="pi pi-trash" 
+                                                     action="#{orderManagementBean.processReturn(false)}" 
+                                                     update=":mainForm:dataTable :crudForm:crudContent" 
+                                                     styleClass="ui-button-danger ui-button-outlined text-xs px-3 py-1">
+                                        <p:confirm header="Xác nhận hàng hỏng" message="Nông sản bị dập/hỏng sẽ KHÔNG cộng vào tồn kho mà ghi nhận thất thoát. Tiếp tục?" icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{orderManagementBean.selectedOrder.status ne 'DELIVERED' and orderManagementBean.selectedOrder.status ne 'CANCELLED' and orderManagementBean.selectedOrder.status ne 'RETURNED'}">
+                                    <p:commandButton value="Hủy Đơn Hàng" icon="pi pi-times" 
+                                                     action="#{orderManagementBean.updateStatus}" 
+                                                     update=":mainForm:dataTable :crudForm:crudContent" 
+                                                     styleClass="ui-button-danger ui-button-flat text-xs px-3 py-1 ml-auto">
+                                        <f:setPropertyActionListener value="CANCELLED" target="#{orderManagementBean.newStatus}" />
+                                        <p:confirm header="Xác nhận hủy" message="Bạn chắc chắn muốn HỦY đơn hàng này? Tồn kho đang giữ sẽ được giải phóng." icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+                </p:outputPanel>
+                
+                <f:facet name="footer">
+                    <div class="flex justify-content-end gap-2">
+                        <p:commandButton value="Đóng" type="button" onclick="PF('crudDialog').hide()" styleClass="ui-button-secondary text-xs" />
+                    </div>
+                </f:facet>
+            </h:form>
+        </p:dialog>
+
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="360">
+            <div class="flex justify-content-end gap-2 mt-3">
+                <p:commandButton value="Không" type="button" styleClass="ui-confirmdialog-no ui-button-secondary text-xs"/>
+                <p:commandButton value="Đồng ý Hủy" type="button" styleClass="ui-confirmdialog-yes ui-button-danger text-xs" />
+            </div>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,49 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">404 - Không Tìm Thấy Trang | AgriShop</ui:define>
+
+    <ui:define name="meta">
+        <meta name="robots" content="noindex, follow" />
+        <meta name="description" content="Trang bạn tìm kiếm không tồn tại hoặc đã được di chuyển trên hệ thống AgriShop." />
+    </ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-8 md:py-12">
+            <div class="bg-white border-1 border-gray-200 border-round-xl p-6 md:p-8 text-center max-w-40rem mx-auto shadow-1">
+                
+                <!-- Botanical Minimalist Error Badge -->
+                <div class="w-6rem h-6rem border-circle bg-stone-50 border-2 border-gray-200 text-primary flex align-items-center justify-content-center mx-auto mb-4 text-4xl shadow-sm">
+                    <i class="pi pi-compass"></i>
+                </div>
+
+                <span class="text-xs font-bold text-red-600 bg-red-50 border-1 border-red-200 px-3 py-1 border-round uppercase tracking-wider inline-block mb-3">
+                    Lỗi 404: Trang Không Tồn Tại
+                </span>
+
+                <h1 class="font-heading text-3xl md:text-4xl font-bold text-gray-900 m-0 mb-3">
+                    Lạc Lối Giữa Vườn Xanh
+                </h1>
+
+                <p class="text-sm text-600 line-height-3 max-w-30rem mx-auto mb-6">
+                    Trang nông sản hoặc liên kết quý khách đang tìm kiếm có thể đã đổi mùa vụ, tạm ngừng kinh doanh hoặc đường dẫn đã thay đổi. Đừng lo lắng, những giỏ nông sản tươi lành nhất vẫn đang chờ quý khách tại Cửa hàng!
+                </p>
+
+                <div class="flex flex-column sm:flex-row gap-3 justify-content-center">
+                    <p:button outcome="/store.xhtml" value="Khám Phá Cửa Hàng" icon="pi pi-shopping-bag" 
+                              styleClass="cta-btn text-xs px-5 py-3" />
+                    <p:button outcome="/index.xhtml" value="Quay Về Trang Chủ" icon="pi pi-home" 
+                              styleClass="ui-button-outlined text-xs px-5 py-3" />
+                </div>
+
+                <div class="border-top-1 border-gray-200 mt-7 pt-4 text-xs text-400">
+                    Cần hỗ trợ tìm kiếm sản phẩm? Hotline <strong>1900 6868</strong> luôn sẵn sàng trợ giúp quý khách.
+                </div>
+            </div>
+        </div>
+    </ui:define>
+
+</ui:composition>

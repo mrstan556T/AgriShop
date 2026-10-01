@@ -1,0 +1,207 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="jakarta.faces.html"
+        xmlns:f="jakarta.faces.core"
+        xmlns:ui="jakarta.faces.facelets"
+        xmlns:p="http://primefaces.org/ui">
+    <ui:insert name="metadata" />
+    <html>
+    <h:head>
+        <title><ui:insert name="title">AgriShop - Nông Sản Hữu Cơ Thuần Khiết</ui:insert></title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <ui:insert name="meta">
+            <meta name="description" content="AgriShop - Nền tảng tuyển chọn nông sản sạch, thực phẩm hữu cơ và đặc sản nông nghiệp chất lượng cao từ các nông trại tiêu chuẩn VietGAP." />
+        </ui:insert>
+        
+        <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+        
+        <!-- PrimeFlex CDN -->
+        <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.1/primeflex.min.css" />
+        
+        <!-- Stylesheets -->
+        <h:outputStylesheet library="css" name="theme.css" />
+        <h:outputStylesheet library="css" name="storefront.css" />
+        
+        <ui:insert name="head" />
+    </h:head>
+    <h:body>
+        <!-- Minimalist Luxury Header -->
+        <header class="storefront-header">
+            <div class="container mx-auto px-4 lg:px-8 py-2">
+                <div class="flex justify-content-between align-items-center">
+                    <!-- Brand Logo -->
+                    <h:link outcome="/index.xhtml" class="brand-logo">
+                        <div class="brand-icon-box">
+                            <i class="pi pi-shopping-bag"></i>
+                        </div>
+                        <span>AgriShop</span>
+                    </h:link>
+
+                    <!-- Main Navigation Menu -->
+                    <nav class="hidden md:flex align-items-center gap-1">
+                        <h:link outcome="/index.xhtml" styleClass="nav-link #{view.viewId eq '/index.xhtml' ? 'active' : ''}">
+                            Trang chủ
+                        </h:link>
+                        <h:link outcome="/store.xhtml" styleClass="nav-link #{view.viewId eq '/store.xhtml' ? 'active' : ''}">
+                            Cửa hàng
+                        </h:link>
+                        <h:link outcome="/about.xhtml" styleClass="nav-link #{view.viewId eq '/about.xhtml' ? 'active' : ''}">
+                            Về chúng tôi
+                        </h:link>
+                        <h:link outcome="/contact.xhtml" styleClass="nav-link #{view.viewId eq '/contact.xhtml' ? 'active' : ''}">
+                            Liên hệ
+                        </h:link>
+                    </nav>
+
+                    <!-- Header Right Actions -->
+                    <div class="flex align-items-center gap-3">
+                        <h:form id="navForm" class="flex align-items-center gap-3 m-0">
+                            <!-- Wishlist Button with Badge -->
+                            <h:link outcome="/wishlist.xhtml" class="cart-icon-btn" title="Danh sách yêu thích">
+                                <i class="pi pi-heart text-lg"></i>
+                                <h:panelGroup rendered="#{wishlistBean.wishlistCount gt 0}">
+                                    <span class="cart-badge-count">#{wishlistBean.wishlistCount}</span>
+                                </h:panelGroup>
+                            </h:link>
+
+                            <!-- Live Cart Button with Badge -->
+                            <h:link outcome="/cart.xhtml" class="cart-icon-btn" title="Giỏ hàng của bạn">
+                                <i class="pi pi-shopping-cart text-lg"></i>
+                                <h:panelGroup rendered="#{cartBean.cart.totalItems gt 0}">
+                                    <span class="cart-badge-count">#{cartBean.cart.totalItems}</span>
+                                </h:panelGroup>
+                            </h:link>
+
+                            <!-- Authenticated User Dropdown / Profile -->
+                            <h:panelGroup rendered="#{not empty loginBean.currentUser}">
+                                <div class="flex align-items-center gap-2">
+                                    <h:panelGroup rendered="#{loginBean.currentUser.role == 'ADMIN'}">
+                                        <p:button outcome="/admin/dashboard.xhtml" value="Quản trị" icon="pi pi-shield" 
+                                                  styleClass="ui-button-secondary text-xs hidden lg:inline-flex" />
+                                    </h:panelGroup>
+
+                                    <h:link outcome="/order-history.xhtml" class="cart-icon-btn hidden sm:flex" title="Đơn mua của tôi">
+                                        <i class="pi pi-list text-sm"></i>
+                                    </h:link>
+
+                                    <h:link outcome="/profile.xhtml" class="cart-icon-btn" title="Tài khoản">
+                                        <i class="pi pi-user text-sm"></i>
+                                    </h:link>
+
+                                    <p:commandButton action="#{loginBean.logout()}" icon="pi pi-sign-out" 
+                                                     title="Đăng xuất" styleClass="ui-button-flat ui-button-secondary p-button-rounded" />
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- Guest State: Login / Register CTA -->
+                            <h:panelGroup rendered="#{empty loginBean.currentUser}">
+                                <div class="flex align-items-center gap-2">
+                                    <h:link outcome="/login.xhtml" styleClass="nav-link">
+                                        Đăng nhập
+                                    </h:link>
+                                    <p:button outcome="/register.xhtml" value="Đăng ký" 
+                                              styleClass="cta-btn text-xs px-3 py-2 font-medium" />
+                                </div>
+                            </h:panelGroup>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dynamic Content Container -->
+        <main class="main-content" style="min-height: 75vh;">
+            <p:growl id="growlMessages" showDetail="true" life="3500">
+                <p:autoUpdate />
+            </p:growl>
+            
+            <ui:insert name="content" />
+        </main>
+
+        <!-- Understated Luxury Footer -->
+        <footer class="storefront-footer">
+            <div class="container mx-auto px-4 lg:px-8">
+                <div class="grid">
+                    <!-- Col 1: Brand Info -->
+                    <div class="col-12 md:col-6 lg:col-4 mb-4">
+                        <div class="brand-logo mb-3" style="color: #FFFFFF;">
+                            <div class="brand-icon-box" style="background: rgba(255,255,255,0.15);">
+                                <i class="pi pi-shopping-bag"></i>
+                            </div>
+                            <span>AgriShop</span>
+                        </div>
+                        <p style="color: #9CA3AF; line-height: 1.8; font-size: 0.9rem;" class="mb-4">
+                            Nền tảng tuyển chọn nông sản sạch, thực phẩm hữu cơ thuần khiết trực tiếp từ các hợp tác xã nông trại đạt chuẩn VietGAP &amp; GlobalGAP.
+                        </p>
+                        <div class="flex gap-2">
+                            <a href="#" class="cart-icon-btn" style="background: rgba(255,255,255,0.06); color: #fff; border-color: rgba(255,255,255,0.12);"><i class="pi pi-facebook text-sm"></i></a>
+                            <a href="#" class="cart-icon-btn" style="background: rgba(255,255,255,0.06); color: #fff; border-color: rgba(255,255,255,0.12);"><i class="pi pi-youtube text-sm"></i></a>
+                            <a href="#" class="cart-icon-btn" style="background: rgba(255,255,255,0.06); color: #fff; border-color: rgba(255,255,255,0.12);"><i class="pi pi-instagram text-sm"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Col 2: Quick Links -->
+                    <div class="col-12 sm:col-6 lg:col-2 mb-4">
+                        <h4 class="footer-col-title">Khám Phá</h4>
+                        <ul class="footer-links-list">
+                            <li><h:link outcome="/index.xhtml" value="Trang chủ" /></li>
+                            <li><h:link outcome="/store.xhtml" value="Cửa hàng" /></li>
+                            <li><h:link outcome="/about.xhtml" value="Về chúng tôi" /></li>
+                            <li><h:link outcome="/contact.xhtml" value="Liên hệ hỗ trợ" /></li>
+                        </ul>
+                    </div>
+
+                    <!-- Col 3: Customer Care -->
+                    <div class="col-12 sm:col-6 lg:col-3 mb-4">
+                        <h4 class="footer-col-title">Chính Sách &amp; Hỗ Trợ</h4>
+                        <ul class="footer-links-list">
+                            <li><h:link outcome="/policy-shipping.xhtml" value="Chính sách vận chuyển &amp; giao nhanh" /></li>
+                            <li><h:link outcome="/policy-returns.xhtml" value="Chính sách đổi trả 24h &amp; bồi hoàn" /></li>
+                            <li><h:link outcome="/policy-privacy.xhtml" value="Chính sách bảo mật thông tin" /></li>
+                            <li><h:link outcome="/about.xhtml" value="Tiêu chuẩn canh tác VietGAP" /></li>
+                        </ul>
+                    </div>
+
+                    <!-- Col 4: Contact & Hotline -->
+                    <div class="col-12 md:col-6 lg:col-3 mb-4">
+                        <h4 class="footer-col-title">Thông Tin Liên Hệ</h4>
+                        <div style="color: #9CA3AF; font-size: 0.88rem; line-height: 2;">
+                            <div class="flex align-items-center mb-1">
+                                <i class="pi pi-map-marker mr-2 text-xs"></i>
+                                <span>123 Đường Nông Nghiệp, Quận Xanh, Cần Thơ</span>
+                            </div>
+                            <div class="flex align-items-center mb-1">
+                                <i class="pi pi-phone mr-2 text-xs"></i>
+                                <span class="text-white font-medium">1900 6868</span>
+                            </div>
+                            <div class="flex align-items-center mb-1">
+                                <i class="pi pi-envelope mr-2 text-xs"></i>
+                                <span>support@agrishop.vn</span>
+                            </div>
+                            <div class="flex align-items-center">
+                                <i class="pi pi-clock mr-2 text-xs"></i>
+                                <span>07:00 - 21:00 hàng ngày</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Copyright -->
+                <div class="footer-bottom flex flex-column md:flex-row justify-content-between align-items-center gap-3">
+                    <div>
+                        © 2026 AgriShop Co., Ltd. Tất cả quyền được bảo lưu.
+                    </div>
+                    <div class="flex align-items-center gap-4 text-xs">
+                        <span><i class="pi pi-shield mr-1"></i> Chuẩn VietGAP</span>
+                        <span><i class="pi pi-check-circle mr-1"></i> Giao nhận tươi mới</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </h:body>
+    </html>
+</f:view>

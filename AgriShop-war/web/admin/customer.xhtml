@@ -1,0 +1,224 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/adminTemplate.xhtml">
+    <ui:define name="title">Quản Lý Khách Hàng - AgriShop</ui:define>
+    <ui:define name="breadcrumb">
+        <h:link outcome="/admin/customer.xhtml">Khách Hàng</h:link>
+        <span class="separator">/</span>
+        <span class="active">Danh Sách Khách Hàng</span>
+    </ui:define>
+    <ui:define name="pageTitle">Hồ Sơ Khách Hàng &amp; Lịch Sử Mua Hàng</ui:define>
+
+    <ui:define name="content">
+        <h:form id="mainForm">
+            <!-- Header Actions Row -->
+            <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="font-heading font-semibold text-xl text-gray-900 m-0">Danh Sách Khách Hàng</h2>
+                    <span class="text-xs text-500">Quản lý tài khoản khách hàng, tổng chi tiêu và đối soát lịch sử giao dịch</span>
+                </div>
+            </div>
+
+            <!-- Table Container Box -->
+            <div class="admin-table-box">
+                <!-- Toolbar Filter Section -->
+                <div class="flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom-1 border-gray-100">
+                    <div class="flex flex-wrap align-items-center gap-2">
+                        <!-- Search Box -->
+                        <div class="ui-inputgroup" style="width: 240px;">
+                            <p:inputText value="#{customerManagementBean.globalFilter}" placeholder="Tìm theo tên, email, SĐT, mã..." styleClass="w-full text-xs" />
+                            <p:commandButton icon="pi pi-search" update="dataTable" styleClass="ui-button-secondary text-xs" />
+                        </div>
+                        
+                        <!-- Status Filter Dropdown -->
+                        <div style="width: 170px;">
+                            <p:selectOneMenu value="#{customerManagementBean.statusFilter}" styleClass="w-full text-xs">
+                                <f:selectItem itemLabel="Tất cả trạng thái" itemValue="#{null}" />
+                                <f:selectItem itemLabel="Đang hoạt động" itemValue="ACTIVE" />
+                                <f:selectItem itemLabel="Đang bị khóa" itemValue="INACTIVE" />
+                                <p:ajax update="dataTable" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+
+                    <p:commandButton icon="pi pi-refresh" actionListener="#{customerManagementBean.resetFilters()}" 
+                                     update="dataTable @form" styleClass="ui-button-secondary ui-button-flat btn-toolbar-refresh text-xs" 
+                                     title="Tải lại bảng dữ liệu" />
+                </div>
+
+                <!-- DataTable -->
+                <p:dataTable id="dataTable" widgetVar="dtCustomers" var="c" value="#{customerManagementBean.lazyModel}"
+                             lazy="true" paginator="true" rows="10" paginatorPosition="bottom" emptyMessage="Không tìm thấy khách hàng nào."
+                             styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             currentPageReportTemplate="Hiển thị {startRecord} - {endRecord} / {totalRecords} khách hàng"
+                             rowsPerPageTemplate="10,20,50" rowIndexVar="index">
+
+                    <p:column headerText="#" style="width: 2.75rem; text-align: center;">
+                        <span class="text-xs text-500">#{index + 1}</span>
+                    </p:column>
+
+                    <!-- Avatar -->
+                    <p:column headerText="Ảnh" style="width: 3.5rem; text-align: center;">
+                        <h:panelGroup rendered="#{not empty c.avatarUrl}">
+                            <img src="#{c.avatarUrl.startsWith('http') ? c.avatarUrl : (c.avatarUrl.startsWith('/') ? request.contextPath.concat(c.avatarUrl) : request.contextPath.concat('/').concat(c.avatarUrl))}" 
+                                 style="width: 32px; height: 32px; object-fit: cover; border-radius: 50%; border: 1px solid #E2E8F0;" 
+                                 alt="#{c.fullName}" />
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{empty c.avatarUrl}">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #E2E8F0; display: inline-flex; align-items: center; justify-content: center; color: #64748B; font-size: 0.75rem; font-weight: 600;">
+                                #{c.fullName != null and c.fullName.length() gt 0 ? c.fullName.substring(0,1).toUpperCase() : 'U'}
+                            </div>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <!-- Code -->
+                    <p:column headerText="Mã KH" style="width: 100px;">
+                        <span class="font-mono text-xs bg-stone-100 px-1.5 py-0.5 border-round-xs">
+                            #{c.userCode}
+                        </span>
+                    </p:column>
+
+                    <!-- Full Name & Username -->
+                    <p:column headerText="Họ &amp; Tên" style="min-width: 160px;">
+                        <div class="font-semibold text-xs text-gray-900">#{c.fullName}</div>
+                        <span class="text-xs text-400 font-mono">@#{c.username}</span>
+                    </p:column>
+
+                    <!-- Email -->
+                    <p:column headerText="Email" style="min-width: 160px;">
+                        <span class="text-xs text-gray-700">#{c.email}</span>
+                    </p:column>
+
+                    <!-- Phone -->
+                    <p:column headerText="Số Điện Thoại" style="width: 110px;">
+                        <span class="text-xs font-mono text-gray-700">#{not empty c.phone ? c.phone : '—'}</span>
+                    </p:column>
+
+                    <!-- Total Orders -->
+                    <p:column headerText="Đã Đặt" style="width: 80px; text-align: center;">
+                        <span class="font-semibold text-xs text-gray-900">#{c.totalOrders} đơn</span>
+                    </p:column>
+
+                    <!-- Total Spent -->
+                    <p:column headerText="Tổng Chi Tiêu" style="width: 120px; text-align: right;">
+                        <span class="font-bold text-xs text-green-700">
+                            <h:outputText value="#{c.totalSpent}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>₫
+                        </span>
+                    </p:column>
+
+                    <!-- Status -->
+                    <p:column headerText="Trạng Thái" style="width: 110px; text-align: center;">
+                        <span class="badge #{c.status eq 'ACTIVE' ? 'badge-success' : 'badge-danger'}">
+                            #{c.status eq 'ACTIVE' ? 'Hoạt động' : 'Bị khóa'}
+                        </span>
+                    </p:column>
+
+                    <!-- Actions -->
+                    <p:column headerText="Thao Tác" style="width: 100px; text-align: center;">
+                        <div class="flex gap-1 justify-content-center">
+                            <p:commandButton icon="pi pi-eye" actionListener="#{customerManagementBean.viewCustomerDetails(c.id)}"
+                                             update=":detailDialogForm:detailDialogPanel" oncomplete="PF('detailDialog').show()"
+                                             styleClass="p-button-sm ui-button-secondary p-1" title="Xem hồ sơ &amp; đơn hàng" />
+                            <p:commandButton icon="#{c.status eq 'ACTIVE' ? 'pi pi-lock' : 'pi pi-lock-open'}"
+                                             actionListener="#{customerManagementBean.toggleCustomerStatus(c.id)}"
+                                             update=":mainForm:dataTable"
+                                             styleClass="p-button-sm #{c.status eq 'ACTIVE' ? 'ui-button-outlined ui-button-danger' : 'ui-button-outlined ui-button-success'} p-1"
+                                             title="#{c.status eq 'ACTIVE' ? 'Khóa tài khoản' : 'Kích hoạt lại'}">
+                                <p:confirm header="Xác nhận" message="#{c.status eq 'ACTIVE' ? 'Khóa tài khoản khách hàng này?' : 'Mở khóa tài khoản khách hàng này?'}" icon="pi pi-exclamation-triangle" />
+                            </p:commandButton>
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </h:form>
+
+        <!-- Customer Profile & Order History Modal Dialog -->
+        <p:dialog id="detailDialog" widgetVar="detailDialog" modal="true" responsive="true"
+                  header="Hồ Sơ Khách Hàng: #{customerManagementBean.selectedCustomer.fullName}" width="720" fitViewport="true"
+                  showEffect="fade" hideEffect="fade" closeOnEscape="true">
+            <h:form id="detailDialogForm">
+                <p:outputPanel id="detailDialogPanel" styleClass="p-2">
+                    <h:panelGroup rendered="#{not empty customerManagementBean.selectedCustomer}">
+                        <!-- Customer Info Card -->
+                        <div class="grid mb-3">
+                            <div class="col-12 sm:col-6">
+                                <div class="p-3 border-1 border-gray-200 border-round-sm bg-stone-50 h-full">
+                                    <div class="text-xs text-500 font-semibold uppercase mb-2">Thông Tin Cá Nhân</div>
+                                    <div class="text-xs mb-1"><strong>Họ &amp; Tên:</strong> #{customerManagementBean.selectedCustomer.fullName}</div>
+                                    <div class="text-xs mb-1"><strong>Tài khoản:</strong> @#{customerManagementBean.selectedCustomer.username}</div>
+                                    <div class="text-xs mb-1"><strong>Mã KH:</strong> #{customerManagementBean.selectedCustomer.userCode}</div>
+                                    <div class="text-xs mb-1"><strong>Email:</strong> #{customerManagementBean.selectedCustomer.email}</div>
+                                    <div class="text-xs"><strong>Số điện thoại:</strong> #{customerManagementBean.selectedCustomer.phone}</div>
+                                </div>
+                            </div>
+                            <div class="col-12 sm:col-6">
+                                <div class="p-3 border-1 border-gray-200 border-round-sm bg-stone-50 h-full">
+                                    <div class="text-xs text-500 font-semibold uppercase mb-2">Giao Hàng &amp; Chi Tiêu</div>
+                                    <div class="text-xs mb-1"><strong>Địa chỉ nhận hàng:</strong> #{not empty customerManagementBean.selectedCustomer.address ? customerManagementBean.selectedCustomer.address : 'Chưa cập nhật'}</div>
+                                    <div class="text-xs mb-1"><strong>Tổng số đơn đã đặt:</strong> <span class="font-bold text-gray-900">#{customerManagementBean.selectedCustomer.totalOrders}</span> đơn</div>
+                                    <div class="text-xs mb-1"><strong>Tổng chi tiêu tích lũy:</strong> <span class="font-bold text-green-700"><h:outputText value="#{customerManagementBean.selectedCustomer.totalSpent}"><f:convertNumber pattern="#,##0" /></h:outputText>₫</span></div>
+                                    <div class="text-xs">
+                                        <strong>Ngày tham gia:</strong> 
+                                        <h:outputText value="#{customerManagementBean.selectedCustomer.createdAt}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Orders History Table -->
+                        <div class="border-top-1 border-gray-200 pt-3">
+                            <span class="font-semibold text-xs text-gray-800 uppercase tracking-wider block mb-2">
+                                <i class="pi pi-shopping-cart text-xs mr-1 text-primary"></i> Lịch Sử Đơn Hàng Đã Đặt
+                            </span>
+
+                            <p:dataTable value="#{customerManagementBean.customerOrders}" var="ord"
+                                         emptyMessage="Khách hàng chưa có đơn hàng nào"
+                                         styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;"
+                                         paginator="true" rows="5" paginatorPosition="bottom">
+                                <p:column headerText="Mã Đơn" style="width: 140px;">
+                                    <span class="font-mono text-xs font-bold text-gray-900">#{ord.orderCode}</span>
+                                </p:column>
+                                <p:column headerText="Ngày Đặt" style="width: 130px;">
+                                    <h:outputText value="#{ord.createdAt}" class="text-xs text-500">
+                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Tổng Tiền" style="width: 120px; text-align: right;">
+                                    <span class="font-bold text-xs text-gray-900 font-mono">
+                                        <h:outputText value="#{ord.totalAmount}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>₫
+                                    </span>
+                                </p:column>
+                                <p:column headerText="Trạng Thái" style="width: 120px; text-align: center;">
+                                    <span class="badge #{ord.status eq 'DELIVERED' ? 'badge-success' : (ord.status eq 'CANCELLED' ? 'badge-danger' : 'badge-warning')}">
+                                        #{ord.status eq 'PENDING' ? 'Chờ duyệt' : (ord.status eq 'PROCESSING' ? 'Đang xử lý' : (ord.status eq 'SHIPPED' ? 'Đang giao' : (ord.status eq 'DELIVERED' ? 'Đã giao' : 'Đã hủy')))}
+                                    </span>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </h:panelGroup>
+                </p:outputPanel>
+
+                <f:facet name="footer">
+                    <div class="flex justify-content-end">
+                        <p:commandButton value="Đóng" type="button" onclick="PF('detailDialog').hide()"
+                                         styleClass="ui-button-outlined ui-button-secondary text-xs px-3 py-2" />
+                    </div>
+                </f:facet>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>
+</html>

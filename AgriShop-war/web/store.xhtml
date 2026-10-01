@@ -1,0 +1,191 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">
+        #{storefrontBean.selectedCategoryName != null ? storefrontBean.selectedCategoryName.concat(' - Cửa Hàng Nông Sản AgriShop') : 'Cửa Hàng Nông Sản Hữu Cơ Tuyển Chọn - AgriShop'}
+    </ui:define>
+
+    <ui:define name="meta">
+        <meta name="description" content="Khám phá danh mục #{storefrontBean.selectedCategoryName != null ? storefrontBean.selectedCategoryName : 'nông sản hữu cơ'} tươi sạch đạt chuẩn VietGAP, thu hoạch và phân phối trực tiếp từ các nhà vườn nông trại AgriShop." />
+        <meta property="og:title" content="#{storefrontBean.selectedCategoryName != null ? storefrontBean.selectedCategoryName.concat(' - Cửa Hàng Nông Sản AgriShop') : 'Cửa Hàng Nông Sản Hữu Cơ Tuyển Chọn - AgriShop'}" />
+        <meta property="og:description" content="Nông sản hữu cơ tươi sạch đạt chuẩn VietGAP tại AgriShop. Thu hoạch và phân phối trực tiếp trong ngày." />
+        <meta property="og:type" content="website" />
+    </ui:define>
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewParam name="catId" value="#{storefrontBean.selectedCategoryId}" />
+            <f:viewParam name="category" value="#{storefrontBean.selectedCategoryId}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-4">
+            
+            <!-- Page Breadcrumb & Header -->
+            <div class="mb-4">
+                <div class="flex align-items-center gap-2 text-xs text-500 mb-2">
+                    <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="text-500 hover:text-primary" />
+                    <i class="pi pi-angle-right text-xs"></i>
+                    <span class="font-medium text-gray-800">Cửa hàng</span>
+                </div>
+                <div>
+                    <h1 class="font-heading text-2xl md:text-3xl font-semibold text-gray-900 m-0">Nông Sản Mùa Vụ Hôm Nay</h1>
+                    <p class="text-xs text-500 m-0 mt-1">Được thu hoạch và đóng gói trực tiếp từ các hợp tác xã nông trại đạt chuẩn</p>
+                </div>
+            </div>
+
+            <h:form id="storeForm">
+                <div class="store-layout-grid">
+                    
+                    <!-- Left Filter Sidebar -->
+                    <div class="store-sidebar-col">
+                        <div class="store-filter-card">
+                            
+                            <!-- Search Input -->
+                            <div class="mb-4">
+                                <h4 class="filter-header-title">
+                                    <i class="pi pi-search text-xs"></i> Tìm kiếm
+                                </h4>
+                                <div class="ui-inputgroup w-full">
+                                    <p:inputText value="#{storefrontBean.searchQuery}" 
+                                                 placeholder="Tên nông sản..." 
+                                                 styleClass="w-full" />
+                                    <p:commandButton icon="pi pi-search" 
+                                                     actionListener="#{storefrontBean.applyFilter()}" 
+                                                     update="productGrid" 
+                                                     styleClass="ui-button-secondary"
+                                                     title="Tìm kiếm" />
+                                </div>
+                            </div>
+
+                            <!-- Price Range Filter -->
+                            <div class="mb-4 pb-3 border-bottom-1 border-gray-100">
+                                <h4 class="filter-header-title">
+                                    <i class="pi pi-filter text-xs"></i> Khoảng giá (VNĐ)
+                                </h4>
+                                <div class="flex align-items-center gap-2 mb-2">
+                                    <p:inputNumber value="#{storefrontBean.minPrice}" placeholder="Từ" 
+                                                   decimalPlaces="0" symbol="₫" symbolPosition="s" 
+                                                   inputStyleClass="w-full" styleClass="w-full" />
+                                    <span class="text-xs text-400">-</span>
+                                    <p:inputNumber value="#{storefrontBean.maxPrice}" placeholder="Đến" 
+                                                   decimalPlaces="0" symbol="₫" symbolPosition="s" 
+                                                   inputStyleClass="w-full" styleClass="w-full" />
+                                </div>
+                                <p:commandButton value="Áp Dụng Lọc Giá" icon="pi pi-check" 
+                                                 actionListener="#{storefrontBean.applyFilter()}" 
+                                                 update="productGrid" 
+                                                 styleClass="ui-button-outlined ui-button-secondary w-full"
+                                                 style="height: 38px; font-weight: 500;" />
+                            </div>
+
+                            <!-- Stock Status Filter -->
+                            <div class="mb-4 pb-3 border-bottom-1 border-gray-100">
+                                <h4 class="filter-header-title">
+                                    <i class="pi pi-box text-xs"></i> Tình trạng hàng
+                                </h4>
+                                <div class="flex align-items-center">
+                                    <p:selectBooleanCheckbox value="#{storefrontBean.inStockOnly}" itemLabel="Chỉ hiện hàng còn trong kho">
+                                        <p:ajax listener="#{storefrontBean.applyFilter()}" update="productGrid" />
+                                    </p:selectBooleanCheckbox>
+                                </div>
+                            </div>
+
+                            <!-- Category List Filter -->
+                            <div class="mb-4">
+                                <h4 class="filter-header-title">
+                                    <i class="pi pi-tags text-xs"></i> Danh mục
+                                </h4>
+                                <div class="flex flex-column">
+                                    <p:commandLink value="Tất cả sản phẩm" 
+                                                   actionListener="#{storefrontBean.selectCategory(null)}" 
+                                                   update="productGrid :storeForm" 
+                                                   styleClass="filter-category-link #{empty storefrontBean.selectedCategoryId ? 'active' : ''}">
+                                    </p:commandLink>
+
+                                    <ui:repeat value="#{storefrontBean.categories}" var="cat">
+                                        <p:commandLink value="#{cat.name}" 
+                                                       actionListener="#{storefrontBean.selectCategory(cat.id)}" 
+                                                       update=":storeForm:productGrid :storeForm" 
+                                                       styleClass="filter-category-link #{storefrontBean.selectedCategoryId == cat.id ? 'active' : ''}">
+                                        </p:commandLink>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+
+                            <!-- Reset Filters -->
+                            <div class="mb-3">
+                                <p:commandButton value="Đặt Lại Bộ Lọc" icon="pi pi-refresh" 
+                                                 actionListener="#{storefrontBean.resetFilter()}" 
+                                                 update=":storeForm" 
+                                                 styleClass="ui-button-flat text-xs text-500 w-full"
+                                                 style="height: 38px;" />
+                            </div>
+
+                            <!-- Quality Guarantee Box (Understated) -->
+                            <div class="p-3 border-round-sm border-1 border-gray-200 mt-3 bg-stone-50">
+                                <div class="flex align-items-center gap-2 text-gray-800 font-semibold text-xs mb-1">
+                                    <i class="pi pi-shield text-primary"></i> Cam Kết Tươi Sạch
+                                </div>
+                                <p class="text-xs text-500 m-0 line-height-2">
+                                    Nông sản được thu hái trong 24 giờ trước khi vận chuyển đến quý khách.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Right Products Grid Area -->
+                    <div class="store-main-col">
+                        <!-- Admin View Notice Banner -->
+                        <h:panelGroup rendered="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}">
+                            <div class="mb-3 p-3 border-round bg-blue-50 border-1 border-blue-200 text-blue-900 text-xs flex align-items-center gap-2">
+                                <i class="pi pi-shield text-base text-blue-600"></i>
+                                <span><strong>Chế độ Xem Quản Trị Viên:</strong> Bạn đang duyệt xem bằng tài khoản Quản trị viên — hãy đăng nhập bằng tài khoản khách hàng để trải nghiệm mua sắm đầy đủ.</span>
+                            </div>
+                        </h:panelGroup>
+
+                        <!-- Top Sort Bar -->
+                        <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center bg-white p-3 border-round-sm border-1 border-gray-200 mb-3 gap-2">
+                            <div class="text-xs text-500">
+                                <span>Sắp xếp nông sản theo tiêu chí</span>
+                            </div>
+                            <div class="flex align-items-center gap-2">
+                                <span class="text-xs text-600 font-medium">Sắp xếp:</span>
+                                <p:selectOneMenu value="#{storefrontBean.sortOption}" style="min-width: 180px; height: 38px;">
+                                    <f:selectItem itemLabel="Mới nhất" itemValue="newest" />
+                                    <f:selectItem itemLabel="Giá: Thấp đến Cao" itemValue="price_asc" />
+                                    <f:selectItem itemLabel="Giá: Cao đến Thấp" itemValue="price_desc" />
+                                    <f:selectItem itemLabel="Bán chạy nhất" itemValue="bestseller" />
+                                    <f:selectItem itemLabel="Tên A - Z" itemValue="name_asc" />
+                                    <p:ajax listener="#{storefrontBean.applyFilter()}" update="productGrid" />
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <p:dataGrid id="productGrid" var="prod" value="#{storefrontBean.lazyModel}" columns="3" layout="grid"
+                                    rows="9" paginator="true" lazy="true" 
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                    currentPageReportTemplate="Hiển thị {startRecord} - {endRecord} / {totalRecords} sản phẩm"
+                                    emptyMessage="Không tìm thấy sản phẩm nào phù hợp với bộ lọc."
+                                    styleClass="w-full">
+                            
+                            <div class="p-2 h-full">
+                                <ui:include src="/WEB-INF/components/productCard.xhtml">
+                                    <ui:param name="prod" value="#{prod}" />
+                                </ui:include>
+                            </div>
+                        </p:dataGrid>
+                    </div>
+
+                </div>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>

@@ -2,6 +2,7 @@ package com.agrishop.entity;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "CartItems")
@@ -19,7 +20,7 @@ public class CartItem implements Serializable {
     private Product product;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private BigDecimal quantity;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -27,6 +28,6 @@ public class CartItem implements Serializable {
     public void setCart(Cart cart) { this.cart = cart; }
     public Product getProduct() { return product; }
     public void setProduct(Product product) { this.product = product; }
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public BigDecimal getQuantity() { return quantity != null ? quantity : BigDecimal.ZERO; }
+    public void setQuantity(BigDecimal quantity) { this.quantity = quantity; }
 }

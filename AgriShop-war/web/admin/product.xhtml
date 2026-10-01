@@ -7,141 +7,669 @@
       xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="/WEB-INF/templates/adminTemplate.xhtml">
-    <ui:define name="title">Sản phẩm - AgriShop</ui:define>
-    <ui:define name="pageTitle">Quản lý Sản phẩm</ui:define>
+    <ui:define name="title">Quản Lý Sản Phẩm - AgriShop</ui:define>
+    <ui:define name="breadcrumb">
+        <h:link outcome="/admin/product.xhtml">Sản Phẩm</h:link>
+        <span class="separator">/</span>
+        <span class="active">Danh Sách</span>
+    </ui:define>
+    <ui:define name="pageTitle">Quản Lý Sản Phẩm Nông Nghiệp</ui:define>
 
     <ui:define name="content">
         <h:form id="mainForm">
-            <p:card>
-                <p:toolbar styleClass="mb-4">
-                    <p:toolbarGroup>
-                        <p:commandButton value="Thêm Mới" icon="pi pi-plus" actionListener="#{productBean.openNew()}"
-                                         update=":crudForm:crudContent" oncomplete="PF('crudDialog').show()"
-                                         styleClass="ui-button-success mr-2" />
-                    </p:toolbarGroup>
-                    <p:toolbarGroup align="right">
-                        <div class="ui-inputgroup flex align-items-center">
-                            <p:selectOneMenu value="#{productBean.categoryIdFilter}" styleClass="mr-2">
-                                <f:selectItem itemLabel="Tất cả danh mục" itemValue="" />
-                                <f:selectItems value="#{productBean.categories}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat.id}" />
-                            </p:selectOneMenu>
-                            <p:inputText value="#{productBean.globalFilter}" placeholder="Mã, tên..." />
-                            <p:commandButton icon="pi pi-search" update="dataTable" />
-                            <p:commandButton icon="pi pi-refresh" actionListener="#{productBean.init()}" update="dataTable @previous" styleClass="ui-button-secondary" />
-                        </div>
-                    </p:toolbarGroup>
-                </p:toolbar>
+            <!-- Header Actions Row -->
+            <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="font-heading font-semibold text-xl text-gray-900 m-0">Quản Lý Nông Sản &amp; Kho Hàng</h2>
+                    <span class="text-xs text-500">Quản lý thông tin nguồn gốc, số lượng tồn kho và giá bán</span>
+                </div>
+                <p:commandButton value="Thêm Sản Phẩm" icon="pi pi-plus" 
+                                 actionListener="#{productBean.openNew()}" 
+                                 update=":crudForm:dialogTitle :crudForm:crudContent :crudForm:dialogFooter" oncomplete="PF('crudDialog').show()" 
+                                 styleClass="cta-btn text-xs px-3 py-2 border-round-md" />
+            </div>
 
+            <!-- Table Container Box -->
+            <div class="admin-table-box">
+                <!-- Toolbar Filter Section (Compact Single Row) -->
+                <div class="flex flex-wrap align-items-center justify-content-between gap-2 mb-3 pb-3 border-bottom-1 border-gray-100">
+                    <div class="flex flex-wrap align-items-center gap-2">
+                        <!-- Category Filter SelectOneMenu -->
+                        <div style="width: 200px;">
+                            <p:selectOneMenu value="#{productBean.categoryIdFilter}" styleClass="w-full text-xs" filter="true" filterMatchMode="contains" filterPlaceholder="Tìm danh mục...">
+                                <f:selectItem itemLabel="Tất cả danh mục" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{productBean.categories}" var="c" itemLabel="#{c.name}" itemValue="#{c.id}" />
+                                <p:ajax listener="#{productBean.onCategoryFilterChange}" update="dataTable" />
+                            </p:selectOneMenu>
+                        </div>
+
+                        <!-- Keyword Search Box -->
+                        <div class="ui-inputgroup" style="width: 200px;">
+                            <p:inputText value="#{productBean.globalFilter}" placeholder="Tìm theo tên, mã..." styleClass="w-full text-xs" />
+                            <p:commandButton icon="pi pi-search" actionListener="#{productBean.init()}" update="dataTable" styleClass="ui-button-secondary text-xs" />
+                        </div>
+                    </div>
+
+                    <p:commandButton icon="pi pi-refresh" actionListener="#{productBean.init()}" 
+                                     update="dataTable" styleClass="ui-button-secondary ui-button-flat btn-toolbar-refresh text-xs" 
+                                     title="Tải lại bảng dữ liệu" />
+                </div>
+
+                <!-- DataTable -->
                 <p:dataTable id="dataTable" var="prod" value="#{productBean.lazyModel}" 
                              lazy="true" paginator="true" rows="10" paginatorPosition="bottom"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="10,20,50" emptyMessage="Không có dữ liệu."
-                             rowIndexVar="index" styleClass="mt-2">
+                             currentPageReportTemplate="Hiển thị {startRecord} - {endRecord} / {totalRecords} sản phẩm"
+                             rowsPerPageTemplate="10,20,50" emptyMessage="Không tìm thấy sản phẩm nào."
+                             rowIndexVar="index" styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;">
                              
-                    <p:column headerText="STT" style="width:3rem; text-align:center;">
-                        <h:outputText value="#{index + 1}" />
+                    <p:column headerText="#" style="width: 2.75rem; text-align: center;">
+                        <span class="text-xs text-500">#{index + 1}</span>
                     </p:column>
                     
-                    <p:column headerText="Mã" sortBy="#{prod.productCode}" style="width:8rem;">
-                        <h:outputText value="#{prod.productCode}" />
+                    <p:column headerText="Ảnh" style="width: 4rem; text-align: center;">
+                        <h:panelGroup rendered="#{not empty prod.imageUrl}">
+                            <img src="#{prod.imageUrl.startsWith('http') ? prod.imageUrl : request.contextPath.concat(prod.imageUrl)}" 
+                                 style="width: 36px; height: 36px; object-fit: contain; border-radius: 4px; border: 1px solid #E5E7EB;" 
+                                 class="bg-stone-50 p-0.5 inline-block align-middle" alt="Ảnh SP" />
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{empty prod.imageUrl}">
+                            <div style="width: 36px; height: 36px; border-radius: 4px; border: 1px solid #E5E7EB;" 
+                                 class="bg-stone-50 flex align-items-center justify-content-center mx-auto text-400">
+                                 <i class="pi pi-image text-xs"></i>
+                            </div>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <p:column headerText="Mã SP" sortBy="#{prod.productCode}" style="width: 7.5rem;">
+                        <span class="text-xs font-mono text-gray-700 bg-stone-100 px-1.5 py-0.5 border-round-xs">
+                            #{prod.productCode}
+                        </span>
                     </p:column>
                     
-                    <p:column headerText="Sản phẩm" sortBy="#{prod.name}">
-                        <h:outputText value="#{prod.name}" styleClass="font-bold" />
-                        <br/>
-                        <h:outputText value="#{prod.categoryName}" style="font-size:0.85rem; color:gray;" />
+                    <p:column headerText="Tên Nông Sản" sortBy="#{prod.name}">
+                        <div class="font-medium text-gray-900 text-xs">#{prod.name}</div>
                     </p:column>
                     
-                    <p:column headerText="Nhà cung cấp" sortBy="#{prod.supplierName}">
-                        <h:outputText value="#{prod.supplierName}" />
+                    <p:column headerText="Danh Mục" sortBy="#{prod.categoryName}" style="width: 9.5rem;">
+                        <span class="text-xs text-600">
+                            #{prod.categoryName}
+                        </span>
                     </p:column>
                     
-                    <p:column headerText="Giá" sortBy="#{prod.price}" style="width:10rem; text-align:right;">
-                        <h:outputText value="#{prod.price}" styleClass="font-bold text-primary">
-                            <f:convertNumber pattern="#,##0" />
-                        </h:outputText> đ
+                    <p:column headerText="Giá Vốn" sortBy="#{prod.costPrice}" style="text-align: right; width: 7.5rem;">
+                        <span class="text-xs text-500 font-mono">
+                            <h:outputText value="#{prod.costPrice}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>₫
+                        </span>
+                    </p:column>
+
+                    <p:column headerText="Giá Bán" sortBy="#{prod.price}" style="text-align: right; width: 8rem;">
+                        <span class="font-semibold text-xs text-gray-900 font-mono">
+                            <h:outputText value="#{prod.price}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>₫
+                        </span>
+                    </p:column>
+
+                    <p:column headerText="Đã Bán" sortBy="#{prod.totalSold}" style="text-align: center; width: 5.5rem;">
+                        <span class="font-semibold text-xs text-primary">#{prod.totalSold}</span>
+                    </p:column>
+
+                    <p:column headerText="Tồn Kho" sortBy="#{prod.stockQuantity}" style="text-align: center; width: 7.5rem;">
+                        <h:panelGroup rendered="#{prod.stockQuantity > 5}">
+                            <span class="stock-pill stock-in">#{prod.stockQuantity} #{prod.unit}</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{prod.stockQuantity > 0 and prod.stockQuantity le 5}">
+                            <span class="stock-pill stock-low" title="Sắp hết hàng">#{prod.stockQuantity} #{prod.unit}</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{prod.stockQuantity le 0}">
+                            <span class="stock-pill stock-out">Hết hàng</span>
+                        </h:panelGroup>
                     </p:column>
                     
-                    <p:column headerText="Tồn kho" sortBy="#{prod.stockQuantity}" style="width:6rem; text-align:right;">
-                        <h:outputText value="#{prod.stockQuantity} #{prod.unit}" />
-                    </p:column>
-                    
-                    <p:column headerText="Thao tác" style="width:10rem; text-align:center;">
-                        <p:commandButton icon="pi pi-eye" actionListener="#{productBean.prepareView(prod)}" 
-                                         update=":crudForm:crudContent" oncomplete="PF('crudDialog').show()"
-                                         styleClass="ui-button-info rounded-button mr-2" title="Xem chi tiết" />
-                        <p:commandButton icon="pi pi-pencil" actionListener="#{productBean.prepareEdit(prod)}" 
-                                         update=":crudForm:crudContent" oncomplete="PF('crudDialog').show()"
-                                         styleClass="ui-button-warning rounded-button mr-2" title="Sửa" />
-                        <p:commandButton icon="pi pi-trash" actionListener="#{productBean.delete(prod)}" 
-                                         update=":mainForm:dataTable" styleClass="ui-button-danger rounded-button">
-                            <p:confirm header="Xác nhận" message="Bạn muốn xóa sản phẩm này?" icon="pi pi-exclamation-triangle" />
-                        </p:commandButton>
+                    <p:column headerText="Thao Tác" style="width: 8.5rem; text-align: center; white-space: nowrap;">
+                        <div class="row-actions">
+                            <p:commandButton icon="pi pi-eye" actionListener="#{productBean.prepareView(prod)}" 
+                                             update=":crudForm:dialogTitle :crudForm:crudContent :crudForm:dialogFooter" oncomplete="PF('crudDialog').show()" 
+                                             styleClass="row-action-btn btn-view" title="Chi tiết" />
+                            <p:commandButton icon="pi pi-pencil" actionListener="#{productBean.prepareEdit(prod)}" 
+                                             update=":crudForm:dialogTitle :crudForm:crudContent :crudForm:dialogFooter" oncomplete="PF('crudDialog').show()" 
+                                             styleClass="row-action-btn btn-edit" title="Sửa" />
+                            <p:commandButton icon="pi pi-trash" actionListener="#{productBean.prepareDeleteProduct(prod)}" 
+                                             process="@this"
+                                             update=":deleteConfirmForm" 
+                                             oncomplete="PF('deleteConfirmDialog').show()" 
+                                             styleClass="row-action-btn btn-delete" title="Xóa" />
+                        </div>
                     </p:column>
                 </p:dataTable>
-            </p:card>
+            </div>
         </h:form>
 
-        <h:form id="crudForm">
-            <p:dialog id="crudDialog" widgetVar="crudDialog" header="#{productBean.editMode ? 'Chi tiết Sản phẩm' : 'Sản phẩm Mới'}" 
-                      showEffect="fade" hideEffect="fade" modal="true" responsive="true" width="600">
-                <p:messages id="messages" closable="true" />
-                <p:outputPanel id="crudContent" class="ui-fluid">
-                    <div class="formgrid grid">
-                        <div class="field col-6">
-                            <p:outputLabel for="code" value="Mã Sản phẩm" />
-                            <p:inputText id="code" value="#{productBean.currentItem.productCode}" required="true" disabled="#{productBean.viewMode or productBean.editMode}" />
+        <!-- Product Modal Dialog (Add / Edit / View) -->
+        <h:form id="crudForm" enctype="multipart/form-data">
+            <p:dialog id="crudDialog" widgetVar="crudDialog" 
+                      showEffect="fade" hideEffect="fade" modal="true" responsive="true" width="700" fitViewport="true">
+                <f:facet name="header">
+                    <h:outputText id="dialogTitle" value="#{productBean.viewMode ? 'Chi Tiết Sản Phẩm' : (productBean.editMode ? 'Chỉnh Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới')}" />
+                </f:facet>
+                
+                <p:messages id="messages" globalOnly="true" closable="true" styleClass="mb-3" />
+                
+                <p:outputPanel id="crudContent" class="ui-fluid #{productBean.viewMode ? 'view-mode' : ''}">
+                    <div class="grid">
+                        <!-- Product Code -->
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="code" class="form-label">Mã Sản Phẩm / SKU <span class="required-star">*</span></label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <div class="ui-inputgroup">
+                                    <p:inputText id="code" value="#{productBean.currentItem.productCode}" required="true" 
+                                                 requiredMessage="Vui lòng nhập mã sản phẩm / SKU"
+                                                 validatorMessage="Mã SKU gồm 3-20 ký tự (chữ, số, dấu gạch ngang)" 
+                                                 disabled="#{productBean.editMode}" 
+                                                 placeholder="Ví dụ: RAU-000001, AGRI-1002" styleClass="w-full text-xs">
+                                        <f:validateRegex pattern="^[A-Za-z0-9_-]{3,20}$" />
+                                    </p:inputText>
+                                    <p:commandButton icon="pi pi-refresh" title="Tự sinh mã SKU theo danh mục" styleClass="ui-button-outlined ui-button-secondary"
+                                                     action="#{productBean.generateSku}" process="@this" update="code"
+                                                     rendered="#{not productBean.editMode}" />
+                                </div>
+                                <p:message for="code" />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.currentItem.productCode}" rendered="#{productBean.viewMode}" 
+                                          styleClass="block font-mono text-xs bg-stone-50 p-2 border-round-xs" />
                         </div>
-                        <div class="field col-6">
-                            <p:outputLabel for="cat" value="Danh mục" />
-                            <p:selectOneMenu id="cat" value="#{productBean.currentItem.categoryId}" required="true" disabled="#{productBean.viewMode}">
-                                <f:selectItem itemLabel="Chọn danh mục" itemValue="" noSelectionOption="true" />
-                                <f:selectItems value="#{productBean.categories}" var="c" itemLabel="#{c.name}" itemValue="#{c.id}" />
-                            </p:selectOneMenu>
+
+                        <!-- Product Name -->
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="name" class="form-label">Tên Sản Phẩm <span class="required-star">*</span></label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <p:inputText id="name" value="#{productBean.currentItem.name}" required="true" 
+                                             requiredMessage="Vui lòng nhập tên sản phẩm"
+                                             validatorMessage="Tên sản phẩm phải từ 2 đến 100 ký tự"
+                                             styleClass="w-full text-xs" placeholder="Ví dụ: Dưa lưới Huỳnh Long">
+                                    <f:validateLength minimum="2" maximum="100" />
+                                </p:inputText>
+                                <p:message for="name" />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.currentItem.name}" rendered="#{productBean.viewMode}" 
+                                          styleClass="block font-medium text-gray-900 text-xs bg-stone-50 p-2 border-round-xs" />
                         </div>
-                        <div class="field col-6 mt-2">
-                            <p:outputLabel for="supplier" value="Nhà cung cấp" />
-                            <p:selectOneMenu id="supplier" value="#{productBean.currentItem.supplierId}" disabled="#{productBean.viewMode}">
-                                <f:selectItem itemLabel="Chọn nhà cung cấp" itemValue="" noSelectionOption="true" />
-                                <f:selectItems value="#{productBean.suppliers}" var="s" itemLabel="#{s.name}" itemValue="#{s.id}" />
-                            </p:selectOneMenu>
+
+                        <!-- Category Selection (p:autoComplete with suggestions) -->
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="cat" class="form-label">Danh Mục Nông Sản <span class="required-star">*</span></label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <p:autoComplete id="cat" value="#{productBean.selectedCategory}"
+                                                completeMethod="#{productBean.completeCategory}"
+                                                var="c" itemLabel="#{c.name}" itemValue="#{c}"
+                                                converter="#{categoryConverter}"
+                                                dropdown="true" forceSelection="true"
+                                                placeholder="Gõ để tìm gợi ý danh mục..."
+                                                styleClass="w-full text-xs" inputStyleClass="w-full text-xs"
+                                                required="true" requiredMessage="Vui lòng chọn danh mục">
+                                    <p:ajax event="itemSelect" process="@this" />
+                                </p:autoComplete>
+                                <p:message for="cat" />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.selectedCategory != null ? productBean.selectedCategory.name : productBean.selectedCategoryName}" 
+                                          rendered="#{productBean.viewMode}" 
+                                          styleClass="block text-xs bg-stone-50 p-2 border-round-xs" />
                         </div>
-                        <div class="field col-6 mt-2">
-                            <p:outputLabel for="name" value="Tên Sản phẩm" />
-                            <p:inputText id="name" value="#{productBean.currentItem.name}" required="true" disabled="#{productBean.viewMode}" />
+                        
+                        <!-- Supplier Selection (p:autoComplete with suggestions) -->
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="supplier" class="form-label">Nhà Cung Cấp</label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <p:autoComplete id="supplier" value="#{productBean.selectedSupplier}"
+                                                completeMethod="#{productBean.completeSupplier}"
+                                                var="s" itemLabel="#{s.name} (#{s.supplierCode})" itemValue="#{s}"
+                                                converter="#{supplierConverter}"
+                                                dropdown="true" forceSelection="true"
+                                                placeholder="Gõ tên hoặc mã NCC để gợi ý..."
+                                                styleClass="w-full text-xs" inputStyleClass="w-full text-xs">
+                                    <p:ajax event="itemSelect" process="@this" />
+                                </p:autoComplete>
+                                <p:message for="supplier" />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.selectedSupplier != null ? productBean.selectedSupplier.name : productBean.selectedSupplierName}" 
+                                          rendered="#{productBean.viewMode}" 
+                                          styleClass="block text-xs bg-stone-50 p-2 border-round-xs" />
                         </div>
-                        <div class="field col-4 mt-2">
-                            <p:outputLabel for="unit" value="Đơn vị tính" />
-                            <p:inputText id="unit" value="#{productBean.currentItem.unit}" required="true" disabled="#{productBean.viewMode}" />
+
+                        <!-- Price -->
+                        <div class="col-12 sm:col-3 field mb-3">
+                            <label for="price" class="form-label">Giá Bán <span class="required-star">*</span></label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <p:inputNumber id="price" value="#{productBean.currentItem.price}" required="true" 
+                                               requiredMessage="Vui lòng nhập giá bán"
+                                               minValue="1" decimalPlaces="0" symbol=" ₫" symbolPosition="s" 
+                                               inputStyleClass="w-full text-xs" />
+                                <p:message for="price" />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.currentItem.price}" rendered="#{productBean.viewMode}" 
+                                           styleClass="block font-semibold text-gray-900 text-xs bg-stone-50 p-2 border-round-xs">
+                                <f:convertNumber pattern="#,##0" /> ₫
+                            </h:outputText>
                         </div>
-                        <div class="field col-4 mt-2">
-                            <p:outputLabel for="price" value="Giá (VND)" />
-                            <p:inputNumber id="price" value="#{productBean.currentItem.price}" required="true" decimalPlaces="0" disabled="#{productBean.viewMode}" />
+
+                        <!-- Cost Price -->
+                        <div class="col-12 sm:col-3 field mb-3">
+                            <label for="costPrice" class="form-label">Giá Vốn (Nhập) <span class="required-star">*</span></label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <p:inputNumber id="costPrice" value="#{productBean.currentItem.costPrice}" required="true" 
+                                               requiredMessage="Vui lòng nhập giá vốn"
+                                               minValue="0" decimalPlaces="0" symbol=" ₫" symbolPosition="s" 
+                                               inputStyleClass="w-full text-xs" />
+                                <p:message for="costPrice" />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.currentItem.costPrice}" rendered="#{productBean.viewMode}" 
+                                           styleClass="block font-medium text-gray-700 text-xs bg-stone-50 p-2 border-round-xs">
+                                <f:convertNumber pattern="#,##0" /> ₫
+                            </h:outputText>
                         </div>
-                        <div class="field col-4 mt-2">
-                            <p:outputLabel for="stock" value="Tồn kho" />
-                            <p:inputNumber id="stock" value="#{productBean.currentItem.stockQuantity}" required="true" decimalPlaces="0" disabled="#{productBean.viewMode}" />
+                        
+                        <!-- Stock Quantity -->
+                        <div class="col-12 sm:col-3 field mb-3">
+                            <label for="stock" class="form-label">
+                                Tồn Kho Vật Lý <span class="required-star">*</span>
+                                <h:panelGroup rendered="#{productBean.editMode}">
+                                    <span class="text-xs text-orange-600 font-normal">(Khóa)</span>
+                                </h:panelGroup>
+                            </label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <p:inputNumber id="stock" value="#{productBean.currentItem.stockQuantity}" required="true" 
+                                               requiredMessage="Vui lòng nhập số lượng tồn kho"
+                                               minValue="0" decimalPlaces="2" inputStyleClass="w-full text-xs" 
+                                               disabled="#{productBean.editMode}" />
+                                <h:panelGroup rendered="#{productBean.editMode}">
+                                    <small class="text-xs text-gray-500 block mt-1">Điều chỉnh tại <h:link outcome="/admin/inventory.xhtml" value="Quản lý kho" style="color: #15803D; font-weight: 600;" /></small>
+                                </h:panelGroup>
+                                <p:message for="stock" />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.currentItem.stockQuantity}" rendered="#{productBean.viewMode}" 
+                                           styleClass="block text-xs text-gray-800 bg-stone-50 p-2 border-round-xs" />
                         </div>
-                        <div class="field col-12 mt-2">
-                            <p:outputLabel for="desc" value="Mô tả" />
-                            <p:inputTextarea id="desc" value="#{productBean.currentItem.description}" rows="3" disabled="#{productBean.viewMode}" />
+
+                        <!-- Minimum Stock (Định mức tồn tối thiểu) -->
+                        <div class="col-12 sm:col-3 field mb-3">
+                            <label for="minStock" class="form-label">Định Mức Tối Thiểu</label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <p:inputNumber id="minStock" value="#{productBean.currentItem.minStock}" 
+                                               minValue="0" decimalPlaces="2" inputStyleClass="w-full text-xs" 
+                                               placeholder="Mặc định: 10" />
+                                <p:message for="minStock" />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.currentItem.minStock}" rendered="#{productBean.viewMode}" 
+                                           styleClass="block text-xs text-gray-800 bg-stone-50 p-2 border-round-xs" />
                         </div>
+
+                        <!-- Unit -->
+                        <div class="col-12 sm:col-3 field mb-3">
+                            <label for="unit" class="form-label">Đơn Vị Tính <span class="required-star">*</span></label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <p:inputText id="unit" value="#{productBean.currentItem.unit}" required="true" 
+                                             requiredMessage="Vui lòng nhập đơn vị tính"
+                                             styleClass="w-full text-xs" placeholder="kg, hộp..." />
+                                <p:message for="unit" />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.currentItem.unit}" rendered="#{productBean.viewMode}" 
+                                          styleClass="block text-xs text-gray-800 bg-stone-50 p-2 border-round-xs" />
+                        </div>
+
+                        <!-- Unit Type -->
+                        <div class="col-12 sm:col-3 field mb-3">
+                            <label for="unitType" class="form-label">Quy Cách Bán <span class="required-star">*</span></label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <p:selectOneMenu id="unitType" value="#{productBean.currentItem.unitType}" styleClass="w-full text-xs">
+                                    <f:selectItem itemLabel="Đóng gói/Cái (COUNT)" itemValue="COUNT" />
+                                    <f:selectItem itemLabel="Hàng cân ký (WEIGHT)" itemValue="WEIGHT" />
+                                </p:selectOneMenu>
+                                <p:message for="unitType" />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.currentItem.unitType eq 'WEIGHT' ? 'Hàng cân (WEIGHT)' : 'Đóng gói/Cái (COUNT)'}" 
+                                          rendered="#{productBean.viewMode}" 
+                                          styleClass="block text-xs text-gray-800 bg-stone-50 p-2 border-round-xs" />
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-12 field mb-3">
+                            <label for="desc" class="form-label">Mô Tả Sản Phẩm</label>
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <p:inputTextarea id="desc" value="#{productBean.currentItem.description}" rows="3" 
+                                                 styleClass="w-full text-xs" placeholder="Thông tin xuất xứ, tiêu chuẩn canh tác..." />
+                            </h:panelGroup>
+                            <h:outputText value="#{productBean.currentItem.description}" rendered="#{productBean.viewMode}" 
+                                          styleClass="block text-xs text-600 line-height-3 bg-stone-50 p-2 border-round-xs min-h-3rem" />
+                        </div>
+                        
+                        <!-- Image Upload Area with Preview & Remove "X" -->
+                        <div class="col-12 field mb-2">
+                            <label class="form-label">Hình Ảnh Nông Sản</label>
+                            
+                            <!-- Hidden flag for image removal -->
+                            <h:inputHidden id="removeImageFlag" value="#{productBean.removeCurrentImage}" />
+
+                            <!-- View Mode: Read-only image or placeholder -->
+                            <h:panelGroup rendered="#{productBean.viewMode}">
+                                <h:panelGroup rendered="#{not empty productBean.currentItem.imageUrl}">
+                                    <div class="p-2 border-1 border-gray-200 border-round-sm bg-stone-50 inline-block">
+                                        <img src="#{productBean.currentItem.imageUrl.startsWith('http') ? productBean.currentItem.imageUrl : request.contextPath.concat(productBean.currentItem.imageUrl)}" 
+                                             style="max-height: 180px; max-width: 100%; object-fit: contain; border-radius: 4px; display: block;" 
+                                             alt="#{productBean.currentItem.name}" />
+                                    </div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{empty productBean.currentItem.imageUrl}">
+                                    <div class="p-4 border-1 border-gray-200 border-round-sm bg-stone-50 text-center text-500 text-xs">
+                                        <i class="pi pi-image text-2xl text-400 block mb-1"></i>
+                                        Sản phẩm chưa có hình ảnh
+                                    </div>
+                                </h:panelGroup>
+                            </h:panelGroup>
+
+                            <!-- Create / Edit Mode -->
+                            <h:panelGroup rendered="#{not productBean.viewMode}">
+                                <div class="product-uploader-wrapper">
+                                    
+                                    <!-- Box 1: Image Preview Container with top-right 'X' badge -->
+                                    <div id="productImagePreviewBox" 
+                                         style="#{not empty productBean.currentItem.imageUrl ? 'display: inline-block;' : 'display: none;'} position: relative; margin-bottom: 0.5rem;">
+                                        <div style="position: relative; display: inline-block; padding: 4px; background: #FAFAF9; border: 1px solid #E5E7EB; border-radius: 8px;">
+                                            <img id="productPreviewImg" 
+                                                 src="#{not empty productBean.currentItem.imageUrl ? (productBean.currentItem.imageUrl.startsWith('http') ? productBean.currentItem.imageUrl : request.contextPath.concat(productBean.currentItem.imageUrl)) : ''}" 
+                                                 style="max-height: 180px; max-width: 260px; object-fit: contain; border-radius: 6px; display: block;" 
+                                                 alt="Xem trước ảnh" />
+                                            
+                                            <button type="button" class="image-remove-badge" onclick="removeProductImage()" title="Xóa ảnh này để chọn ảnh khác">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="productUploadBox" 
+                                         style="#{not empty productBean.currentItem.imageUrl ? 'display: none;' : 'display: block;'}">
+                                        <div onclick="triggerProductFileInput(event)" 
+                                             class="upload-dropzone flex flex-column align-items-center justify-content-center p-4 border-2 border-dashed border-gray-300 border-round-md bg-stone-50 cursor-pointer hover:border-primary hover:bg-stone-100 transition-duration-200 text-center"
+                                             style="min-height: 130px; width: 100%; box-sizing: border-box; display: flex;">
+                                            <i class="pi pi-image text-3xl text-gray-400 mb-2"></i>
+                                            <span class="text-sm font-semibold text-gray-800 mb-1">Nhấn để chọn ảnh từ máy tính</span>
+                                            <span class="text-xs text-500 mb-3">Hỗ trợ JPG, PNG, WebP (giữ nguyên kích thước gốc)</span>
+                                            <span class="cta-btn text-xs px-3 py-1.5 border-round-sm inline-flex align-items-center gap-1">
+                                                <i class="pi pi-folder-open text-xs"></i> Chọn Ảnh
+                                            </span>
+                                            <p:fileUpload id="productFileUpload" value="#{productBean.imageFile}" mode="simple" skinSimple="false" 
+                                                          accept="image/*" style="display: none;" />
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </h:panelGroup>
+                        </div>
+
+                        <!-- Multi-Image Gallery Management (rendered when product exists) -->
+                        <h:panelGroup id="galleryPanel" layout="block" styleClass="col-12 field mb-3" rendered="#{not empty productBean.currentItem.id}">
+                            <div class="p-3 border-round-sm border-1 border-gray-200 bg-stone-50">
+                                <div class="flex justify-content-between align-items-center mb-2">
+                                    <h4 class="font-semibold text-xs text-gray-800 m-0">
+                                        <i class="pi pi-images text-primary mr-1"></i> Bộ Sưu Tập Ảnh Sản Phẩm (#{not empty productBean.currentItem.images ? productBean.currentItem.images.size() : 0} ảnh)
+                                    </h4>
+                                    <span class="text-xs text-500">Khách hàng xem gallery trên trang chi tiết</span>
+                                </div>
+
+                                <!-- Current Gallery Items Grid -->
+                                <h:panelGroup rendered="#{not empty productBean.currentItem.images}">
+                                    <div class="flex flex-wrap gap-2 mb-3">
+                                        <ui:repeat value="#{productBean.currentItem.images}" var="gImg">
+                                            <div class="border-round-sm border-1 border-gray-200 bg-white p-2 flex flex-column align-items-center relative" style="width: 120px;">
+                                                <img src="#{gImg.imageUrl.startsWith('http') ? gImg.imageUrl : request.contextPath.concat(gImg.imageUrl)}" 
+                                                     style="width: 90px; height: 90px; object-fit: contain; border-radius: 4px;" alt="Gallery" />
+                                                
+                                                <div class="mt-2 text-center w-full">
+                                                    <h:panelGroup rendered="#{gImg.isPrimary}">
+                                                        <span class="text-xs px-2 py-0.5 bg-green-100 text-green-800 border-round-xs font-semibold block mb-1">
+                                                            <i class="pi pi-star-fill text-xs mr-1"></i>Chính
+                                                        </span>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{not gImg.isPrimary and not productBean.viewMode}">
+                                                        <p:commandButton value="Làm chính" icon="pi pi-star" 
+                                                                         actionListener="#{productBean.setPrimaryImage(gImg.id)}" 
+                                                                         update=":crudForm:galleryPanel :mainForm:dataTable :crudForm:messages" 
+                                                                         styleClass="ui-button-outlined ui-button-secondary text-xs px-1 py-1 w-full mb-1" />
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{not productBean.viewMode}">
+                                                        <p:commandButton icon="pi pi-trash" value="Xóa"
+                                                                         actionListener="#{productBean.deleteGalleryImage(gImg.id)}" 
+                                                                         update=":crudForm:galleryPanel :mainForm:dataTable :crudForm:messages" 
+                                                                         styleClass="ui-button-danger ui-button-flat text-xs px-1 py-1 w-full">
+                                                            <p:confirm header="Xóa ảnh" message="Xóa ảnh này khỏi bộ sưu tập?" icon="pi pi-exclamation-triangle" />
+                                                        </p:commandButton>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </div>
+                                        </ui:repeat>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Gallery Uploader Form for Adding Extra Images -->
+                                <h:panelGroup rendered="#{not productBean.viewMode}">
+                                    <div class="flex flex-wrap align-items-center gap-2 pt-2 border-top-1 border-gray-200">
+                                        <p:fileUpload value="#{productBean.galleryFile}" mode="simple" skinSimple="true" 
+                                                      chooseIcon="pi pi-plus" chooseButtonTitle="Chọn ảnh bổ sung"
+                                                      accept="image/*" styleClass="text-xs" />
+                                        <p:commandButton value="Tải Lên Thư Viện" icon="pi pi-upload" 
+                                                         actionListener="#{productBean.uploadGalleryImage()}" 
+                                                         update=":crudForm:galleryPanel :mainForm:dataTable :crudForm:messages" 
+                                                         ajax="false"
+                                                         styleClass="ui-button-secondary text-xs px-3 py-2" />
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+                        </h:panelGroup>
                     </div>
                 </p:outputPanel>
                 
                 <f:facet name="footer">
-                    <p:commandButton value="Lưu" icon="pi pi-check" actionListener="#{productBean.save()}" 
-                                     update="crudContent messages" process="crudContent @this" rendered="#{not productBean.viewMode}" />
-                    <p:commandButton value="Đóng" icon="pi pi-times" onclick="PF('crudDialog').hide()" 
-                                     class="ui-button-secondary" type="button" />
+                    <h:panelGroup id="dialogFooter" layout="block" styleClass="flex justify-content-end gap-2 pt-1 #{productBean.viewMode ? 'hidden' : ''}">
+                        <p:commandButton value="Hủy Bỏ" type="button" onclick="PF('crudDialog').hide()" 
+                                         styleClass="ui-button-secondary text-xs" />
+                        <p:commandButton value="Lưu Dữ Liệu" icon="pi pi-check" actionListener="#{productBean.save()}" 
+                                         update="crudContent messages :mainForm:dataTable" ajax="false" 
+                                         styleClass="cta-btn text-xs px-3 py-2" rendered="#{not productBean.viewMode}" />
+                    </h:panelGroup>
                 </f:facet>
+
+                <h:outputScript rendered="#{facesContext.validationFailed}">
+                    PF('crudDialog').show();
+                </h:outputScript>
             </p:dialog>
         </h:form>
 
-        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
-            <p:commandButton value="Hủy" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
-            <p:commandButton value="Đồng ý" type="button" styleClass="ui-confirmdialog-yes" />
+        <!-- Smart Soft/Hard Delete Confirmation Dialog -->
+        <p:dialog id="deleteDialog" widgetVar="deleteConfirmDialog" modal="true" responsive="true" width="520" 
+                  header="Xác Nhận Xóa Sản Phẩm" resizable="false" closable="true">
+            <h:form id="deleteConfirmForm">
+                <div class="p-3">
+                    <!-- Case 1: Linked data exists -> Soft delete only -->
+                    <h:panelGroup rendered="#{productBean.selectedProductHasLinkedData}">
+                        <div class="flex align-items-start gap-3 p-3 border-round bg-yellow-50 border-1 border-yellow-200 mb-2">
+                            <i class="pi pi-shield text-2xl text-yellow-700 mt-1"></i>
+                            <div>
+                                <h4 class="m-0 text-yellow-900 font-bold text-sm">Bắt buộc Xóa Mềm (Soft-delete)</h4>
+                                <p class="m-0 text-xs text-yellow-800 line-height-3 mt-1">
+                                    Sản phẩm <strong>#{productBean.selectedProductForDelete.name}</strong> (Mã: #{productBean.selectedProductForDelete.productCode}) đã có phát sinh giao dịch liên kết (Đơn hàng, Lịch sử kho, hoặc Đánh giá).
+                                </p>
+                                <p class="m-0 text-xs text-yellow-800 line-height-3 mt-1">
+                                    Hệ thống sẽ <strong>ngừng bán và ẩn sản phẩm</strong> khỏi Cửa hàng, đồng thời tự động dọn sạch khỏi giỏ hàng/yêu thích của khách hàng. Toàn bộ lịch sử hóa đơn và báo cáo tài chính được <strong>bảo toàn tuyệt đối</strong>.
+                                </p>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Case 2: No linked data -> Hard delete allowed -->
+                    <h:panelGroup rendered="#{not productBean.selectedProductHasLinkedData}">
+                        <div class="flex align-items-start gap-3 p-3 border-round bg-red-50 border-1 border-red-200 mb-2">
+                            <i class="pi pi-exclamation-triangle text-2xl text-red-600 mt-1"></i>
+                            <div>
+                                <h4 class="m-0 text-red-900 font-bold text-sm">Cảnh báo: Xóa vĩnh viễn (Hard-delete)</h4>
+                                <p class="m-0 text-xs text-red-800 line-height-3 mt-1">
+                                    Sản phẩm <strong>#{productBean.selectedProductForDelete.name}</strong> (Mã: #{productBean.selectedProductForDelete.productCode}) là sản phẩm mới tạo, chưa từng phát sinh bất kỳ đơn hàng hay biến động kho nào.
+                                </p>
+                                <p class="m-0 text-xs text-red-700 font-bold line-height-3 mt-1">
+                                    Dữ liệu sẽ bị xóa hoàn toàn khỏi cơ sở dữ liệu. Hành động này không thể hoàn tác!
+                                </p>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+                </div>
+
+                <div class="flex justify-content-end gap-2 p-2 border-top-1 border-gray-100">
+                    <p:commandButton value="Hủy bỏ" type="button" onclick="PF('deleteConfirmDialog').hide()" 
+                                     styleClass="ui-button-secondary ui-button-flat text-xs" />
+                    
+                    <p:commandButton value="Xác Nhận Xóa Mềm" icon="pi pi-shield" 
+                                     action="#{productBean.executeDeleteProduct()}" 
+                                     process="@this"
+                                     update=":mainForm:dataTable :growlMessages"
+                                     oncomplete="PF('deleteConfirmDialog').hide()"
+                                     rendered="#{productBean.selectedProductHasLinkedData}"
+                                     styleClass="ui-button-warning text-xs font-semibold" />
+
+                    <p:commandButton value="Xác Nhận Xóa Vĩnh Viễn" icon="pi pi-trash" 
+                                     action="#{productBean.executeDeleteProduct()}" 
+                                     process="@this"
+                                     update=":mainForm:dataTable :growlMessages"
+                                     oncomplete="PF('deleteConfirmDialog').hide()"
+                                     rendered="#{not productBean.selectedProductHasLinkedData}"
+                                     styleClass="ui-button-danger text-xs font-semibold" />
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <!-- Global Confirm Dialog -->
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="360">
+            <div class="flex justify-content-end gap-2 mt-3">
+                <p:commandButton value="Hủy bỏ" type="button" styleClass="ui-confirmdialog-no ui-button-secondary text-xs"/>
+                <p:commandButton value="Xác Nhận Xóa" type="button" styleClass="ui-confirmdialog-yes ui-button-danger text-xs" />
+            </div>
         </p:confirmDialog>
+
+        <script>
+        //<![CDATA[
+        function triggerProductFileInput(e) {
+            if (e && e.target && e.target.tagName === 'INPUT' && e.target.type === 'file') {
+                return;
+            }
+            var fileInput = document.querySelector('#crudForm input[type="file"]');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+
+        function handleImageFileChange(input) {
+            if (!input || !input.files || !input.files[0]) {
+                return;
+            }
+            var file = input.files[0];
+            if (!file.type.match('image.*')) {
+                alert('Vui lòng chọn tệp hình ảnh hợp lệ (PNG, JPG, WebP, ...)!');
+                input.value = '';
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = document.getElementById('productPreviewImg');
+                var previewBox = document.getElementById('productImagePreviewBox');
+                var uploadBox = document.getElementById('productUploadBox');
+                var flag = document.querySelector('input[id$="removeImageFlag"]');
+                
+                if (img) {
+                    img.src = e.target.result;
+                }
+                if (previewBox) {
+                    previewBox.style.setProperty('display', 'inline-block', 'important');
+                }
+                if (uploadBox) {
+                    uploadBox.style.setProperty('display', 'none', 'important');
+                }
+                if (flag) {
+                    flag.value = 'false';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeProductImage() {
+            var img = document.getElementById('productPreviewImg');
+            var previewBox = document.getElementById('productImagePreviewBox');
+            var uploadBox = document.getElementById('productUploadBox');
+            var flag = document.querySelector('input[id$="removeImageFlag"]');
+            var input = document.querySelector('#crudForm input[type="file"]');
+            
+            if (img) {
+                img.src = '';
+            }
+            if (previewBox) {
+                previewBox.style.setProperty('display', 'none', 'important');
+            }
+            if (uploadBox) {
+                uploadBox.style.setProperty('display', 'block', 'important');
+            }
+            if (flag) {
+                flag.value = 'true';
+            }
+            if (input) {
+                input.value = '';
+            }
+        }
+
+        // Global delegated event listeners for ANY file input change inside #crudForm
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.type === 'file' && e.target.closest('#crudForm')) {
+                handleImageFileChange(e.target);
+            }
+        });
+
+        if (window.jQuery) {
+            jQuery(document).on('change', '#crudForm input[type="file"]', function() {
+                handleImageFileChange(this);
+            });
+        }
+
+        // Drag and Drop Support
+        document.addEventListener('dragover', function(e) {
+            var dropzone = e.target.closest('.upload-dropzone');
+            if (dropzone) {
+                e.preventDefault();
+                dropzone.classList.add('border-primary', 'bg-stone-100');
+            }
+        });
+
+        document.addEventListener('dragleave', function(e) {
+            var dropzone = e.target.closest('.upload-dropzone');
+            if (dropzone) {
+                e.preventDefault();
+                dropzone.classList.remove('border-primary', 'bg-stone-100');
+            }
+        });
+
+        document.addEventListener('drop', function(e) {
+            var dropzone = e.target.closest('.upload-dropzone');
+            if (dropzone) {
+                e.preventDefault();
+                dropzone.classList.remove('border-primary', 'bg-stone-100');
+                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    var fileInput = document.querySelector('#crudForm input[type="file"]');
+                    if (fileInput) {
+                        fileInput.files = e.dataTransfer.files;
+                        handleImageFileChange(fileInput);
+                    }
+                }
+            }
+        });
+        //]]>
+        </script>
     </ui:define>
 </ui:composition>
 </html>

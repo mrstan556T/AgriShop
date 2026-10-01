@@ -1,0 +1,48 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">500 - Gián Đoạn Hệ Thống | AgriShop</ui:define>
+
+    <ui:define name="meta">
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="description" content="Đã xảy ra sự cố kỹ thuật trong quá trình xử lý. Đội ngũ kỹ thuật AgriShop đang khắc phục." />
+    </ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-8 md:py-12">
+            <div class="bg-white border-1 border-gray-200 border-round-xl p-6 md:p-8 text-center max-w-40rem mx-auto shadow-1">
+                
+                <div class="w-6rem h-6rem border-circle bg-amber-50 border-2 border-amber-300 text-amber-700 flex align-items-center justify-content-center mx-auto mb-4 text-4xl shadow-sm">
+                    <i class="pi pi-cog"></i>
+                </div>
+
+                <span class="text-xs font-bold text-amber-800 bg-amber-100 border-1 border-amber-300 px-3 py-1 border-round uppercase tracking-wider inline-block mb-3">
+                    Lỗi 500: Sự Cố Kỹ Thuật
+                </span>
+
+                <h1 class="font-heading text-3xl md:text-4xl font-bold text-gray-900 m-0 mb-3">
+                    Hệ Thống Đang Được Bảo Trì
+                </h1>
+
+                <p class="text-sm text-600 line-height-3 max-w-30rem mx-auto mb-6">
+                    Đã có một sự cố bất ngờ phát sinh trong quá trình xử lý yêu cầu của quý khách. Đội ngũ kỹ thuật của AgriShop đã ghi nhận nhật ký hệ thống và đang tiến hành kiểm tra khắc phục ngay lập tức.
+                </p>
+
+                <div class="flex flex-column sm:flex-row gap-3 justify-content-center">
+                    <p:button outcome="/index.xhtml" value="Quay Về Trang Chủ" icon="pi pi-home" 
+                              styleClass="cta-btn text-xs px-5 py-3" />
+                    <p:button outcome="/store.xhtml" value="Thử Lại Cửa Hàng" icon="pi pi-refresh" 
+                              styleClass="ui-button-outlined text-xs px-5 py-3" />
+                </div>
+
+                <div class="border-top-1 border-gray-200 mt-7 pt-4 text-xs text-400">
+                    Nếu đơn hàng của quý khách đang trong quá trình thanh toán, xin yên tâm liên hệ hotline <strong>1900 6868</strong> để được kiểm tra trạng thái ngay.
+                </div>
+            </div>
+        </div>
+    </ui:define>
+
+</ui:composition>

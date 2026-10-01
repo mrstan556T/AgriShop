@@ -1,0 +1,108 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">Liên Hệ &amp; Hỗ Trợ - AgriShop</ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-5">
+            
+            <!-- Breadcrumbs -->
+            <div class="flex align-items-center gap-2 text-xs text-500 mb-4">
+                <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="hover:text-primary" />
+                <i class="pi pi-angle-right text-xs"></i>
+                <span class="font-medium text-gray-800">Liên hệ</span>
+            </div>
+
+            <div class="mb-5">
+                <h1 class="font-heading text-2xl md:text-3xl font-semibold text-gray-900 m-0 mb-1">Liên Hệ Hỗ Trợ</h1>
+                <p class="text-xs text-500 m-0">Chúng tôi luôn sẵn sàng lắng nghe mọi góp ý và giải đáp thắc mắc của quý khách</p>
+            </div>
+
+            <div class="grid gap-4">
+                
+                <!-- Left: Contact Cards -->
+                <div class="col-12 lg:col-4">
+                    <div class="bg-white border-round-sm border-1 border-gray-200 p-4 h-full flex flex-column gap-3">
+                        
+                        <!-- Hotline -->
+                        <div class="p-3 border-round-sm bg-stone-50 border-1 border-gray-200">
+                            <div class="text-xs text-500 font-semibold uppercase tracking-wider">Tổng đài hỗ trợ</div>
+                            <div class="font-heading font-semibold text-xl text-gray-900 mt-1">1900 6868</div>
+                            <span class="text-xs text-500">07:00 - 21:00 hàng ngày</span>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="p-3 border-round-sm bg-stone-50 border-1 border-gray-200">
+                            <div class="text-xs text-500 font-semibold uppercase tracking-wider">Hòm thư điện tử</div>
+                            <div class="font-medium text-sm text-gray-900 mt-1">support@agrishop.vn</div>
+                            <span class="text-xs text-500">Phản hồi trong vòng 24 giờ</span>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="p-3 border-round-sm bg-stone-50 border-1 border-gray-200">
+                            <div class="text-xs text-500 font-semibold uppercase tracking-wider">Trụ sở chính</div>
+                            <div class="font-medium text-xs text-gray-900 mt-1 line-height-2">123 Đường Nông Nghiệp, Quận Xanh, TP. Cần Thơ</div>
+                        </div>
+
+                        <!-- Warehouse Hours -->
+                        <div class="p-3 border-round-sm bg-stone-50 border-1 border-gray-200 text-xs text-500 line-height-3 mt-auto">
+                            <div class="font-medium text-gray-800 mb-1">Thời gian giao hàng:</div>
+                            <div>Thứ Hai - Thứ Bảy: 07:00 - 20:00</div>
+                            <div>Chủ Nhật: 07:30 - 18:00</div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Right: Message Form -->
+                <div class="col-12 lg:col-8">
+                    <div class="bg-white border-round-sm border-1 border-gray-200 p-5">
+                        <h3 class="font-heading text-lg font-semibold text-gray-900 m-0 mb-4 pb-2 border-bottom-1 border-gray-100">
+                            Gửi Tin Nhắn Cho Chúng Tôi
+                        </h3>
+
+                        <h:form id="contactForm">
+                            <div class="grid">
+                                <div class="col-12 sm:col-6 field mb-3">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Họ và tên *</label>
+                                    <p:inputText id="name" value="#{storefrontBean.contactName}" required="true" 
+                                                 requiredMessage="Vui lòng nhập họ và tên" 
+                                                 placeholder="Nguyễn Văn A" styleClass="w-full text-sm" />
+                                </div>
+                                <div class="col-12 sm:col-6 field mb-3">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Email liên hệ *</label>
+                                    <p:inputText id="email" value="#{storefrontBean.contactEmail}" required="true" 
+                                                 requiredMessage="Vui lòng nhập địa chỉ email" 
+                                                 placeholder="email@example.com" styleClass="w-full text-sm" />
+                                </div>
+                                <div class="col-12 field mb-3">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Chủ đề cần hỗ trợ</label>
+                                    <p:inputText id="subject" value="#{storefrontBean.contactSubject}" 
+                                                 placeholder="Ví dụ: Tư vấn đơn hàng số lượng lớn..." styleClass="w-full text-sm" />
+                                </div>
+                                <div class="col-12 field mb-4">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Nội dung chi tiết *</label>
+                                    <p:inputTextarea id="message" value="#{storefrontBean.contactMessage}" rows="5" required="true" 
+                                                     requiredMessage="Vui lòng nhập nội dung chi tiết" 
+                                                     placeholder="Chia sẻ yêu cầu của quý khách..." styleClass="w-full text-sm line-height-3" />
+                                </div>
+                                <div class="col-12">
+                                    <p:commandButton value="Gửi Tin Nhắn" icon="pi pi-send"
+                                                     action="#{storefrontBean.submitContact}"
+                                                     process="@form"
+                                                     update="@form :growlMessages"
+                                                     styleClass="ui-button cta-btn text-xs px-4 border-round-sm font-semibold" 
+                                                     style="height: 40px; display: inline-flex; align-items: center;" />
+                                </div>
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </ui:define>
+</ui:composition>

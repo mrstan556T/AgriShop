@@ -11,6 +11,7 @@ public interface SupplierRepositoryLocal {
     List<Supplier> findActiveSuppliers();
     void create(Supplier supplier);
     void update(Supplier supplier);
+    List<Supplier> searchByName(String keyword);
     List<Supplier> findWithPagination(PageRequestDTO request);
     long countWithPagination(PageRequestDTO request);
 }

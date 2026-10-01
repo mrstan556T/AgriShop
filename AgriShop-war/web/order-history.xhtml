@@ -1,0 +1,240 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">Lịch Sử Mua Hàng - AgriShop</ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-5">
+            
+            <!-- Page Header -->
+            <div class="mb-5">
+                <div class="flex align-items-center gap-2 text-xs text-500 mb-1">
+                    <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="hover:text-primary" />
+                    <i class="pi pi-angle-right text-xs"></i>
+                    <span class="font-medium text-gray-800">Lịch sử đơn hàng</span>
+                </div>
+                <h1 class="font-heading text-2xl md:text-3xl font-semibold text-gray-900 m-0">Đơn Hàng Của Bạn</h1>
+            </div>
+
+            <h:form id="form">
+                <!-- Status Filter Navigation -->
+                <div class="bg-white border-round-sm mb-4 p-1 border-1 border-gray-200 flex flex-wrap">
+                    <p:commandLink action="#{customerOrderBean.filterOrders('ALL')}" process="@this" update="@form" 
+                        styleClass="p-2 flex-1 text-center text-xs font-medium no-underline border-round-sm transition-all #{customerOrderBean.statusFilter eq 'ALL' ? 'bg-stone-100 text-gray-900 font-semibold' : 'text-500 hover:text-gray-900'}">
+                        Tất cả
+                    </p:commandLink>
+                    <p:commandLink action="#{customerOrderBean.filterOrders('PENDING')}" process="@this" update="@form" 
+                        styleClass="p-2 flex-1 text-center text-xs font-medium no-underline border-round-sm transition-all #{customerOrderBean.statusFilter eq 'PENDING' ? 'bg-stone-100 text-gray-900 font-semibold' : 'text-500 hover:text-gray-900'}">
+                        Chờ xác nhận
+                    </p:commandLink>
+                    <p:commandLink action="#{customerOrderBean.filterOrders('PROCESSING')}" process="@this" update="@form" 
+                        styleClass="p-2 flex-1 text-center text-xs font-medium no-underline border-round-sm transition-all #{customerOrderBean.statusFilter eq 'PROCESSING' ? 'bg-stone-100 text-gray-900 font-semibold' : 'text-500 hover:text-gray-900'}">
+                        Đang chuẩn bị
+                    </p:commandLink>
+                    <p:commandLink action="#{customerOrderBean.filterOrders('SHIPPED')}" process="@this" update="@form" 
+                        styleClass="p-2 flex-1 text-center text-xs font-medium no-underline border-round-sm transition-all #{customerOrderBean.statusFilter eq 'SHIPPED' ? 'bg-stone-100 text-gray-900 font-semibold' : 'text-500 hover:text-gray-900'}">
+                        Đang giao hàng
+                    </p:commandLink>
+                    <p:commandLink action="#{customerOrderBean.filterOrders('DELIVERED')}" process="@this" update="@form" 
+                        styleClass="p-2 flex-1 text-center text-xs font-medium no-underline border-round-sm transition-all #{customerOrderBean.statusFilter eq 'DELIVERED' ? 'bg-stone-100 text-gray-900 font-semibold' : 'text-500 hover:text-gray-900'}">
+                        Hoàn tất
+                    </p:commandLink>
+                    <p:commandLink action="#{customerOrderBean.filterOrders('CANCELLED')}" process="@this" update="@form" 
+                        styleClass="p-2 flex-1 text-center text-xs font-medium no-underline border-round-sm transition-all #{customerOrderBean.statusFilter eq 'CANCELLED' ? 'bg-stone-100 text-gray-900 font-semibold' : 'text-500 hover:text-gray-900'}">
+                        Đã hủy
+                    </p:commandLink>
+                </div>
+
+                <h:panelGroup id="orderList">
+                    <!-- Empty State -->
+                    <h:panelGroup rendered="#{empty customerOrderBean.filteredOrders}">
+                        <div class="bg-white border-round-sm border-1 border-gray-200 p-6 text-center my-4">
+                            <i class="pi pi-inbox text-gray-300 text-3xl mb-2"></i>
+                            <h3 class="font-heading text-lg font-semibold text-gray-800 mb-1">Không có đơn hàng nào</h3>
+                            <p class="text-xs text-500 mb-3">Chưa tìm thấy đơn hàng nào tương ứng với bộ lọc này.</p>
+                            <p:button outcome="/store.xhtml" value="Khám Phá Cửa Hàng" styleClass="cta-btn text-xs px-3 py-2" />
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Order Card List -->
+                    <h:panelGroup rendered="#{not empty customerOrderBean.filteredOrders}">
+                        <ui:repeat value="#{customerOrderBean.filteredOrders}" var="order">
+                            <div class="bg-white border-round-sm border-1 border-gray-200 p-4 mb-3">
+                                <!-- Order Header -->
+                                <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center pb-2 mb-2 border-bottom-1 border-gray-100 gap-2">
+                                    <div class="flex align-items-center gap-2">
+                                        <span class="font-medium text-xs text-gray-900">
+                                            Mã đơn: #{order.orderCode}
+                                        </span>
+                                        <span class="text-400 text-xs">|</span>
+                                        <span class="text-xs text-500">
+                                            <h:outputText value="#{order.createdAt}"><f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" /></h:outputText>
+                                        </span>
+                                    </div>
+
+                                    <!-- Status Pill & Payment Pill -->
+                                    <div class="flex align-items-center gap-2">
+                                        <!-- Payment Pill -->
+                                        <span class="text-xs px-2 py-0.5 border-round-xs font-medium #{order.paymentStatus eq 'PAID' ? 'bg-green-100 text-green-800' : (order.paymentStatus eq 'REFUND_PENDING' ? 'bg-purple-100 text-purple-800' : (order.paymentStatus eq 'REFUNDED' ? 'bg-purple-100 text-purple-800' : 'bg-stone-100 text-gray-700'))}">
+                                            #{order.paymentMethod != null ? order.paymentMethod : 'COD'} - #{order.paymentStatus}
+                                        </span>
+
+                                        <h:panelGroup rendered="#{order.cancellationRequested and order.status ne 'CANCELLED'}">
+                                            <span class="status-pill font-medium" style="background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;">
+                                                <i class="pi pi-clock text-xs"></i> Đang chờ duyệt hủy
+                                            </span>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{order.status eq 'PENDING'}">
+                                            <span class="status-pill pill-pending"><i class="pi pi-clock text-xs"></i> Chờ xác nhận</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{order.status eq 'CONFIRMED'}">
+                                            <span class="status-pill pill-pending"><i class="pi pi-check text-xs"></i> Đã xác nhận</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{order.status eq 'PROCESSING'}">
+                                            <span class="status-pill pill-pending"><i class="pi pi-spin pi-spinner text-xs"></i> Đang chuẩn bị</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{order.status eq 'SHIPPED'}">
+                                            <span class="status-pill pill-delivered"><i class="pi pi-truck text-xs"></i> Đang giao hàng</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{order.status eq 'DELIVERED'}">
+                                            <span class="status-pill pill-delivered"><i class="pi pi-check text-xs"></i> Đã giao</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{order.status eq 'CANCELLED'}">
+                                            <span class="status-pill pill-cancelled"><i class="pi pi-times text-xs"></i> Đã hủy</span>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{order.status eq 'RETURNED'}">
+                                            <span class="status-pill" style="background: #F3E8FF; color: #6B21A8;"><i class="pi pi-replay text-xs"></i> Đã trả hàng</span>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
+                                <!-- Items in this Order -->
+                                <div class="mb-3">
+                                    <ui:repeat value="#{order.orderDetails}" var="item">
+                                        <div class="flex align-items-center justify-content-between py-2 border-bottom-1 border-gray-50">
+                                            <div class="flex align-items-center gap-3">
+                                                <h:panelGroup rendered="#{not empty item.imageUrl}">
+                                                    <img src="#{item.imageUrl.startsWith('http') ? item.imageUrl : request.contextPath.concat(item.imageUrl)}" 
+                                                         style="width: 50px; height: 50px; object-fit: contain;" 
+                                                         class="border-round-sm border-1 border-gray-200 bg-stone-50 p-1" alt="#{item.productName}" />
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{empty item.imageUrl}">
+                                                    <div style="width: 50px; height: 50px;" class="border-round-sm border-1 border-gray-200 bg-stone-50 flex align-items-center justify-content-center text-400">
+                                                        <i class="pi pi-image text-lg"></i>
+                                                    </div>
+                                                </h:panelGroup>
+                                                <div>
+                                                    <h4 class="font-medium text-xs text-gray-900 m-0">#{item.productName}</h4>
+                                                    <span class="text-xs text-500">Số lượng: <h:outputText value="#{item.quantity}"><f:convertNumber pattern="#,##0.##" /></h:outputText> #{item.unit}</span>
+                                                </div>
+                                            </div>
+                                            <div class="font-medium text-xs text-gray-800">
+                                                <h:outputText value="#{item.unitPrice}">
+                                                    <f:convertNumber pattern="#,##0" />
+                                                </h:outputText>₫
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+
+                                <!-- Order Footer: Address & Total & Action Buttons -->
+                                <div class="bg-stone-50 border-round-sm p-3 flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center gap-3">
+                                    <div class="text-xs text-500">
+                                        <span>Giao đến: <strong class="text-gray-700">#{order.shippingAddress}</strong></span>
+                                    </div>
+
+                                    <div class="flex flex-wrap align-items-center gap-2">
+                                        <div class="text-right mr-2">
+                                            <span class="text-xs text-500 mr-2">Tổng cộng:</span>
+                                            <span class="font-heading font-semibold text-base text-gray-900">
+                                                <h:outputText value="#{order.totalAmount}">
+                                                    <f:convertNumber pattern="#,##0" />
+                                                </h:outputText>₫
+                                            </span>
+                                        </div>
+
+                                        <!-- Direct Cancel for PENDING orders -->
+                                        <h:panelGroup rendered="#{order.status eq 'PENDING'}">
+                                            <p:commandButton value="Hủy Đơn" icon="pi pi-times" 
+                                                             action="#{customerOrderBean.cancelOrder(order.id)}" 
+                                                             update="form:orderList :growlMessages" 
+                                                             styleClass="ui-button-danger ui-button-outlined"
+                                                             style="height: 36px;">
+                                                <p:confirm header="Xác nhận hủy đơn hàng" 
+                                                           message="Bạn có chắc chắn muốn hủy đơn #{order.orderCode}? Nông sản đã giữ sẽ được hoàn lại kho." 
+                                                           icon="pi pi-exclamation-triangle" />
+                                            </p:commandButton>
+                                        </h:panelGroup>
+
+                                        <!-- Request Cancel for CONFIRMED or PROCESSING orders -->
+                                        <h:panelGroup rendered="#{(order.status eq 'CONFIRMED' or order.status eq 'PROCESSING') and not order.cancellationRequested}">
+                                            <p:commandButton value="Gửi Yêu Cầu Hủy" icon="pi pi-exclamation-circle" 
+                                                             actionListener="#{customerOrderBean.prepareRequestCancel(order)}" 
+                                                             oncomplete="PF('cancelReqDialog').show()" 
+                                                             update=":cancelReqForm" 
+                                                             styleClass="ui-button-warning ui-button-outlined"
+                                                             style="height: 36px;" />
+                                        </h:panelGroup>
+
+                                        <p:button outcome="/store.xhtml" value="Mua lại" 
+                                                  styleClass="ui-button-secondary"
+                                                  style="height: 36px;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <!-- Global Confirm Dialog for Customer Direct Cancel -->
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="380">
+                    <div class="flex justify-content-end gap-2 mt-3">
+                        <p:commandButton value="Không" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" style="height: 36px;" />
+                        <p:commandButton value="Đồng ý Hủy" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" style="height: 36px;" />
+                    </div>
+                </p:confirmDialog>
+            </h:form>
+
+            <!-- Customer Cancellation Request Modal Dialog -->
+            <p:dialog id="cancelReqDialog" widgetVar="cancelReqDialog" header="Gửi Yêu Cầu Hủy Đơn Hàng" 
+                      showEffect="fade" hideEffect="fade" modal="true" responsive="true" width="460">
+                <h:form id="cancelReqForm">
+                    <div class="mb-3">
+                        <p class="text-xs text-500 line-height-3 m-0">
+                            Đơn hàng <strong>##{customerOrderBean.selectedOrderForCancel.orderCode}</strong> đã được hệ thống xác nhận và đang trong quá trình chuẩn bị nông sản. Quý khách vui lòng cung cấp lý do để Ban quản trị xem xét:
+                        </p>
+                    </div>
+
+                    <div class="form-field mb-3">
+                        <label for="reason" class="form-label">
+                            Lý do hủy đơn hàng <span class="required-star">*</span>
+                        </label>
+                        <p:inputTextarea id="reason" value="#{customerOrderBean.cancelReason}" rows="4" 
+                                         styleClass="w-full" required="true" 
+                                         requiredMessage="Vui lòng nhập lý do hủy đơn" 
+                                         placeholder="Ví dụ: Tôi đặt nhầm số lượng, muốn đổi địa chỉ nhận hàng, có việc đột xuất...">
+                            <f:validateLength minimum="5" maximum="500" />
+                        </p:inputTextarea>
+                        <p:message for="reason" />
+                    </div>
+
+                    <div class="flex justify-content-end gap-2 mt-4 pt-2 border-top-1 border-gray-100">
+                        <p:commandButton value="Đóng" type="button" onclick="PF('cancelReqDialog').hide()" 
+                                         styleClass="ui-button-secondary" style="height: 38px;" />
+                        <p:commandButton value="Gửi Yêu Cầu Hủy" icon="pi pi-send" 
+                                         action="#{customerOrderBean.submitCancellationRequest()}" 
+                                         update="@form :form:orderList :growlMessages" 
+                                         oncomplete="if (!args.validationFailed) PF('cancelReqDialog').hide()" 
+                                         styleClass="ui-button-warning" style="height: 38px;" />
+                    </div>
+                </h:form>
+            </p:dialog>
+
+        </div>
+    </ui:define>
+</ui:composition>

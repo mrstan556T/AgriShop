@@ -58,6 +58,12 @@ public class CategoryBean extends AbstractCrudBean<CategoryDTO> {
 
     @Override
     protected void performSave() throws Exception {
+        if (currentItem.getCode() == null || currentItem.getCode().trim().isEmpty()) {
+            throw new com.agrishop.exception.BusinessException("Vui lòng nhập mã danh mục");
+        }
+        if (currentItem.getName() == null || currentItem.getName().trim().isEmpty()) {
+            throw new com.agrishop.exception.BusinessException("Vui lòng nhập tên danh mục");
+        }
         if (editMode) {
             categoryService.updateCategory(currentItem);
         } else {

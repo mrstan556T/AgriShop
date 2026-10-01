@@ -5,8 +5,13 @@
   <persistence-unit name="AgriShopPU" transaction-type="JTA">
     <jta-data-source>jdbc/AgriShopDB</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
+    <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
     <properties>
-      <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+      <property name="jakarta.persistence.schema-generation.database.action" value="update"/>
+      <!-- EclipseLink L2 Cache Configurations -->
+      <property name="eclipselink.cache.shared.default" value="false"/>
+      <property name="eclipselink.cache.size.default" value="500"/>
+      <property name="eclipselink.cache.type.default" value="Soft"/>
     </properties>
   </persistence-unit>
 </persistence>

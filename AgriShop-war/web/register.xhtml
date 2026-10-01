@@ -1,0 +1,217 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Đăng Ký Tài Khoản - AgriShop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+    
+    <!-- PrimeFlex CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.1/primeflex.min.css" />
+    
+    <!-- Theme & Storefront CSS -->
+    <h:outputStylesheet library="css" name="theme.css" />
+    <link rel="stylesheet" href="#{request.contextPath}/resources/css/storefront.css?v=#{session.lastAccessedTime}" />
+</h:head>
+<h:body>
+    <div class="auth-page-wrapper">
+        <div class="auth-split-card">
+            
+            <!-- Left Side: Editorial Botanical Storytelling -->
+            <div class="auth-visual-side">
+                <div>
+                    <div class="auth-visual-tag">
+                        <i class="pi pi-star"></i>
+                        <span>Đặc Quyền Thành Viên</span>
+                    </div>
+
+                    <h1 class="auth-visual-title">
+                        Khởi Đầu Lối Sống Xanh &amp; An Lành
+                    </h1>
+                    
+                    <p class="auth-visual-desc">
+                        Đăng ký thành viên AgriShop ngay hôm nay để nhận các ưu đãi nông sản độc quyền, tích lũy điểm thưởng và trải nghiệm dịch vụ giao hàng ưu tiên.
+                    </p>
+
+                    <div class="auth-badge-list">
+                        <div class="auth-badge-item">
+                            <div class="auth-badge-icon">
+                                <i class="pi pi-gift"></i>
+                            </div>
+                            <span>Tặng mã ưu đãi 10% cho đơn hàng nông sản đầu tiên</span>
+                        </div>
+                        <div class="auth-badge-item">
+                            <div class="auth-badge-icon">
+                                <i class="pi pi-truck"></i>
+                            </div>
+                            <span>Miễn phí vận chuyển hỏa tốc trong ngày cho thành viên</span>
+                        </div>
+                        <div class="auth-badge-item">
+                            <div class="auth-badge-icon">
+                                <i class="pi pi-bell"></i>
+                            </div>
+                            <span>Thông báo sớm nhất các vụ mùa trái cây chín rộ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-top-1 border-white-alpha-20 text-xs text-300">
+                    © 2026 AgriShop Co., Ltd. Nông sản hữu cơ chuẩn VietGAP.
+                </div>
+            </div>
+
+            <!-- Right Side: Luxury Registration Form -->
+            <div class="auth-form-side">
+                <!-- Brand Badge -->
+                <h:link outcome="/index.xhtml" styleClass="auth-brand-badge">
+                    <div class="brand-box">
+                        <i class="pi pi-shopping-bag"></i>
+                    </div>
+                    <span>AgriShop</span>
+                </h:link>
+
+                <div class="auth-form-header">
+                    <h2>Tạo Tài Khoản Mới</h2>
+                    <p>Điền thông tin để đăng ký thành viên mua sắm nông sản sạch</p>
+                </div>
+
+                <h:form id="registerForm">
+                    <p:messages id="messages" globalOnly="true" showDetail="true" closable="true" styleClass="mb-3">
+                        <p:autoUpdate />
+                    </p:messages>
+
+                    <!-- Full Name & Username in 2 cols -->
+                    <div class="grid">
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="fullName" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Họ và tên <span class="text-red-500">*</span>
+                            </label>
+                            <div class="auth-input-group">
+                                <i class="pi pi-id-card auth-icon"></i>
+                                <p:inputText id="fullName" value="#{registerBean.fullName}" required="true" 
+                                             requiredMessage="Vui lòng nhập họ và tên" 
+                                             validatorMessage="Họ và tên phải có từ 3 đến 50 ký tự"
+                                             placeholder="Ví dụ: Nguyễn Văn An">
+                                    <f:validateLength minimum="3" maximum="50" />
+                                </p:inputText>
+                            </div>
+                            <p:message for="fullName" styleClass="mt-1 text-xs" />
+                        </div>
+
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="username" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Tên đăng nhập <span class="text-red-500">*</span>
+                            </label>
+                            <div class="auth-input-group">
+                                <i class="pi pi-user auth-icon"></i>
+                                <p:inputText id="username" value="#{registerBean.username}" required="true" 
+                                             requiredMessage="Vui lòng nhập tên đăng nhập" 
+                                             validatorMessage="Tên đăng nhập từ 4-20 ký tự, chỉ gồm chữ cái, số và dấu gạch dưới"
+                                             placeholder="Ví dụ: annguyen99">
+                                    <f:validateLength minimum="4" maximum="20" />
+                                    <f:validateRegex pattern="^[a-zA-Z0-9_]{4,20}$" />
+                                </p:inputText>
+                            </div>
+                            <p:message for="username" styleClass="mt-1 text-xs" />
+                        </div>
+                    </div>
+
+                    <!-- Email & Phone in 2 cols -->
+                    <div class="grid">
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="email" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <div class="auth-input-group">
+                                <i class="pi pi-envelope auth-icon"></i>
+                                <p:inputText id="email" value="#{registerBean.email}" required="true" 
+                                             requiredMessage="Vui lòng nhập email" 
+                                             validatorMessage="Email không đúng định dạng (ví dụ: email@domain.com)"
+                                             placeholder="email@domain.com">
+                                    <f:validateRegex pattern="^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$" />
+                                </p:inputText>
+                            </div>
+                            <p:message for="email" styleClass="mt-1 text-xs" />
+                        </div>
+
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="phone" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Số điện thoại <span class="text-red-500">*</span>
+                            </label>
+                            <div class="auth-input-group">
+                                <i class="pi pi-phone auth-icon"></i>
+                                <p:inputText id="phone" value="#{registerBean.phone}" required="true" 
+                                             requiredMessage="Vui lòng nhập số điện thoại" 
+                                             validatorMessage="Số điện thoại không hợp lệ (gồm 10-11 số, bắt đầu bằng 0)"
+                                             placeholder="Ví dụ: 0912345678">
+                                    <f:validateRegex pattern="^0[0-9]{9,10}$" />
+                                </p:inputText>
+                            </div>
+                            <p:message for="phone" styleClass="mt-1 text-xs" />
+                        </div>
+                    </div>
+
+                    <!-- Password & Confirm in 2 cols -->
+                    <div class="grid">
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="password" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Mật khẩu <span class="text-red-500">*</span>
+                            </label>
+                            <div class="auth-input-group">
+                                <i class="pi pi-lock auth-icon"></i>
+                                <p:password id="password" value="#{registerBean.password}" required="true" 
+                                            requiredMessage="Vui lòng nhập mật khẩu" 
+                                            validatorMessage="Mật khẩu phải có ít nhất 6 ký tự"
+                                            placeholder="Tối thiểu 6 ký tự" 
+                                            toggleMask="true">
+                                    <f:validateLength minimum="6" />
+                                </p:password>
+                            </div>
+                            <p:message for="password" styleClass="mt-1 text-xs" />
+                        </div>
+
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="confirmPassword" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                Xác nhận lại <span class="text-red-500">*</span>
+                            </label>
+                            <div class="auth-input-group">
+                                <i class="pi pi-check-circle auth-icon"></i>
+                                <p:password id="confirmPassword" value="#{registerBean.confirmPassword}" required="true" 
+                                            requiredMessage="Vui lòng nhập xác nhận mật khẩu" 
+                                            placeholder="Nhập lại mật khẩu" 
+                                            toggleMask="true" />
+                            </div>
+                            <p:message for="confirmPassword" styleClass="mt-1 text-xs" />
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <p:commandButton value="Đăng Ký Tài Khoản" action="#{registerBean.register}" 
+                                     ajax="false" styleClass="auth-submit-btn my-2" 
+                                     icon="pi pi-user-plus" />
+                    
+                    <div class="text-center pt-3 border-top-1 border-gray-200 text-xs mb-2">
+                        <span class="text-600">Đã có tài khoản? </span>
+                        <h:link outcome="/login.xhtml" value="Đăng nhập ngay" styleClass="auth-link" />
+                    </div>
+
+                    <div class="text-center">
+                        <h:link outcome="/index.xhtml" styleClass="auth-back-link">
+                            <i class="pi pi-arrow-left text-xs"></i>
+                            <span>Quay về trang chủ</span>
+                        </h:link>
+                    </div>
+                </h:form>
+            </div>
+
+        </div>
+    </div>
+</h:body>
+</html>

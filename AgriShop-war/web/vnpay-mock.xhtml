@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Cổng Thanh Toán Trực Tuyến VNPAY / VietQR (Sandbox)</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.1/primeflex.min.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/primeicons@6.0.1/primeicons.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <h:outputStylesheet library="css" name="theme.css" />
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #F4F6F8;
+            margin: 0;
+            padding: 20px;
+            color: #1F2937;
+        }
+        .vnpay-box {
+            max-width: 520px;
+            margin: 30px auto;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #E5E7EB;
+            overflow: hidden;
+        }
+        .vnpay-header {
+            background: linear-gradient(135deg, #005BAA 0%, #003F7A 100%);
+            padding: 24px;
+            color: #FFFFFF;
+            text-align: center;
+        }
+        .qr-mock {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 16px;
+            background: #FFFFFF;
+            border: 2px dashed #005BAA;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #005BAA;
+        }
+        .btn-success-pay {
+            background: #005BAA;
+            color: #FFFFFF;
+            border: none;
+            height: 44px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.2s;
+            box-sizing: border-box;
+        }
+        .btn-success-pay:hover {
+            background: #004684;
+        }
+        .btn-cancel-pay {
+            background: #F3F4F6;
+            color: #4B5563;
+            border: 1px solid #D1D5DB;
+            height: 40px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            text-decoration: none;
+            margin-top: 10px;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        .btn-cancel-pay:hover {
+            background: #E5E7EB;
+            color: #111827;
+        }
+    </style>
+</h:head>
+<h:body>
+    <div class="vnpay-box">
+        <div class="vnpay-header">
+            <div style="font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">VNPAY-QR / VietQR</div>
+            <div style="font-size: 12px; opacity: 0.85; margin-top: 4px;">Mô Phỏng Cổng Thanh Toán Trực Tuyến An Toàn</div>
+        </div>
+
+        <div style="padding: 24px;">
+            <!-- Order summary info -->
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                <div class="flex justify-content-between mb-2 text-xs">
+                    <span style="color: #64748B;">Mã đơn hàng:</span>
+                    <strong style="color: #0F172A; font-family: monospace;">#{param.vnp_TxnRef}</strong>
+                </div>
+                <div class="flex justify-content-between mb-2 text-xs">
+                    <span style="color: #64748B;">Nội dung thanh toán:</span>
+                    <span style="color: #334155;">#{param.vnp_OrderInfo}</span>
+                </div>
+                <div class="flex justify-content-between pt-2 border-top-1 border-gray-200">
+                    <span style="font-size: 13px; font-weight: 600;">Số tiền cần thanh toán:</span>
+                    <strong style="color: #005BAA; font-size: 16px; font-family: monospace;">
+                        <h:outputText value="#{param.vnp_Amount}">
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputText> ₫
+                    </strong>
+                </div>
+            </div>
+
+            <!-- QR Code Box -->
+            <div class="qr-mock">
+                <i class="pi pi-qrcode" style="font-size: 5rem; margin-bottom: 6px;"></i>
+                <span style="font-size: 11px; font-weight: 600;">VIETQR VNPAY SANDBOX</span>
+            </div>
+            
+            <p style="text-align: center; font-size: 12px; color: #64748B; margin-bottom: 24px;">
+                Đây là giao diện mô phỏng tích hợp Cổng thanh toán theo kiến trúc <strong>PaymentGateway</strong> của AgriShop. Bạn có thể bấm chọn kết quả thử nghiệm bên dưới:
+            </p>
+
+            <!-- Test action buttons -->
+            <div>
+                <a href="#{request.contextPath}#{param.returnUrl}?vnp_TxnRef=#{param.vnp_TxnRef}&amp;vnp_ResponseCode=00&amp;vnp_TransactionNo=VNP#{session.lastAccessedTime}&amp;vnp_Amount=#{param.vnp_Amount}" 
+                   class="btn-success-pay">
+                    <i class="pi pi-check-circle mr-2"></i> Xác Nhận Thanh Toán Thành Công
+                </a>
+
+                <a href="#{request.contextPath}#{param.returnUrl}?vnp_TxnRef=#{param.vnp_TxnRef}&amp;vnp_ResponseCode=24&amp;vnp_TransactionNo=0&amp;vnp_Amount=#{param.vnp_Amount}" 
+                   class="btn-cancel-pay">
+                    <i class="pi pi-times-circle mr-2"></i> Hủy Giao Dịch / Mô Phỏng Thất Bại
+                </a>
+
+                <div style="text-align: center; margin-top: 16px;">
+                    <a href="#{request.contextPath}/order-history.xhtml" style="font-size: 12px; color: #64748B; text-decoration: underline;">
+                        Quay lại danh sách đơn hàng mà không thanh toán
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</h:body>
+</html>

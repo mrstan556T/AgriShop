@@ -35,6 +35,15 @@ public class SupplierRepository implements SupplierRepositoryLocal {
     }
 
     @Override
+    public List<Supplier> searchByName(String keyword) {
+        String searchPattern = "%" + (keyword == null ? "" : keyword.toLowerCase().trim()) + "%";
+        return em.createQuery("SELECT s FROM Supplier s WHERE s.isDeleted = false AND LOWER(s.name) LIKE :kw", Supplier.class)
+                 .setParameter("kw", searchPattern)
+                 .setMaxResults(20)
+                 .getResultList();
+    }
+
+    @Override
     public List<Supplier> findWithPagination(PageRequestDTO request) {
         StringBuilder jpql = new StringBuilder("SELECT s FROM Supplier s WHERE s.isDeleted = false ");
         if (request.getSearchKeyword() != null && !request.getSearchKeyword().trim().isEmpty()) {

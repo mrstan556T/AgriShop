@@ -1,0 +1,468 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">Hồ Sơ Tài Khoản - AgriShop</ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-5">
+            
+            <!-- Breadcrumbs -->
+            <div class="flex align-items-center gap-2 text-xs text-500 mb-4">
+                <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="hover:text-primary" />
+                <i class="pi pi-angle-right text-xs"></i>
+                <span class="font-medium text-gray-800">Tài khoản của tôi</span>
+            </div>
+
+            <!-- 1. GUEST STATE (Chưa đăng nhập) -->
+            <h:panelGroup rendered="#{empty loginBean.currentUser}">
+                <div class="bg-white border-round-xl border-1 border-gray-200 text-center py-8 px-4 my-6 max-w-30rem mx-auto shadow-sm">
+                    <div class="w-5rem h-5rem border-circle bg-stone-50 border-1 border-gray-200 text-primary flex align-items-center justify-content-center mx-auto mb-3 text-3xl">
+                        <i class="pi pi-user"></i>
+                    </div>
+                    <h2 class="font-heading text-2xl font-semibold text-gray-900 mb-2">Vui Lòng Đăng Nhập</h2>
+                    <p class="text-xs text-600 max-w-25rem mx-auto mb-5 line-height-3">
+                        Quý khách cần đăng nhập để xem và quản lý thông tin hồ sơ cá nhân, địa chỉ nhận hàng và lịch sử đơn hàng.
+                    </p>
+                    <div class="flex justify-content-center gap-3">
+                        <p:button outcome="/login.xhtml" value="Đăng Nhập Ngay" styleClass="cta-btn text-xs px-4 border-round-sm" style="height: 40px; display: inline-flex; align-items: center;" />
+                        <p:button outcome="/register.xhtml" value="Tạo Tài Khoản Mới" styleClass="ui-button-secondary text-xs px-4 border-round-sm" style="height: 40px; display: inline-flex; align-items: center;" />
+                    </div>
+                </div>
+            </h:panelGroup>
+
+            <!-- 2. AUTHENTICATED STATE (Đã đăng nhập) -->
+            <h:panelGroup rendered="#{not empty loginBean.currentUser}">
+                
+                <!-- Profile Hero Banner Card -->
+                <div class="profile-hero-card">
+                    <div class="flex flex-column lg:flex-row justify-content-between align-items-start lg:align-items-center gap-4">
+                        
+                        <!-- Left: Avatar & Identity -->
+                        <div class="flex flex-column sm:flex-row align-items-center sm:align-items-start gap-3.5 text-center sm:text-left">
+                            <div class="profile-avatar-box">
+                                <img id="heroAvatarImg" 
+                                     src="#{not empty loginBean.currentUser.avatarUrl ? (loginBean.currentUser.avatarUrl.startsWith('http') ? loginBean.currentUser.avatarUrl : request.contextPath.concat(loginBean.currentUser.avatarUrl)) : ''}" 
+                                     style="#{not empty loginBean.currentUser.avatarUrl ? 'display: block;' : 'display: none;'}" 
+                                     alt="#{loginBean.currentUser.fullName}" />
+                                <div id="heroDefaultAvatar" 
+                                     style="#{empty loginBean.currentUser.avatarUrl ? 'display: flex;' : 'display: none;'}" 
+                                     class="w-full h-full align-items-center justify-content-center text-gray-400 text-4xl">
+                                    <i class="pi pi-user"></i>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h1 class="font-heading text-2xl md:text-3xl font-semibold text-gray-900 m-0 mb-1">
+                                    #{loginBean.currentUser.fullName != null and not empty loginBean.currentUser.fullName ? loginBean.currentUser.fullName : loginBean.currentUser.username}
+                                </h1>
+                                <div class="flex flex-wrap align-items-center justify-content-center sm:justify-content-start gap-2 mb-2">
+                                    <span class="text-xs text-500 font-medium">@#{loginBean.currentUser.username}</span>
+                                    <span class="text-300">•</span>
+                                    <span class="status-pill pill-completed text-xs font-semibold">
+                                        <i class="pi pi-id-card text-xs mr-1"></i>
+                                        #{loginBean.currentUser.userCode != null ? loginBean.currentUser.userCode : 'CUST-'.concat(loginBean.currentUser.id)}
+                                    </span>
+                                    <span class="text-300">•</span>
+                                    <span class="status-pill pill-pending text-xs font-semibold">
+                                        <i class="pi pi-shield text-xs mr-1"></i>
+                                        #{loginBean.currentUser.role eq 'ADMIN' ? 'Quản Trị Viên' : 'Thành Viên AgriShop'}
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap align-items-center justify-content-center sm:justify-content-start gap-3 text-xs text-600">
+                                    <span class="flex align-items-center gap-1">
+                                        <i class="pi pi-envelope text-primary text-xs"></i>
+                                        #{loginBean.currentUser.email}
+                                    </span>
+                                    <span class="flex align-items-center gap-1">
+                                        <i class="pi pi-phone text-primary text-xs"></i>
+                                        #{not empty loginBean.currentUser.phone ? loginBean.currentUser.phone : 'Chưa cập nhật SĐT'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Quick Stat Cards -->
+                        <div class="flex flex-column sm:flex-row gap-3 w-full lg:w-auto">
+                            <h:link outcome="/order-history.xhtml" styleClass="profile-stat-card flex-1 sm:flex-initial">
+                                <div class="profile-stat-icon">
+                                    <i class="pi pi-shopping-bag"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-500 font-medium">Đơn mua của tôi</div>
+                                    <div class="font-heading font-semibold text-lg text-gray-900">
+                                        #{profileBean.totalOrders} <span class="text-xs font-normal text-400">đơn hàng</span>
+                                    </div>
+                                </div>
+                            </h:link>
+
+                            <h:link outcome="/cart.xhtml" styleClass="profile-stat-card flex-1 sm:flex-initial">
+                                <div class="profile-stat-icon">
+                                    <i class="pi pi-shopping-cart"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-500 font-medium">Giỏ hàng hiện tại</div>
+                                    <div class="font-heading font-semibold text-lg text-gray-900">
+                                        #{cartBean.cart.totalItems} <span class="text-xs font-normal text-400">món</span>
+                                    </div>
+                                </div>
+                            </h:link>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 2-Column Responsive Form Layout -->
+                <div class="grid align-items-start">
+                    
+                    <!-- Left: Personal Information & Delivery Address -->
+                    <div class="col-12 lg:col-7 mb-4">
+                        <div class="profile-card-panel">
+                            <h3 class="profile-panel-title">
+                                <i class="pi pi-user-edit text-primary"></i>
+                                <span>Thông Tin Cá Nhân &amp; Giao Nhận</span>
+                            </h3>
+
+                            <h:form id="profileInfoForm" enctype="multipart/form-data">
+                                <p:messages id="infoMsgs" globalOnly="true" showDetail="true" closable="true" styleClass="mb-3">
+                                    <p:autoUpdate />
+                                </p:messages>
+
+                                <!-- Hidden field to track image removal -->
+                                <h:inputHidden id="removeImageFlag" value="#{profileBean.removeCurrentImage}" />
+
+                                <!-- Customer Avatar Uploader (Identical to Admin Style) -->
+                                <div class="profile-uploader-wrapper mb-4">
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Ảnh đại diện tài khoản
+                                    </label>
+
+                                    <!-- Box 1: Image Preview Container with top-right 'X' badge -->
+                                    <div id="avatarImagePreviewBox" 
+                                         style="#{not empty loginBean.currentUser.avatarUrl ? 'display: inline-block;' : 'display: none;'} position: relative; margin-bottom: 0.5rem;">
+                                        <div style="position: relative; display: inline-block; padding: 4px; background: #FAFAF9; border: 1px solid #E5E7EB; border-radius: 8px;">
+                                            <img id="avatarPreviewImg" 
+                                                 src="#{not empty loginBean.currentUser.avatarUrl ? (loginBean.currentUser.avatarUrl.startsWith('http') ? loginBean.currentUser.avatarUrl : request.contextPath.concat(loginBean.currentUser.avatarUrl)) : ''}" 
+                                                 style="max-height: 180px; max-width: 240px; object-fit: cover; border-radius: 6px; display: block;" 
+                                                 alt="Xem trước ảnh đại diện" />
+                                            
+                                            <button type="button" class="image-remove-badge" onclick="removeAvatarImage()" title="Xóa ảnh này để chọn ảnh khác">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Box 2: Dropzone Upload Box -->
+                                    <div id="avatarUploadBox" 
+                                         style="#{not empty loginBean.currentUser.avatarUrl ? 'display: none;' : 'display: block;'}">
+                                        <div onclick="triggerAvatarFileInput(event)" 
+                                             class="upload-dropzone flex flex-column align-items-center justify-content-center p-4 border-2 border-dashed border-gray-300 border-round-md bg-stone-50 cursor-pointer hover:border-primary hover:bg-stone-100 transition-duration-200 text-center"
+                                             style="min-height: 130px; width: 100%; box-sizing: border-box; display: flex;">
+                                            <i class="pi pi-image text-3xl text-gray-400 mb-2"></i>
+                                            <span class="text-sm font-semibold text-gray-800 mb-1">Nhấn để chọn ảnh từ máy tính</span>
+                                            <span class="text-xs text-500 mb-3">Hỗ trợ JPG, PNG, WebP (dung lượng tối đa 2MB)</span>
+                                            <span class="cta-btn text-xs px-3 py-1.5 border-round-sm inline-flex align-items-center gap-1">
+                                                <i class="pi pi-folder-open text-xs"></i> Chọn Ảnh
+                                            </span>
+                                            <p:fileUpload id="avatarFileUpload" value="#{profileBean.avatarFile}" mode="simple" skinSimple="false" 
+                                                          accept="image/*" style="display: none;" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid">
+                                    <!-- Full Name -->
+                                    <div class="col-12 sm:col-6 field mb-3">
+                                        <label for="fullName" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                            Họ và tên <span class="text-red-500">*</span>
+                                        </label>
+                                        <p:inputText id="fullName" value="#{profileBean.fullName}" required="true" 
+                                                     requiredMessage="Vui lòng nhập họ và tên" 
+                                                     validatorMessage="Họ và tên phải từ 3 đến 50 ký tự"
+                                                     styleClass="w-full text-sm" placeholder="Nhập họ và tên...">
+                                            <f:validateLength minimum="3" maximum="50" />
+                                        </p:inputText>
+                                        <p:message for="fullName" styleClass="mt-1 text-xs" />
+                                    </div>
+
+                                    <!-- Phone -->
+                                    <div class="col-12 sm:col-6 field mb-3">
+                                        <label for="phone" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                            Số điện thoại liên hệ
+                                        </label>
+                                        <p:inputText id="phone" value="#{profileBean.phone}" 
+                                                     validatorMessage="Số điện thoại không hợp lệ (gồm 10-11 số, bắt đầu bằng 0)"
+                                                     styleClass="w-full text-sm" placeholder="Ví dụ: 0912345678">
+                                            <f:validateRegex pattern="^$|^0[0-9]{9,10}$" />
+                                        </p:inputText>
+                                        <p:message for="phone" styleClass="mt-1 text-xs" />
+                                    </div>
+
+                                    <!-- Username (Read only) -->
+                                    <div class="col-12 sm:col-6 field mb-3">
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 flex align-items-center gap-1">
+                                            <span>Tên đăng nhập</span>
+                                            <i class="pi pi-lock text-xs text-400" title="Tên đăng nhập không thể thay đổi"></i>
+                                        </label>
+                                        <p:inputText value="#{loginBean.currentUser.username}" disabled="true" 
+                                                     styleClass="w-full bg-stone-100 text-sm text-600" />
+                                        <span class="text-xs text-400 mt-1 block">Tên đăng nhập dùng định danh tài khoản</span>
+                                    </div>
+
+                                    <!-- Email (Read only with verified badge) -->
+                                    <div class="col-12 sm:col-6 field mb-3">
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 flex align-items-center gap-1">
+                                            <span>Địa chỉ Email</span>
+                                            <i class="pi pi-check-circle text-xs text-green-600" title="Email đã liên kết"></i>
+                                        </label>
+                                        <p:inputText value="#{loginBean.currentUser.email}" disabled="true" 
+                                                     styleClass="w-full bg-stone-100 text-sm text-600" />
+                                        <span class="text-xs text-green-700 mt-1 block flex align-items-center gap-1">
+                                            <i class="pi pi-verified text-xs"></i> Đã kích hoạt nhận hóa đơn &amp; thông báo
+                                        </span>
+                                    </div>
+
+                                    <!-- Default Shipping Address -->
+                                    <div class="col-12 field mb-4">
+                                        <label for="address" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                            Địa chỉ nhận hàng mặc định
+                                        </label>
+                                        <p:inputTextarea id="address" value="#{profileBean.address}" rows="3" 
+                                                         styleClass="w-full text-sm line-height-3" 
+                                                         placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..." />
+                                        <span class="text-xs text-400 mt-1 block">
+                                            Địa chỉ này sẽ được tự động điền khi quý khách đặt mua nông sản
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Action Submit -->
+                                <div class="flex justify-content-end pt-2 border-top-1 border-gray-100">
+                                    <p:commandButton value="Lưu Thay Đổi Thông Tin" icon="pi pi-check" 
+                                                     action="#{profileBean.updateProfileInfo}" 
+                                                     ajax="false"
+                                                     styleClass="cta-btn text-xs px-4 border-round-sm font-semibold" 
+                                                     style="height: 40px; display: inline-flex; align-items: center;" />
+                                </div>
+                            </h:form>
+                        </div>
+                    </div>
+
+                    <!-- Right: Security & Password Management -->
+                    <div class="col-12 lg:col-5 mb-4">
+                        <div class="profile-card-panel">
+                            <h3 class="profile-panel-title">
+                                <i class="pi pi-shield text-primary"></i>
+                                <span>Bảo Mật &amp; Đổi Mật Khẩu</span>
+                            </h3>
+
+                            <p class="text-xs text-500 m-0 mb-4 line-height-2">
+                                Để bảo đảm an toàn cho tài khoản và thông tin mua hàng, vui lòng sử dụng mật khẩu mạnh và không chia sẻ cho người khác.
+                            </p>
+
+                            <h:form id="passwordForm">
+                                <p:messages id="passMsgs" globalOnly="true" showDetail="true" closable="true" styleClass="mb-3">
+                                    <p:autoUpdate />
+                                </p:messages>
+
+                                <!-- Current Password -->
+                                <div class="field mb-3">
+                                    <label for="curPass" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Mật khẩu hiện tại <span class="text-red-500">*</span>
+                                    </label>
+                                    <p:password id="curPass" value="#{profileBean.currentPassword}" 
+                                                toggleMask="true" styleClass="w-full text-sm" 
+                                                placeholder="Nhập mật khẩu đang sử dụng" />
+                                    <p:message for="curPass" styleClass="mt-1 text-xs" />
+                                </div>
+
+                                <!-- New Password -->
+                                <div class="field mb-3">
+                                    <label for="newPass" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Mật khẩu mới <span class="text-red-500">*</span>
+                                    </label>
+                                    <p:password id="newPass" value="#{profileBean.newPassword}" 
+                                                toggleMask="true" styleClass="w-full text-sm" 
+                                                placeholder="Tối thiểu 6 ký tự" />
+                                    <p:message for="newPass" styleClass="mt-1 text-xs" />
+                                </div>
+
+                                <!-- Confirm New Password -->
+                                <div class="field mb-4">
+                                    <label for="confirmPass" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Xác nhận mật khẩu mới <span class="text-red-500">*</span>
+                                    </label>
+                                    <p:password id="confirmPass" value="#{profileBean.confirmPassword}" 
+                                                toggleMask="true" styleClass="w-full text-sm" 
+                                                placeholder="Nhập lại mật khẩu mới" />
+                                    <p:message for="confirmPass" styleClass="mt-1 text-xs" />
+                                </div>
+
+                                <!-- Security Tips Box -->
+                                <div class="p-3 border-round-sm border-1 border-gray-200 bg-stone-50 mb-4 text-xs text-600 line-height-2">
+                                    <div class="font-semibold text-gray-800 mb-1 flex align-items-center gap-1">
+                                        <i class="pi pi-info-circle text-primary"></i> Lời khuyên bảo mật:
+                                    </div>
+                                    <div>• Độ dài tối thiểu 6 ký tự</div>
+                                    <div>• Nên kết hợp chữ cái hoa, chữ thường và chữ số</div>
+                                </div>
+
+                                <!-- Action Submit -->
+                                <p:commandButton value="Cập Nhật Mật Khẩu" icon="pi pi-lock" 
+                                                 action="#{profileBean.changePassword}" 
+                                                 update="passwordForm :growlMessages" 
+                                                 styleClass="ui-button-secondary text-xs px-4 w-full font-semibold border-round-sm" 
+                                                 style="height: 40px; display: inline-flex; align-items: center; justify-content: center;" />
+                            </h:form>
+                        </div>
+                    </div>
+
+                </div>
+
+            </h:panelGroup>
+
+        </div>
+
+        <!-- Script Preview & Drag-Drop Avatar (Admin-style) -->
+        <script>
+        //<![CDATA[
+        function triggerAvatarFileInput(e) {
+            if (e && e.target && e.target.tagName === 'INPUT' && e.target.type === 'file') {
+                return;
+            }
+            var fileInput = document.querySelector('#profileInfoForm input[type="file"]');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+
+        function handleAvatarFileChange(input) {
+            if (!input || !input.files || !input.files[0]) {
+                return;
+            }
+            var file = input.files[0];
+            if (!file.type.match('image.*')) {
+                alert('Vui lòng chọn tệp hình ảnh hợp lệ (PNG, JPG, WebP, ...)!');
+                input.value = '';
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = document.getElementById('avatarPreviewImg');
+                var previewBox = document.getElementById('avatarImagePreviewBox');
+                var uploadBox = document.getElementById('avatarUploadBox');
+                var flag = document.querySelector('input[id$="removeImageFlag"]');
+                
+                if (img) {
+                    img.src = e.target.result;
+                }
+                if (previewBox) {
+                    previewBox.style.setProperty('display', 'inline-block', 'important');
+                }
+                if (uploadBox) {
+                    uploadBox.style.setProperty('display', 'none', 'important');
+                }
+                if (flag) {
+                    flag.value = 'false';
+                }
+
+                // Live update Hero Avatar
+                var heroImg = document.getElementById('heroAvatarImg');
+                var heroDef = document.getElementById('heroDefaultAvatar');
+                if (heroImg) {
+                    heroImg.src = e.target.result;
+                    heroImg.style.setProperty('display', 'block', 'important');
+                }
+                if (heroDef) {
+                    heroDef.style.setProperty('display', 'none', 'important');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeAvatarImage() {
+            var img = document.getElementById('avatarPreviewImg');
+            var previewBox = document.getElementById('avatarImagePreviewBox');
+            var uploadBox = document.getElementById('avatarUploadBox');
+            var flag = document.querySelector('input[id$="removeImageFlag"]');
+            var input = document.querySelector('#profileInfoForm input[type="file"]');
+            
+            if (img) {
+                img.src = '';
+            }
+            if (previewBox) {
+                previewBox.style.setProperty('display', 'none', 'important');
+            }
+            if (uploadBox) {
+                uploadBox.style.setProperty('display', 'block', 'important');
+            }
+            if (flag) {
+                flag.value = 'true';
+            }
+            if (input) {
+                input.value = '';
+            }
+
+            // Reset Hero Avatar display
+            var heroImg = document.getElementById('heroAvatarImg');
+            var heroDef = document.getElementById('heroDefaultAvatar');
+            if (heroImg) {
+                heroImg.src = '';
+                heroImg.style.setProperty('display', 'none', 'important');
+            }
+            if (heroDef) {
+                heroDef.style.setProperty('display', 'flex', 'important');
+            }
+        }
+
+        // Delegated event listener for file input change inside #profileInfoForm
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.type === 'file' && e.target.closest('#profileInfoForm')) {
+                handleAvatarFileChange(e.target);
+            }
+        });
+
+        if (window.jQuery) {
+            jQuery(document).on('change', '#profileInfoForm input[type="file"]', function() {
+                handleAvatarFileChange(this);
+            });
+        }
+
+        // Drag and Drop Support
+        document.addEventListener('dragover', function(e) {
+            var dropzone = e.target.closest('#profileInfoForm .upload-dropzone');
+            if (dropzone) {
+                e.preventDefault();
+                dropzone.classList.add('border-primary', 'bg-stone-100');
+            }
+        });
+
+        document.addEventListener('dragleave', function(e) {
+            var dropzone = e.target.closest('#profileInfoForm .upload-dropzone');
+            if (dropzone) {
+                e.preventDefault();
+                dropzone.classList.remove('border-primary', 'bg-stone-100');
+            }
+        });
+
+        document.addEventListener('drop', function(e) {
+            var dropzone = e.target.closest('#profileInfoForm .upload-dropzone');
+            if (dropzone) {
+                e.preventDefault();
+                dropzone.classList.remove('border-primary', 'bg-stone-100');
+                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    var fileInput = document.querySelector('#profileInfoForm input[type="file"]');
+                    if (fileInput) {
+                        fileInput.files = e.dataTransfer.files;
+                        handleAvatarFileChange(fileInput);
+                    }
+                }
+            }
+        });
+        //]]>
+        </script>
+    </ui:define>
+</ui:composition>

@@ -6,124 +6,250 @@
       xmlns:ui="jakarta.faces.facelets"
       xmlns:p="http://primefaces.org/ui">
 <h:head>
-    <title><ui:insert name="title">Quản trị - AgriShop</ui:insert></title>
+    <title><ui:insert name="title">Quản Trị Hệ Thống - AgriShop</ui:insert></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
+    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
     
     <!-- PrimeFlex CDN -->
     <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.1/primeflex.min.css" />
     
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: var(--font-family);
-            background-color: var(--surface-ground);
-            color: var(--text-color);
-        }
-        .layout-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-        .layout-sidebar {
-            width: 250px;
-            background-color: var(--surface-overlay);
-            border-right: 1px solid var(--surface-border);
-            padding: 1rem;
-            flex-shrink: 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 2;
-        }
-        .layout-main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .layout-topbar {
-            height: 60px;
-            background-color: var(--surface-overlay);
-            border-bottom: 1px solid var(--surface-border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            z-index: 1;
-        }
-        .layout-content {
-            padding: 2rem;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-        .logo-text {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-            padding-left: 1rem;
-        }
-    </style>
+    <!-- Stylesheets -->
+    <h:outputStylesheet library="css" name="theme.css" />
+    <link rel="stylesheet" type="text/css" href="#{request.contextPath}/resources/css/admin.css?v=20260923_p18" />
     <ui:insert name="head" />
 </h:head>
 <h:body>
-    <div class="layout-wrapper">
-        <!-- Sidebar -->
-        <div class="layout-sidebar">
-            <h:link outcome="/admin/dashboard.xhtml" class="logo-text">
-                <i class="pi pi-box"></i> AgriShop
-            </h:link>
-            
-            <h:form id="menuForm">
-                <p:menu style="width: 100%; border: none; background: transparent;">
-                    <p:submenu label="Tổng quan">
-                        <p:menuitem value="Dashboard" outcome="/admin/dashboard.xhtml" icon="pi pi-home" />
-                    </p:submenu>
-                    <p:submenu label="Cửa hàng">
-                        <p:menuitem value="Danh mục" outcome="/admin/category.xhtml" icon="pi pi-tags" />
-                        <p:menuitem value="Nhà cung cấp" outcome="/admin/supplier.xhtml" icon="pi pi-truck" />
-                        <p:menuitem value="Sản phẩm" outcome="/admin/product.xhtml" icon="pi pi-shopping-bag" />
-                    </p:submenu>
-                    <p:submenu label="Bán hàng">
-                        <p:menuitem value="Đơn hàng" url="#" icon="pi pi-shopping-cart" />
-                        <p:menuitem value="Khuyến mãi" url="#" icon="pi pi-ticket" />
-                    </p:submenu>
-                    <p:submenu label="Hệ thống">
-                        <p:menuitem value="Người dùng" url="#" icon="pi pi-users" />
-                        <p:menuitem value="Cài đặt" url="#" icon="pi pi-cog" />
-                    </p:submenu>
-                </p:menu>
-            </h:form>
-        </div>
+    <!-- Mobile Drawer Overlay -->
+    <div id="adminSidebarOverlay" class="sidebar-overlay" onclick="toggleSidebarDrawer()"></div>
 
-        <!-- Main Area -->
-        <div class="layout-main">
-            <!-- Topbar -->
-            <div class="layout-topbar">
-                <div class="topbar-left">
-                    <h2 style="margin:0; font-size:1.25rem; font-weight:600;"><ui:insert name="pageTitle">Trang Quản trị</ui:insert></h2>
-                </div>
-                <div class="topbar-right flex align-items-center gap-3">
-                    <h:form id="topbarForm">
-                        <h:outputText value="Xin chào, #{loginBean.currentUser.fullName != null ? loginBean.currentUser.fullName : 'Admin'}" styleClass="font-bold mr-3" />
-                        <p:commandButton value="Đăng xuất" action="#{loginBean.logout()}" icon="pi pi-sign-out" styleClass="ui-button-danger ui-button-flat" />
-                    </h:form>
-                </div>
+    <!-- Global Ajax Loading Status -->
+    <p:ajaxStatus onstart="PF('globalStatusDialog').show()" onsuccess="PF('globalStatusDialog').hide()" />
+    <p:dialog widgetVar="globalStatusDialog" modal="true" draggable="false" closable="false" resizable="false" 
+              showHeader="false" style="background: transparent; box-shadow: none; border: none;">
+        <div class="flex flex-column align-items-center justify-content-center p-3 border-round-md bg-white shadow-3" style="min-width: 140px;">
+            <i class="pi pi-spin pi-spinner text-3xl" style="color: #15803D;"></i>
+            <span class="mt-2 text-xs font-semibold text-gray-700">Đang tải...</span>
+        </div>
+    </p:dialog>
+
+    <div class="admin-layout">
+        <!-- Modern Structured Obsidian Sidebar (3-Section Independent Scroll Layout) -->
+        <aside id="adminSidebar" class="admin-sidebar">
+            <!-- 1. Fixed Top Header: Brand Logo (Never Scrolls) -->
+            <div class="admin-sidebar-header">
+                <h:link outcome="/admin/dashboard.xhtml" class="admin-brand">
+                    <div class="brand-icon-box" style="width: 2.25rem; height: 2.25rem; font-size: 1.1rem; background: rgba(34,197,94,0.2); color: #4ADE80; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px;">
+                        <i class="pi pi-box"></i>
+                    </div>
+                    <span>AgriShop</span>
+                    <span class="admin-brand-badge">Admin</span>
+                </h:link>
             </div>
 
-            <!-- Content -->
-            <div class="layout-content">
-                <p:growl id="growlMessages" showDetail="true" globalOnly="false" life="5000">
+            <!-- 2. Middle Section: Scrollable Menu List (Scrolls Internally) -->
+            <div class="admin-sidebar-scrollable">
+                <ul class="admin-sidebar-menu">
+                    <!-- 1. DASHBOARD -->
+                    <li class="sidebar-category-header">DASHBOARD</li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/dashboard.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/dashboard.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-th-large"></i>
+                            <span>Dashboard</span>
+                        </h:link>
+                    </li>
+
+                    <!-- 2. BÁN HÀNG -->
+                    <li class="sidebar-category-header">BÁN HÀNG</li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/order.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/order.xhtml' or view.viewId eq '/admin/order-detail.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-shopping-cart"></i>
+                            <span>Đơn Hàng</span>
+                        </h:link>
+                    </li>
+
+                    <!-- 3. SẢN PHẨM -->
+                    <li class="sidebar-category-header">SẢN PHẨM</li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/product.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/product.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-box"></i>
+                            <span>Sản Phẩm</span>
+                        </h:link>
+                    </li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/category.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/category.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-tags"></i>
+                            <span>Danh Mục</span>
+                        </h:link>
+                    </li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/supplier.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/supplier.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-truck"></i>
+                            <span>Nhà Cung Cấp</span>
+                        </h:link>
+                    </li>
+
+                    <!-- 4. KHO -->
+                    <li class="sidebar-category-header">KHO HÀNG</li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/inventory.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/inventory.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-inbox"></i>
+                            <span>Quản Lý Tồn Kho</span>
+                        </h:link>
+                    </li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/stock-transactions.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/stock-transactions.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-history"></i>
+                            <span>Biến Động Kho</span>
+                        </h:link>
+                    </li>
+
+                    <!-- 5. KHÁCH HÀNG -->
+                    <li class="sidebar-category-header">KHÁCH HÀNG</li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/customer.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/customer.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-users"></i>
+                            <span>Khách Hàng</span>
+                        </h:link>
+                    </li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/review.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/review.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-star"></i>
+                            <span>Đánh Giá</span>
+                        </h:link>
+                    </li>
+
+                    <!-- 6. MARKETING -->
+                    <li class="sidebar-category-header">MARKETING</li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/coupon.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/coupon.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-ticket"></i>
+                            <span>Mã Giảm Giá</span>
+                        </h:link>
+                    </li>
+
+                    <!-- 7. HỆ THỐNG -->
+                    <li class="sidebar-category-header">HỆ THỐNG</li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/user.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/user.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-shield"></i>
+                            <span>Người Dùng &amp; Quyền</span>
+                        </h:link>
+                    </li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/audit-log.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/audit-log.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-file-o"></i>
+                            <span>Nhật Ký Hệ Thống</span>
+                        </h:link>
+                    </li>
+                    <li class="admin-menu-item">
+                        <h:link outcome="/admin/settings.xhtml" 
+                                styleClass="admin-menu-link #{view.viewId eq '/admin/settings.xhtml' ? 'active' : ''}">
+                            <i class="pi pi-cog"></i>
+                            <span>Cấu Hình Hệ Thống</span>
+                        </h:link>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 3. Fixed Bottom Footer: Storefront Link & System Info -->
+            <div class="admin-sidebar-footer">
+                <a href="#{request.contextPath}/index.xhtml" target="_blank" class="admin-sidebar-storefront-btn">
+                    <i class="pi pi-external-link"></i>
+                    <span>Xem Cửa Hàng</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <div class="admin-main">
+            <!-- Sleek Topbar -->
+            <header class="admin-topbar">
+                <div class="flex align-items-center gap-3">
+                    <!-- Mobile Hamburger -->
+                    <button type="button" class="p-button p-component p-button-text p-button-secondary lg:hidden" 
+                            style="width: 2.25rem; height: 2.25rem; padding: 0;" onclick="toggleSidebarDrawer()">
+                        <i class="pi pi-bars text-lg"></i>
+                    </button>
+
+                    <div>
+                        <!-- Breadcrumbs -->
+                        <div class="admin-breadcrumb mb-1">
+                            <h:link outcome="/admin/dashboard.xhtml"><i class="pi pi-home text-xs"></i> Admin</h:link>
+                            <span class="separator">/</span>
+                            <ui:insert name="breadcrumb">
+                                <span class="active">Hệ Thống</span>
+                            </ui:insert>
+                        </div>
+                        <h2 class="admin-page-title">
+                            <ui:insert name="pageTitle">Bảng Điều Khiển</ui:insert>
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="flex align-items-center gap-2">
+                    <!-- Storefront Shortcut -->
+                    <a href="#{request.contextPath}/index.xhtml" target="_blank" 
+                       class="flex align-items-center gap-2 text-xs font-semibold text-gray-600 hover:text-green-700 bg-gray-100 hover:bg-green-50 px-3 py-2 border-round no-underline transition-colors mr-2">
+                        <i class="pi pi-external-link text-xs"></i>
+                        <span class="hidden sm:inline">Xem Cửa Hàng</span>
+                    </a>
+
+                    <h:form id="topbarForm" class="flex align-items-center gap-2 m-0">
+                        <!-- User Profile Indicator -->
+                        <div class="flex align-items-center gap-2 border-1 border-gray-200 py-1 px-3 border-round-sm bg-white">
+                            <i class="pi pi-user text-xs text-gray-500"></i>
+                            <span class="font-medium text-xs text-gray-700">
+                                #{loginBean.currentUser.fullName != null ? loginBean.currentUser.fullName : 'Quản trị viên'}
+                            </span>
+                        </div>
+
+                        <!-- Logout Button -->
+                        <p:commandButton value="Đăng xuất" action="#{loginBean.logout()}" 
+                                         icon="pi pi-sign-out" styleClass="ui-button-flat ui-button-secondary text-xs" />
+                    </h:form>
+                </div>
+            </header>
+
+            <!-- Dynamic Content Area -->
+            <div class="admin-content-body">
+                <p:growl id="growlMessages" showDetail="true" globalOnly="false" life="4000">
                     <p:autoUpdate />
                 </p:growl>
-                <ui:insert name="content">
-                    <!-- Nơi chứa nội dung các trang con -->
-                </ui:insert>
+                <ui:insert name="content" />
             </div>
         </div>
     </div>
+
+    <script>
+    //<![CDATA[
+        function toggleSidebarDrawer() {
+            var sidebar = document.getElementById('adminSidebar');
+            var overlay = document.getElementById('adminSidebarOverlay');
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('sidebar-drawer-active');
+                overlay.classList.toggle('active');
+            }
+        }
+    //]]>
+    </script>
 </h:body>
 </html>

@@ -1,0 +1,104 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">Chính Sách Đổi Trả &amp; Hoàn Tiền 24H - AgriShop</ui:define>
+
+    <ui:define name="meta">
+        <meta name="description" content="Chính sách đổi trả trong vòng 24 giờ và cam kết hoàn tiền 100% đối với nông sản không đạt tiêu chuẩn tươi ngon tại AgriShop." />
+    </ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-5">
+            <!-- Breadcrumbs -->
+            <div class="flex align-items-center gap-2 text-xs text-500 mb-4">
+                <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="hover:text-primary" />
+                <i class="pi pi-angle-right text-xs"></i>
+                <span class="font-medium text-gray-800">Chính sách đổi trả &amp; hoàn tiền</span>
+            </div>
+
+            <!-- Main Content Container -->
+            <div class="bg-white border-1 border-gray-200 border-round-xl p-5 md:p-8 max-w-55rem mx-auto shadow-1">
+                
+                <div class="border-bottom-1 border-gray-200 pb-4 mb-6">
+                    <span class="text-xs font-semibold text-primary uppercase tracking-wider bg-stone-100 px-3 py-1 border-round inline-block mb-2">
+                        Cam Kết Tươi Ngon
+                    </span>
+                    <h1 class="font-heading text-3xl md:text-4xl font-bold text-gray-900 m-0 mb-2">
+                        Chính Sách Đổi Trả &amp; Bồi Hoàn 24H
+                    </h1>
+                    <p class="text-sm text-500 m-0">
+                        Cập nhật lần cuối: Tháng 09/2026 &#8226; Áp dụng cho mọi đơn hàng trên toàn hệ thống AgriShop
+                    </p>
+                </div>
+
+                <div class="text-gray-700 line-height-3 text-sm flex flex-column gap-5">
+                    
+                    <div>
+                        <h2 class="font-heading text-xl font-bold text-gray-900 mb-2 flex align-items-center gap-2">
+                            <i class="pi pi-check-circle text-primary"></i> 1. Tôn Chỉ &amp; Cam Kết Chất Lượng
+                        </h2>
+                        <p>
+                            Tại AgriShop, chúng tôi hiểu rằng nông sản là thực phẩm gắn liền với sức khỏe và bữa ăn gia đình mỗi ngày. Do đó, tất cả sản phẩm xuất kho đều được kiểm định nghiêm ngặt theo tiêu chuẩn VietGAP. Nếu có bất kỳ vấn đề nào về độ tươi, độ dập nát do vận chuyển hoặc không đúng mô tả, quý khách được <strong>đổi hàng mới hoặc hoàn tiền 100%</strong> trong vòng 24 giờ.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-heading text-xl font-bold text-gray-900 mb-2 flex align-items-center gap-2">
+                            <i class="pi pi-shield text-primary"></i> 2. Điều Kiện Tiếp Nhận Đổi Trả
+                        </h2>
+                        <ul class="list-disc pl-4 flex flex-column gap-2">
+                            <li><strong>Thời gian thông báo:</strong> Trong vòng 24 giờ kể từ thời điểm nhân viên giao hàng bàn giao thành công.</li>
+                            <li><strong>Tình trạng hàng hóa:</strong> Sản phẩm bị héo úa, dập nát quá 10%, hư hỏng bên trong ruột, giao sai phân loại hoặc thiếu định lượng so với đơn đặt.</li>
+                            <li><strong>Chứng từ xác nhận:</strong> Hình ảnh hoặc video chụp rõ nét tem nhãn đơn hàng và vị trí sản phẩm gặp lỗi.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h2 class="font-heading text-xl font-bold text-gray-900 mb-2 flex align-items-center gap-2">
+                            <i class="pi pi-wallet text-primary"></i> 3. Hình Thức Hoàn Tiền &amp; Đổi Mới
+                        </h2>
+                        <p>Quý khách có thể lựa chọn 1 trong 2 phương án linh hoạt sau:</p>
+                        <div class="grid mt-1">
+                            <div class="col-12 md:col-6">
+                                <div class="bg-stone-50 border-1 border-gray-200 border-round p-4 h-full">
+                                    <h4 class="font-heading text-base font-bold text-gray-900 m-0 mb-1">Phương Án A: Giao Bù Hàng Mới</h4>
+                                    <p class="text-xs text-600 m-0">AgriShop điều phối chuyến xe giao bù nông sản tươi mới ngay trong chuyến giao tiếp theo (hoàn toàn miễn phí vận chuyển).</p>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <div class="bg-stone-50 border-1 border-gray-200 border-round p-4 h-full">
+                                    <h4 class="font-heading text-base font-bold text-gray-900 m-0 mb-1">Phương Án B: Hoàn Tiền Tài Khoản</h4>
+                                    <p class="text-xs text-600 m-0">Hoàn tiền trực tiếp qua tài khoản ngân hàng hoặc ví điện tử (VNPAY/Momo) của quý khách trong vòng 2 - 4 giờ làm việc.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="font-heading text-xl font-bold text-gray-900 mb-2 flex align-items-center gap-2">
+                            <i class="pi pi-phone text-primary"></i> 4. Kênh Tiếp Nhận Khiếu Nại
+                        </h2>
+                        <p>
+                            Khi cần hỗ trợ đổi trả gấp, quý khách vui lòng liên hệ trực tiếp đội ngũ chăm sóc khách hàng:
+                        </p>
+                        <div class="bg-green-50 border-1 border-green-200 border-round p-3 flex flex-column sm:flex-row gap-4 align-items-start sm:align-items-center text-xs text-green-900">
+                            <div><i class="pi pi-phone font-bold mr-1"></i> Hotline hỏa tốc: <strong>1900 6868</strong> (7h00 - 21h00 hàng ngày)</div>
+                            <div><i class="pi pi-envelope font-bold mr-1"></i> Email: <strong>support@agrishop.vn</strong></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="text-center mt-7 pt-4 border-top-1 border-gray-200">
+                    <p:button outcome="/store.xhtml" value="Tiếp Tục Mua Sắm Nông Sản" icon="pi pi-arrow-left" 
+                              styleClass="cta-btn text-xs px-5 border-round-sm font-semibold" 
+                              style="height: 44px; display: inline-flex; align-items: center; justify-content: center;" />
+                </div>
+            </div>
+        </div>
+    </ui:define>
+
+</ui:composition>

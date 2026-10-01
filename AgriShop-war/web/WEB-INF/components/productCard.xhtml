@@ -1,0 +1,89 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <!-- Reusable Product Card Component
+         Usage:
+         <ui:include src="/WEB-INF/components/productCard.xhtml">
+             <ui:param name="prod" value="#{item}" />
+         </ui:include>
+    -->
+    <div class="product-card">
+        <!-- Stock Status Tag -->
+        <h:panelGroup rendered="#{prod.stockQuantity le 0}">
+            <div class="product-badge-discount" style="background: var(--color-danger);">Tạm Hết</div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{prod.stockQuantity gt 0 and prod.stockQuantity le 5}">
+            <div class="product-badge-discount" style="background: var(--color-warning);">Sắp Hết</div>
+        </h:panelGroup>
+
+        <!-- Product Thumbnail Image & Wishlist Button -->
+        <div class="product-card-thumb relative">
+            <h:link outcome="/product-detail.xhtml">
+                <f:param name="id" value="#{prod.id}" />
+                <h:panelGroup rendered="#{empty prod.imageUrl}">
+                    <div class="flex flex-column align-items-center justify-content-center text-400 py-5">
+                        <i class="pi pi-image text-3xl mb-1"></i>
+                        <span class="text-xs">Chưa có ảnh</span>
+                    </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not empty prod.imageUrl}">
+                    <img src="#{prod.imageUrl.startsWith('http') ? prod.imageUrl : request.contextPath.concat(prod.imageUrl)}" alt="#{prod.name}" />
+                </h:panelGroup>
+            </h:link>
+
+            <!-- Wishlist Heart Button -->
+            <p:commandButton icon="#{wishlistBean.isWishlisted(prod.id) ? 'pi pi-heart-fill' : 'pi pi-heart'}"
+                             action="#{wishlistBean.toggleWishlist(prod.id)}"
+                             update="@this :growlMessages @([id$=navForm])"
+                             process="@this"
+                             rendered="#{empty loginBean.currentUser or loginBean.currentUser.role ne 'ADMIN'}"
+                             styleClass="ui-button-flat p-button-rounded absolute #{wishlistBean.isWishlisted(prod.id) ? 'text-red-500' : 'text-gray-500'}"
+                             style="top: 8px; right: 8px; background: rgba(255,255,255,0.9); width: 36px; height: 36px; z-index: 2; box-shadow: 0 2px 6px rgba(0,0,0,0.12);"
+                             title="#{wishlistBean.isWishlisted(prod.id) ? 'Đã thích' : 'Thêm vào yêu thích'}" />
+        </div>
+
+        <!-- Product Details -->
+        <div class="product-card-body">
+            <div class="product-category-label">#{prod.categoryName}</div>
+            
+            <h:link outcome="/product-detail.xhtml" class="product-title-link" title="#{prod.name}">
+                <f:param name="id" value="#{prod.id}" />
+                #{prod.name}
+            </h:link>
+
+            <div class="text-xs text-500 my-1 flex align-items-center gap-1">
+                <i class="pi pi-box text-xs"></i>
+                <h:panelGroup rendered="#{prod.stockQuantity gt 0}">
+                    <span>Kho: <strong class="text-700"><h:outputText value="#{prod.stockQuantity}"><f:convertNumber pattern="#,##0.##" /></h:outputText></strong> #{prod.unit}</span>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{prod.stockQuantity le 0}">
+                    <span class="text-red-500 font-medium">Hết hàng</span>
+                </h:panelGroup>
+            </div>
+
+            <!-- Price & Add To Cart Button -->
+            <div class="product-card-footer">
+                <div>
+                    <span class="product-price-val">
+                        <h:outputText value="#{prod.price}">
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputText>₫
+                    </span>
+                    <span class="product-unit-val"> / #{prod.unit}</span>
+                </div>
+
+                <p:commandButton icon="pi pi-cart-plus" 
+                                 title="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN' ? 'Tài khoản Quản trị viên không thể mua hàng' : 'Thêm vào giỏ hàng'}"
+                                 styleClass="product-cart-action-btn"
+                                 action="#{cartBean.addToCart(prod.id)}"
+                                 process="@this"
+                                 update=":growlMessages @([id$=navForm])"
+                                 disabled="#{prod.stockQuantity le 0 or (loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN')}" />
+            </div>
+        </div>
+    </div>
+
+</ui:composition>

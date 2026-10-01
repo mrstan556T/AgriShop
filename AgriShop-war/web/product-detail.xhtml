@@ -1,0 +1,374 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">
+        #{productDetailBean.product != null ? productDetailBean.product.name.concat(' - Nông Sản Hữu Cơ | AgriShop') : 'Chi Tiết Nông Sản - AgriShop'}
+    </ui:define>
+
+    <ui:define name="meta">
+        <h:panelGroup rendered="#{productDetailBean.product != null}">
+            <meta name="description" content="Mua #{productDetailBean.product.name} tươi sạch chuẩn VietGAP tại AgriShop. Đơn giá: #{productDetailBean.product.price}₫ / #{productDetailBean.product.unit}. Tình trạng: #{productDetailBean.product.stockQuantity gt 0 ? 'Còn hàng' : 'Tạm hết'}. Giao nhanh trong ngày." />
+            <meta property="og:title" content="#{productDetailBean.product.name} - AgriShop" />
+            <meta property="og:description" content="#{productDetailBean.product.name} đạt tiêu chuẩn chất lượng VietGAP, phân phối trực tiếp từ nhà vườn AgriShop." />
+            <meta property="og:type" content="product" />
+            <meta property="og:price:amount" content="#{productDetailBean.product.price}" />
+            <meta property="og:price:currency" content="VND" />
+        </h:panelGroup>
+    </ui:define>
+
+    <ui:define name="head">
+        <h:panelGroup rendered="#{productDetailBean.product != null}">
+            <!-- Schema.org/Product Structured Data JSON-LD -->
+            <script type="application/ld+json">
+<h:outputText value="#{productDetailBean.structuredDataJson}" escape="false" />
+            </script>
+        </h:panelGroup>
+    </ui:define>
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewParam name="id" value="#{productDetailBean.productId}" />
+            <f:viewAction action="#{productDetailBean.loadProduct}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-5">
+            
+            <!-- Breadcrumbs -->
+            <div class="flex align-items-center gap-2 text-xs text-500 mb-4">
+                <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="hover:text-primary" />
+                <i class="pi pi-angle-right text-xs"></i>
+                <h:link outcome="/store.xhtml" value="Cửa hàng" styleClass="hover:text-primary" />
+                <i class="pi pi-angle-right text-xs"></i>
+                <span class="font-medium text-gray-800">#{productDetailBean.product != null ? productDetailBean.product.name : 'Chi tiết'}</span>
+            </div>
+
+            <!-- Empty Product Fallback -->
+            <h:panelGroup rendered="#{productDetailBean.product == null}">
+                <div class="bg-white border-round-md border-1 border-gray-200 text-center py-8 p-4">
+                    <i class="pi pi-info-circle text-gray-400 mb-3" style="font-size: 3rem;"></i>
+                    <h2 class="font-heading text-xl font-semibold text-gray-900 mb-2">Sản phẩm hiện không khả dụng</h2>
+                    <p class="text-xs text-600 mb-4">Sản phẩm này có thể đã hết mùa vụ hoặc ngừng cung cấp.</p>
+                    <p:button outcome="/store.xhtml" value="Quay Lại Cửa Hàng" styleClass="cta-btn text-xs px-4 py-2" />
+                </div>
+            </h:panelGroup>
+
+            <!-- Product Detail Content -->
+            <h:panelGroup rendered="#{productDetailBean.product != null}">
+                <div class="bg-white border-round-md border-1 border-gray-200 p-4 md:p-6 mb-6">
+                    <div class="grid">
+                        
+                        <!-- Left Column: Product Image Gallery -->
+                        <div class="col-12 lg:col-5 p-3">
+                            <h:panelGroup id="imageGalleryPanel" layout="block">
+                                <div class="product-detail-img-box text-center p-3 border-1 border-gray-200 border-round-md bg-stone-50" style="min-height: 320px; display: flex; align-items: center; justify-content: center;">
+                                    <h:panelGroup rendered="#{not empty productDetailBean.activeImageUrl}">
+                                        <img src="#{productDetailBean.activeImageUrl.startsWith('http') ? productDetailBean.activeImageUrl : request.contextPath.concat(productDetailBean.activeImageUrl)}" 
+                                             alt="#{productDetailBean.product.name}" 
+                                             style="max-width: 100%; max-height: 340px; object-fit: contain; border-radius: 4px; transition: all 0.2s;" />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{empty productDetailBean.activeImageUrl}">
+                                        <div class="text-400">
+                                            <i class="pi pi-image text-5xl mb-2"></i>
+                                            <div class="text-xs">Hình ảnh đang được cập nhật</div>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Thumbnail Gallery Strip -->
+                                <h:form id="galleryForm" rendered="#{not empty productDetailBean.product.images and productDetailBean.product.images.size() gt 1}">
+                                    <div class="flex flex-wrap gap-2 mt-3 justify-content-center">
+                                        <ui:repeat value="#{productDetailBean.product.images}" var="gImg">
+                                            <p:commandLink actionListener="#{productDetailBean.changeActiveImage(gImg.imageUrl)}" 
+                                                           update=":imageGalleryPanel" process="@this"
+                                                           style="display: inline-block; cursor: pointer; text-decoration: none;">
+                                                <img src="#{gImg.imageUrl.startsWith('http') ? gImg.imageUrl : request.contextPath.concat(gImg.imageUrl)}" 
+                                                     style="width: 56px; height: 56px; object-fit: contain; border-radius: 4px; border: 2px solid #{productDetailBean.activeImageUrl eq gImg.imageUrl ? '#15803D' : '#E5E7EB'}; background: #FAFAF9; padding: 2px;" 
+                                                     alt="Thumbnail" />
+                                            </p:commandLink>
+                                        </ui:repeat>
+                                    </div>
+                                </h:form>
+                            </h:panelGroup>
+
+                            <!-- Understated Quality Badges -->
+                            <div class="flex justify-content-around text-center mt-3 pt-3 border-top-1 border-gray-100 text-xs text-600">
+                                <div><i class="pi pi-shield mr-1 text-primary"></i> VietGAP 100%</div>
+                                <div><i class="pi pi-clock mr-1 text-primary"></i> Giao trong ngày</div>
+                                <div><i class="pi pi-sync mr-1 text-primary"></i> Đổi trả 24h</div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Product Specs & Actions -->
+                        <div class="col-12 lg:col-7 p-3 lg:pl-5">
+                            <!-- Category & SKU Tag -->
+                            <div class="flex align-items-center gap-2 mb-2">
+                                <span class="product-category-label m-0">#{productDetailBean.product.categoryName}</span>
+                                <span class="text-400 text-xs">|</span>
+                                <span class="text-xs text-500 font-medium">Mã SP: #{productDetailBean.product.productCode}</span>
+                                <h:panelGroup rendered="#{productDetailBean.product.unitType eq 'WEIGHT'}">
+                                    <span class="text-400 text-xs">|</span>
+                                    <span class="text-xs font-medium px-2 py-0.5 bg-green-50 text-green-700 border-round-xs">
+                                        <i class="pi pi-compass text-xs mr-1"></i>Hàng cân (bán theo kg/lạng)
+                                    </span>
+                                </h:panelGroup>
+                            </div>
+
+                            <!-- Product Title -->
+                            <h1 class="font-heading text-2xl md:text-3xl font-semibold text-gray-900 mb-2">
+                                #{productDetailBean.product.name}
+                            </h1>
+
+                            <!-- Supplier verification -->
+                            <div class="flex align-items-center gap-2 text-xs text-500 mb-4">
+                                <i class="pi pi-building text-primary"></i>
+                                <span>Nhà cung cấp:</span>
+                                <strong class="text-gray-800">#{productDetailBean.product.supplierName}</strong>
+                                <i class="pi pi-check-circle text-xs text-green-700 ml-1"></i>
+                            </div>
+
+                            <!-- Price Card Box (Clean Minimal) -->
+                            <div class="p-3 border-round-sm border-1 border-gray-200 bg-stone-50 mb-4">
+                                <div class="flex align-items-baseline gap-2">
+                                    <span class="font-heading font-semibold text-2xl md:text-3xl text-gray-900">
+                                        <h:outputText value="#{productDetailBean.product.price}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>₫
+                                    </span>
+                                    <span class="text-xs text-500 font-normal"> / #{productDetailBean.product.unit}</span>
+                                </div>
+                                <div class="text-xs text-500 mt-1">
+                                    Đã bao gồm thuế GTGT &amp; bảo hiểm chất lượng tươi sạch
+                                </div>
+                            </div>
+
+                            <!-- Stock Status -->
+                            <div class="mb-4">
+                                <h:panelGroup rendered="#{productDetailBean.product.stockQuantity gt 0}">
+                                    <span class="status-pill pill-delivered">
+                                        Còn hàng (<h:outputText value="#{productDetailBean.product.stockQuantity}"><f:convertNumber pattern="#,##0.##" /></h:outputText> #{productDetailBean.product.unit})
+                                    </span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{productDetailBean.product.stockQuantity le 0}">
+                                    <span class="status-pill pill-cancelled">
+                                        Tạm hết hàng
+                                    </span>
+                                </h:panelGroup>
+                            </div>
+
+                            <!-- Admin View Notice Banner -->
+                            <h:panelGroup rendered="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}">
+                                <div class="mt-3 p-3 border-round bg-blue-50 border-1 border-blue-200 text-blue-900 text-xs flex align-items-center gap-2">
+                                    <i class="pi pi-shield text-base text-blue-600"></i>
+                                    <span><strong>Chế độ Xem Quản Trị Viên:</strong> Bạn đang duyệt xem bằng tài khoản Quản trị viên — hãy đăng nhập bằng tài khoản khách hàng để trải nghiệm mua sắm đầy đủ.</span>
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- Add to Cart & Wishlist Form -->
+                            <h:form id="addToCartForm" class="mt-4">
+                                <h:panelGroup rendered="#{productDetailBean.product.stockQuantity gt 0}">
+                                    <div class="flex flex-column sm:flex-row align-items-stretch sm:align-items-center gap-3">
+                                        
+                                        <!-- Quantity Selector Widget -->
+                                        <div class="flex flex-column gap-1">
+                                            <div class="product-detail-qty-widget flex align-items-center border-1 border-gray-300 border-round-sm bg-white overflow-hidden" style="height: 44px;">
+                                                <p:commandButton icon="pi pi-minus" 
+                                                                 actionListener="#{productDetailBean.decreaseQuantity()}"
+                                                                 update="qtyInputPanel" process="@this qtyInputPanel"
+                                                                 disabled="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}"
+                                                                 styleClass="ui-button-flat text-gray-600" style="width: 38px; height: 100%; border: none;" />
+                                                
+                                                <h:panelGroup id="qtyInputPanel" layout="block" style="width: 70px;">
+                                                    <p:inputNumber id="detailQtyWeight" value="#{productDetailBean.quantity}" 
+                                                                   minValue="0.1" maxValue="#{productDetailBean.product.stockQuantity}"
+                                                                   decimalPlaces="2" decimalSeparator="." thousandSeparator=","
+                                                                   disabled="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}"
+                                                                   rendered="#{productDetailBean.product.unitType eq 'WEIGHT'}"
+                                                                   inputStyleClass="w-full text-center border-none font-semibold text-sm shadow-none" />
+                                                    
+                                                    <p:inputNumber id="detailQtyCount" value="#{productDetailBean.quantity}" 
+                                                                   minValue="1" maxValue="#{productDetailBean.product.stockQuantity}"
+                                                                   decimalPlaces="0"
+                                                                   disabled="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}"
+                                                                   rendered="#{productDetailBean.product.unitType ne 'WEIGHT'}"
+                                                                   inputStyleClass="w-full text-center border-none font-semibold text-sm shadow-none" />
+                                                </h:panelGroup>
+
+                                                <p:commandButton icon="pi pi-plus" 
+                                                                 actionListener="#{productDetailBean.increaseQuantity()}"
+                                                                 update="qtyInputPanel" process="@this qtyInputPanel"
+                                                                 disabled="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}"
+                                                                 styleClass="ui-button-flat text-gray-600" style="width: 38px; height: 100%; border: none;" />
+                                            </div>
+                                        </div>
+
+                                        <!-- Add Button -->
+                                        <p:commandButton value="Thêm Vào Giỏ Hàng" icon="pi pi-cart-plus" 
+                                                         action="#{productDetailBean.addToCart()}"
+                                                         process="@form"
+                                                         update=":growlMessages @([id$=navForm])"
+                                                         disabled="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}"
+                                                         title="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN' ? 'Tài khoản Quản trị viên không thể mua hàng' : 'Thêm Vào Giỏ Hàng'}"
+                                                         styleClass="cta-btn text-base px-4 py-2 flex-1 font-semibold"
+                                                         style="min-height: 44px; display: inline-flex; align-items: center; justify-content: center;" />
+
+                                        <!-- Wishlist Heart Button -->
+                                        <p:commandButton id="wishlistBtn"
+                                                         icon="#{productDetailBean.wishlisted ? 'pi pi-heart-fill' : 'pi pi-heart'}" 
+                                                         actionListener="#{productDetailBean.toggleWishlist()}"
+                                                         update="wishlistBtn :growlMessages @([id$=navForm])"
+                                                         process="@this"
+                                                         disabled="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}"
+                                                         styleClass="ui-button-outlined ui-button-secondary #{productDetailBean.wishlisted ? 'text-red-500' : ''}" 
+                                                         style="height: 44px; width: 48px;"
+                                                         title="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN' ? 'Tài khoản Quản trị viên không thể yêu thích' : (productDetailBean.wishlisted ? 'Đã yêu thích (nhấn để bỏ)' : 'Thêm vào yêu thích')}" />
+                                    </div>
+                                </h:panelGroup>
+                            </h:form>
+
+                            <!-- Short Description Section -->
+                            <div class="mt-5 pt-4 border-top-1 border-gray-200">
+                                <h4 class="font-heading font-semibold text-base text-gray-900 mb-2">Mô tả sản phẩm:</h4>
+                                <p class="text-xs text-600 line-height-3 m-0">
+                                    #{productDetailBean.product.description != null and not empty productDetailBean.product.description ? productDetailBean.product.description : 'Nông sản hữu cơ được gieo trồng và chăm sóc tại các hợp tác xã nông trại đạt chuẩn VietGAP. Thu hoạch và bảo quản sinh học tự nhiên, đảm bảo an toàn tuyệt đối cho sức khỏe.'}
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Reviews & Official Store Reply Section -->
+                <h:panelGroup id="reviewsSection" layout="block" styleClass="mt-4 bg-white border-1 border-gray-200 border-round-sm p-4">
+                    <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center mb-4 pb-3 border-bottom-1 border-gray-100 gap-2">
+                        <div>
+                            <h3 class="font-heading text-lg font-bold text-gray-900 m-0 flex align-items-center gap-2">
+                                <i class="pi pi-comments text-primary text-base"></i>
+                                Đánh Giá &amp; Nhận Xét Từ Khách Hàng
+                            </h3>
+                            <span class="text-xs text-500">Trải nghiệm chân thực của những khách hàng đã mua và sử dụng nông sản này</span>
+                        </div>
+                        <div class="flex align-items-center gap-3">
+                            <div class="flex align-items-center gap-2">
+                                <span class="text-xl font-bold text-amber-500">#{productDetailBean.averageRating}</span>
+                                <div class="flex text-amber-500 text-xs">
+                                    <ui:repeat value="#{[1,2,3,4,5]}" var="s">
+                                        <i class="#{s le productDetailBean.averageRating ? 'pi pi-star-fill text-amber-500' : 'pi pi-star text-gray-300'}"></i>
+                                    </ui:repeat>
+                                </div>
+                                <span class="text-xs text-500">(#{productDetailBean.reviewCount} đánh giá)</span>
+                            </div>
+
+                            <!-- Button Viết đánh giá: Ẩn hoàn toàn đối với ADMIN (Prompt 18-B & 19) -->
+                            <h:panelGroup rendered="#{loginBean.currentUser == null or loginBean.currentUser.role ne 'ADMIN'}">
+                                <p:commandButton value="Viết đánh giá" icon="pi pi-pencil" 
+                                                 type="button" onclick="PF('writeReviewDialog').show();"
+                                                 styleClass="ui-button-outlined ui-button-success" 
+                                                 style="height: 32px; font-size: 12px; padding: 0 12px;" />
+                            </h:panelGroup>
+                        </div>
+                    </div>
+
+                    <h:panelGroup layout="block" rendered="#{not empty productDetailBean.approvedReviews}" styleClass="flex flex-column gap-3">
+                        <ui:repeat value="#{productDetailBean.approvedReviews}" var="rev">
+                            <div class="p-3 border-round-sm border-1 border-gray-100 bg-stone-50">
+                                <div class="flex justify-content-between align-items-center mb-2">
+                                    <div class="flex align-items-center gap-2">
+                                        <div class="w-2rem h-2rem border-round-circle bg-emerald-100 text-emerald-800 flex align-items-center justify-content-center font-bold text-xs">
+                                            #{rev.userName.substring(0, 1).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-xs text-gray-900">#{rev.userName}</div>
+                                            <div class="flex text-amber-500 text-xs mt-0.5">
+                                                <ui:repeat value="#{[1,2,3,4,5]}" var="star">
+                                                    <i class="#{star le rev.rating ? 'pi pi-star-fill text-amber-500' : 'pi pi-star text-gray-300'}"></i>
+                                                </ui:repeat>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-400">
+                                        <h:outputText value="#{rev.createdAt}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy" timeZone="Asia/Ho_Chi_Minh" />
+                                        </h:outputText>
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-800 line-height-3 m-0 pl-1">
+                                    #{rev.comment}
+                                </p>
+
+                                <!-- Official Admin Reply Box -->
+                                <h:panelGroup layout="block" rendered="#{not empty rev.adminReply}" styleClass="mt-3 p-3 border-round-sm bg-white border-1 border-emerald-200 shadow-none">
+                                    <div class="flex align-items-center justify-content-between mb-1">
+                                        <div class="flex align-items-center gap-1.5 text-xs font-bold text-green-800">
+                                            <i class="pi pi-shield text-xs text-green-600"></i>
+                                            <span>Phản hồi từ AgriShop</span>
+                                            <span class="badge badge-success text-xs font-normal" style="font-size: 9px; padding: 2px 6px;">Chính thức</span>
+                                        </div>
+                                        <span class="text-xs text-400">
+                                            <h:outputText value="#{rev.adminReplyAt}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
+                                            </h:outputText>
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-gray-700 line-height-2 m-0 mt-1 italic">
+                                        "#{rev.adminReply}"
+                                    </p>
+                                </h:panelGroup>
+                            </div>
+                        </ui:repeat>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" rendered="#{empty productDetailBean.approvedReviews}" styleClass="text-center p-4">
+                        <i class="pi pi-comments text-gray-300 text-3xl mb-2 block"></i>
+                        <span class="text-xs text-500">Chưa có đánh giá nào cho sản phẩm này. Hãy đặt mua để trở thành người đầu tiên trải nghiệm và để lại nhận xét nhé!</span>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <!-- Dialog Viết Đánh Giá cho Khách hàng (Ẩn với ADMIN) -->
+            <p:dialog id="writeReviewDialog" widgetVar="writeReviewDialog" header="Viết Đánh Giá Sản Phẩm"
+                      modal="true" responsive="true" width="480" showEffect="fade" hideEffect="fade" closeOnEscape="true">
+                <h:form id="writeReviewForm">
+                    <div class="p-3">
+                        <div class="flex align-items-center gap-3 mb-3 pb-2 border-bottom-1 border-gray-100">
+                            <h:panelGroup rendered="#{not empty productDetailBean.activeImageUrl}">
+                                <img src="#{productDetailBean.activeImageUrl.startsWith('http') ? productDetailBean.activeImageUrl : request.contextPath.concat(productDetailBean.activeImageUrl)}" 
+                                     alt="#{productDetailBean.product.name}" style="width: 48px; height: 48px; object-fit: cover;" class="border-round-sm border-1 border-gray-200" />
+                            </h:panelGroup>
+                            <div>
+                                <div class="font-bold text-sm text-gray-900">#{productDetailBean.product.name}</div>
+                                <div class="text-xs text-500">Mã: #{productDetailBean.product.productCode}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="field mb-3">
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mức độ hài lòng của bạn</label>
+                            <p:rating value="#{productDetailBean.reviewRating}" stars="5" cancel="false" />
+                        </div>
+
+                        <div class="field mb-3">
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Nội dung nhận xét &amp; cảm nhận</label>
+                            <p:inputTextarea value="#{productDetailBean.reviewComment}" rows="4" styleClass="w-full text-xs" 
+                                             placeholder="Chia sẻ trải nghiệm về chất lượng hoặc nông sản..." required="true" requiredMessage="Vui lòng nhập nội dung đánh giá." />
+                        </div>
+
+                        <div class="flex justify-content-end gap-2 mt-4 pt-2 border-top-1 border-gray-100">
+                            <p:commandButton value="Đóng" type="button" onclick="PF('writeReviewDialog').hide();" styleClass="ui-button-secondary" style="height: 36px;" />
+                            <p:commandButton value="Gửi Đánh Giá" icon="pi pi-send" 
+                                             action="#{productDetailBean.submitReview()}" 
+                                             update=":writeReviewForm :reviewsSection :growlMessages" 
+                                             oncomplete="if(!args.validationFailed) PF('writeReviewDialog').hide();"
+                                             styleClass="ui-button-success" style="height: 36px;" />
+                        </div>
+                    </div>
+                </h:form>
+            </p:dialog>
+
+        </div>
+    </ui:define>
+</ui:composition>

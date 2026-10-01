@@ -1,0 +1,99 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">Chính Sách Vận Chuyển &amp; Giao Hỏa Tốc - AgriShop</ui:define>
+
+    <ui:define name="meta">
+        <meta name="description" content="Chính sách giao nhận nông sản tươi sống trong ngày, bảo quản chuỗi lạnh và bảng phí vận chuyển tại AgriShop." />
+    </ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-5">
+            <!-- Breadcrumbs -->
+            <div class="flex align-items-center gap-2 text-xs text-500 mb-4">
+                <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="hover:text-primary" />
+                <i class="pi pi-angle-right text-xs"></i>
+                <span class="font-medium text-gray-800">Chính sách vận chuyển &amp; giao nhận</span>
+            </div>
+
+            <div class="bg-white border-1 border-gray-200 border-round-xl p-5 md:p-8 max-w-55rem mx-auto shadow-1">
+                
+                <div class="border-bottom-1 border-gray-200 pb-4 mb-6">
+                    <span class="text-xs font-semibold text-primary uppercase tracking-wider bg-stone-100 px-3 py-1 border-round inline-block mb-2">
+                        Chuỗi Cung Ứng Lạnh
+                    </span>
+                    <h1 class="font-heading text-3xl md:text-4xl font-bold text-gray-900 m-0 mb-2">
+                        Chính Sách Vận Chuyển &amp; Giao Hàng
+                    </h1>
+                    <p class="text-sm text-500 m-0">
+                        Nông sản thu hoạch buổi sớm &#8226; Giao nhận tươi nguyên tận tay người tiêu dùng
+                    </p>
+                </div>
+
+                <div class="text-gray-700 line-height-3 text-sm flex flex-column gap-5">
+                    
+                    <div>
+                        <h2 class="font-heading text-xl font-bold text-gray-900 mb-2 flex align-items-center gap-2">
+                            <i class="pi pi-truck text-primary"></i> 1. Các Gói Dịch Vụ Vận Chuyển
+                        </h2>
+                        <div class="grid mt-2">
+                            <div class="col-12 md:col-6">
+                                <div class="border-1 border-green-200 bg-green-50 border-round p-4 h-full">
+                                    <div class="flex justify-content-between align-items-center mb-2">
+                                        <h3 class="font-heading text-base font-bold text-green-950 m-0">Giao Hỏa Tốc (2 Giờ)</h3>
+                                        <span class="text-xs font-bold text-green-700 bg-white px-2 py-0.5 border-round">Nội thành</span>
+                                    </div>
+                                    <p class="text-xs text-green-900 line-height-3 m-0 mb-2">
+                                        Dành cho các đơn hàng cần sơ chế ngay trong bữa ăn trưa hoặc tối. Nông sản được đóng gói trong thùng giữ nhiệt chuyên dụng.
+                                    </p>
+                                    <div class="text-xs font-semibold text-green-800">Phí giao: 30.000 ₫ (Miễn phí đơn từ 300.000 ₫)</div>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <div class="border-1 border-gray-200 bg-stone-50 border-round p-4 h-full">
+                                    <div class="flex justify-content-between align-items-center mb-2">
+                                        <h3 class="font-heading text-base font-bold text-gray-900 m-0">Giao Tiêu Chuẩn Trong Ngày</h3>
+                                        <span class="text-xs font-bold text-gray-600 bg-white px-2 py-0.5 border-round">Toàn khu vực</span>
+                                    </div>
+                                    <p class="text-xs text-gray-700 line-height-3 m-0 mb-2">
+                                        Thu hoạch trực tiếp buổi sáng tại nhà vườn, điều phối giao trong 2 khung giờ: 10h00 - 12h00 hoặc 16h00 - 18h30.
+                                    </p>
+                                    <div class="text-xs font-semibold text-primary">Phí giao: 15.000 ₫ (Miễn phí đơn từ 200.000 ₫)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="font-heading text-xl font-bold text-gray-900 mb-2 flex align-items-center gap-2">
+                            <i class="pi pi-box text-primary"></i> 2. Tiêu Chuẩn Đóng Gói Chuỗi Lạnh
+                        </h2>
+                        <p>
+                            Toàn bộ rau ăn lá, trái cây mềm và nấm tươi đều được bảo quản trong túi màng thoáng khí sinh học (Bio-based) và giữ mát bằng túi đá gel sinh học, đảm bảo nhiệt độ từ 12°C - 18°C trong suốt hành trình vận chuyển xe máy hoặc xe tải lạnh.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h2 class="font-heading text-xl font-bold text-gray-900 mb-2 flex align-items-center gap-2">
+                            <i class="pi pi-map text-primary"></i> 3. Phạm Vi Phục Vụ
+                        </h2>
+                        <p>
+                            AgriShop hiện phục vụ giao hàng hỏa tốc tại TP. Cần Thơ, TP. Hồ Chí Minh và các tỉnh lân cận thuộc Đồng bằng sông Cửu Long. Đối với các đơn hàng liên tỉnh, nông sản khô và hạt dinh dưỡng được chuyển phát nhanh qua đối tác bưu chính uy tín (2 - 3 ngày).
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="text-center mt-7 pt-4 border-top-1 border-gray-200">
+                    <p:button outcome="/store.xhtml" value="Khám Phá Cửa Hàng AgriShop" icon="pi pi-shopping-bag" 
+                              styleClass="cta-btn text-xs px-5 border-round-sm font-semibold" 
+                              style="height: 44px; display: inline-flex; align-items: center; justify-content: center;" />
+                </div>
+            </div>
+        </div>
+    </ui:define>
+
+</ui:composition>

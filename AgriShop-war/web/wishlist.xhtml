@@ -1,0 +1,146 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">Danh Sách Yêu Thích - AgriShop</ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-5">
+            
+            <!-- Breadcrumbs -->
+            <div class="flex align-items-center gap-2 text-xs text-500 mb-4">
+                <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="hover:text-primary" />
+                <i class="pi pi-angle-right text-xs"></i>
+                <span class="font-medium text-gray-800">Danh sách yêu thích</span>
+            </div>
+
+            <!-- Page Title -->
+            <div class="mb-5 flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center gap-2">
+                <div>
+                    <h1 class="font-heading text-2xl md:text-3xl font-semibold text-gray-900 m-0">
+                        Nông Sản Yêu Thích Của Bạn
+                        <h:panelGroup rendered="#{not empty wishlistBean.wishlistItems}">
+                            <span class="text-sm font-normal text-500 ml-2">(#{wishlistBean.wishlistCount} sản phẩm)</span>
+                        </h:panelGroup>
+                    </h1>
+                    <p class="text-xs text-500 m-0 mt-1">Lưu trữ các sản phẩm hữu cơ tươi ngon bạn quan tâm để mua sắm nhanh chóng</p>
+                </div>
+                <h:link outcome="/store.xhtml" styleClass="ui-button ui-button-secondary text-xs px-3 no-underline border-round-sm" style="height: 38px; display: inline-flex; align-items: center; justify-content: center;">
+                    <i class="pi pi-plus mr-1"></i> Khám phá thêm
+                </h:link>
+            </div>
+
+            <h:form id="wishlistForm">
+                <!-- Empty State (No items or Not logged in) -->
+                <h:panelGroup rendered="#{empty wishlistBean.wishlistItems}">
+                    <div class="bg-white border-round-md border-1 border-gray-200 text-center py-8 px-4 my-4 max-w-30rem mx-auto">
+                        <div class="w-5rem h-5rem border-circle bg-stone-50 border-1 border-gray-200 text-red-400 flex align-items-center justify-content-center mx-auto mb-3 text-3xl">
+                            <i class="pi pi-heart"></i>
+                        </div>
+                        <h2 class="font-heading text-2xl font-semibold text-gray-900 mb-2">Danh sách yêu thích đang trống</h2>
+                        <p class="text-xs text-600 max-w-22rem mx-auto mb-5 line-height-3">
+                            <h:panelGroup rendered="#{empty loginBean.currentUser}">
+                                Vui lòng đăng nhập để lưu trữ và quản lý danh sách nông sản yêu thích của bạn.
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not empty loginBean.currentUser}">
+                                Hãy nhấn vào biểu tượng trái tim trên các sản phẩm nông sản sạch để lưu lại danh sách cần mua.
+                            </h:panelGroup>
+                        </p>
+                        <div class="flex justify-content-center gap-3">
+                            <h:panelGroup rendered="#{empty loginBean.currentUser}">
+                                <p:button outcome="/login.xhtml" value="Đăng Nhập Ngay" styleClass="cta-btn text-xs px-4 border-round-sm" style="height: 40px; display: inline-flex; align-items: center;" />
+                            </h:panelGroup>
+                            <p:button outcome="/store.xhtml" value="Khám Phá Cửa Hàng" styleClass="ui-button-secondary text-xs px-4 border-round-sm" style="height: 40px; display: inline-flex; align-items: center;" />
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <!-- Non-empty Wishlist Grid -->
+                <h:panelGroup rendered="#{not empty wishlistBean.wishlistItems}">
+                    <div class="grid">
+                        <ui:repeat value="#{wishlistBean.wishlistItems}" var="item">
+                            <div class="col-12 sm:col-6 lg:col-3 p-2">
+                                <div class="product-card h-full flex flex-column justify-content-between">
+                                    
+                                    <!-- Card Image -->
+                                    <div class="product-card-thumb relative">
+                                        <h:link outcome="/product-detail.xhtml">
+                                            <f:param name="id" value="#{item.productId}" />
+                                            <h:panelGroup rendered="#{not empty item.productImageUrl}">
+                                                <img src="#{item.productImageUrl.startsWith('http') ? item.productImageUrl : request.contextPath.concat(item.productImageUrl)}" 
+                                                     alt="#{item.productName}" />
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{empty item.productImageUrl}">
+                                                <div class="flex flex-column align-items-center justify-content-center text-400 py-4">
+                                                    <i class="pi pi-image text-3xl mb-1"></i>
+                                                    <span class="text-xs">Chưa có ảnh</span>
+                                                </div>
+                                            </h:panelGroup>
+                                        </h:link>
+
+                                        <!-- Remove From Wishlist Button -->
+                                        <p:commandButton icon="pi pi-times" 
+                                                         title="Bỏ thích"
+                                                         actionListener="#{wishlistBean.removeFromWishlist(item.productId)}"
+                                                         update=":wishlistForm @([id$=navForm]) :growlMessages"
+                                                         styleClass="ui-button-danger ui-button-flat p-button-rounded absolute"
+                                                         style="top: 8px; right: 8px; background: rgba(255,255,255,0.95); width: 36px; height: 36px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />
+                                    </div>
+
+                                    <!-- Card Content -->
+                                    <div class="product-card-body flex-1 flex flex-column justify-content-between">
+                                        <div>
+                                            <div class="product-category-label">#{item.categoryName}</div>
+                                            <h:link outcome="/product-detail.xhtml" class="product-title-link font-medium" title="#{item.productName}">
+                                                <f:param name="id" value="#{item.productId}" />
+                                                #{item.productName}
+                                            </h:link>
+
+                                            <div class="text-xs text-500 my-1">
+                                                <h:panelGroup rendered="#{item.stockQuantity gt 0}">
+                                                    <span class="text-green-700 font-medium">
+                                                        <i class="pi pi-check text-xs"></i> Còn hàng (#{item.stockQuantity} #{item.productUnit})
+                                                    </span>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{item.stockQuantity le 0}">
+                                                    <span class="text-red-500 font-medium">
+                                                        <i class="pi pi-times text-xs"></i> Tạm hết hàng
+                                                    </span>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+
+                                        <!-- Price & Quick Add To Cart -->
+                                        <div class="product-card-footer mt-3 pt-2 border-top-1 border-gray-100 flex align-items-center justify-content-between">
+                                            <div>
+                                                <span class="product-price-val font-semibold">
+                                                    <h:outputText value="#{item.productPrice}">
+                                                        <f:convertNumber pattern="#,##0" />
+                                                    </h:outputText>₫
+                                                </span>
+                                                <span class="product-unit-val text-xs text-500"> / #{item.productUnit}</span>
+                                            </div>
+
+                                            <p:commandButton icon="pi pi-cart-plus" 
+                                                             value="Thêm"
+                                                             actionListener="#{wishlistBean.addToCart(item.productId)}"
+                                                             update=":growlMessages @([id$=navForm])"
+                                                             disabled="#{item.stockQuantity le 0}"
+                                                             styleClass="cta-btn text-xs px-3 border-round-sm" 
+                                                             style="height: 36px; display: inline-flex; align-items: center;"
+                                                             title="Thêm vào giỏ hàng" />
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </h:panelGroup>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>

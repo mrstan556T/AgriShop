@@ -1,0 +1,108 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">Kết Quả Thanh Toán Trực Tuyến - AgriShop</ui:define>
+
+    <ui:define name="meta">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+    </ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 py-6" style="max-width: 600px;">
+            
+            <!-- Success State -->
+            <h:panelGroup rendered="#{paymentReturnBean.success}">
+                <div class="bg-white border-round-md border-1 border-gray-200 text-center py-6 px-4 md:px-6 my-4 shadow-xs">
+                    <div class="w-5rem h-5rem border-circle bg-green-50 border-1 border-green-200 text-green-700 flex align-items-center justify-content-center mx-auto mb-3 text-3xl">
+                        <i class="pi pi-check-circle"></i>
+                    </div>
+
+                    <h1 class="font-heading text-2xl font-semibold text-gray-900 mb-2">
+                        Thanh Toán Thành Công!
+                    </h1>
+
+                    <p class="text-xs text-500 line-height-3 max-w-25rem mx-auto mb-4">
+                        Hệ thống AgriShop đã ghi nhận thanh toán trực tuyến của quý khách qua cổng <strong>VNPAY / VietQR</strong>. Đơn hàng đang được chuyển sang bộ phận kho để chuẩn bị nông sản tươi.
+                    </p>
+
+                    <!-- Transaction details box -->
+                    <div class="bg-stone-50 border-1 border-gray-200 border-round-sm p-4 mb-4 text-left max-w-25rem mx-auto text-xs">
+                        <div class="flex justify-content-between mb-2">
+                            <span class="text-500">Mã đơn hàng:</span>
+                            <strong class="font-mono text-gray-900">#{paymentReturnBean.orderCode}</strong>
+                        </div>
+                        <div class="flex justify-content-between mb-2">
+                            <span class="text-500">Mã giao dịch VNPAY:</span>
+                            <span class="font-mono text-gray-700">#{paymentReturnBean.transactionRef}</span>
+                        </div>
+                        <div class="flex justify-content-between mb-2">
+                            <span class="text-500">Hình thức thanh toán:</span>
+                            <span class="font-medium text-green-700">Chuyển khoản (Đã thanh toán - PAID)</span>
+                        </div>
+                        <div class="flex justify-content-between pt-2 border-top-1 border-gray-200">
+                            <span class="text-500">Trạng thái:</span>
+                            <span class="font-semibold text-green-700">#{paymentReturnBean.message}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-column sm:flex-row justify-content-center gap-2 mt-4">
+                        <h:link outcome="/order-history.xhtml" class="ui-button ui-button-secondary text-xs px-4 no-underline font-medium border-round-sm" style="height: 40px; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="pi pi-list mr-2 text-xs"></i> Lịch sử đơn hàng
+                        </h:link>
+                        <h:link outcome="/store.xhtml" class="cta-btn text-xs px-4 no-underline font-medium border-round-sm" style="height: 40px; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="pi pi-shopping-bag mr-2 text-xs"></i> Tiếp tục mua nông sản
+                        </h:link>
+                    </div>
+                </div>
+            </h:panelGroup>
+
+            <!-- Failure State -->
+            <h:panelGroup rendered="#{not paymentReturnBean.success}">
+                <div class="bg-white border-round-md border-1 border-gray-200 text-center py-6 px-4 md:px-6 my-4 shadow-xs">
+                    <div class="w-5rem h-5rem border-circle bg-red-50 border-1 border-red-200 text-red-600 flex align-items-center justify-content-center mx-auto mb-3 text-3xl">
+                        <i class="pi pi-exclamation-triangle"></i>
+                    </div>
+
+                    <h1 class="font-heading text-2xl font-semibold text-gray-900 mb-2">
+                        Thanh Toán Không Thành Công
+                    </h1>
+
+                    <p class="text-xs text-500 line-height-3 max-w-25rem mx-auto mb-4">
+                        Giao dịch qua cổng VNPAY / VietQR chưa hoàn tất hoặc đã bị hủy bỏ. Đơn hàng của quý khách vẫn được lưu trong hệ thống ở trạng thái Chưa thanh toán.
+                    </p>
+
+                    <div class="bg-stone-50 border-1 border-gray-200 border-round-sm p-4 mb-4 text-left max-w-25rem mx-auto text-xs">
+                        <div class="flex justify-content-between mb-2">
+                            <span class="text-500">Mã đơn hàng:</span>
+                            <strong class="font-mono text-gray-900">#{paymentReturnBean.orderCode}</strong>
+                        </div>
+                        <div class="flex justify-content-between mb-2">
+                            <span class="text-500">Mã phản hồi:</span>
+                            <span class="font-mono text-red-600">#{paymentReturnBean.responseCode}</span>
+                        </div>
+                        <div class="flex justify-content-between pt-2 border-top-1 border-gray-200">
+                            <span class="text-500">Thông báo:</span>
+                            <span class="text-red-700">#{paymentReturnBean.message}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-column sm:flex-row justify-content-center gap-2 mt-4">
+                        <h:link outcome="/order-history.xhtml" class="cta-btn text-xs px-4 no-underline font-medium border-round-sm" style="height: 40px; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="pi pi-refresh mr-2 text-xs"></i> Xem đơn &amp; Thử lại
+                        </h:link>
+                        <h:link outcome="/store.xhtml" class="ui-button ui-button-secondary text-xs px-4 no-underline font-medium border-round-sm" style="height: 40px; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="pi pi-arrow-left mr-2 text-xs"></i> Về cửa hàng
+                        </h:link>
+                    </div>
+                </div>
+            </h:panelGroup>
+
+        </div>
+    </ui:define>
+</ui:composition>

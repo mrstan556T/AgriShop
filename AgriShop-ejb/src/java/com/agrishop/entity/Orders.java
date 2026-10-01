@@ -20,6 +20,24 @@ public class Orders implements Serializable {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "subtotal")
+    private BigDecimal subtotal;
+
+    @Column(name = "discount_amount")
+    private BigDecimal discountAmount;
+
+    @Column(name = "shipping_fee")
+    private BigDecimal shippingFee;
+
+    @Column(name = "coupon_code", length = 50)
+    private String couponCode;
+
+    @Column(name = "payment_status", length = 30)
+    private String paymentStatus;
+
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod = "COD";
+
     @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
 
@@ -33,12 +51,27 @@ public class Orders implements Serializable {
     private String status;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Column(name = "created_at")
     private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = new Date();
+        }
+        if (updatedAt == null) {
+            updatedAt = new Date();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = new Date();
+    }
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails;
@@ -50,6 +83,18 @@ public class Orders implements Serializable {
     public void setOrderCode(String orderCode) { this.orderCode = orderCode; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public BigDecimal getSubtotal() { return subtotal != null ? subtotal : (totalAmount != null ? totalAmount : BigDecimal.ZERO); }
+    public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
+    public BigDecimal getDiscountAmount() { return discountAmount != null ? discountAmount : BigDecimal.ZERO; }
+    public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
+    public BigDecimal getShippingFee() { return shippingFee != null ? shippingFee : BigDecimal.ZERO; }
+    public void setShippingFee(BigDecimal shippingFee) { this.shippingFee = shippingFee; }
+    public String getCouponCode() { return couponCode; }
+    public void setCouponCode(String couponCode) { this.couponCode = couponCode; }
+    public String getPaymentStatus() { return paymentStatus != null ? paymentStatus : "UNPAID"; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    public String getPaymentMethod() { return paymentMethod != null ? paymentMethod : "COD"; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
     public String getShippingAddress() { return shippingAddress; }

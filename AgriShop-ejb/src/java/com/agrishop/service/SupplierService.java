@@ -26,6 +26,11 @@ public class SupplierService implements SupplierServiceLocal {
     }
 
     @Override
+    public List<SupplierDTO> searchByName(String keyword) {
+        return supplierRepository.searchByName(keyword).stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    @Override
     public PageResponseDTO<SupplierDTO> getSuppliersWithPagination(PageRequestDTO request) {
         List<Supplier> suppliers = supplierRepository.findWithPagination(request);
         long totalRecords = supplierRepository.countWithPagination(request);

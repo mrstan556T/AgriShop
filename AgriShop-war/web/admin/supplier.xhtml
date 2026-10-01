@@ -1,113 +1,244 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ui="jakarta.faces.facelets"
-                xmlns:h="jakarta.faces.html"
-                xmlns:f="jakarta.faces.core"
-                xmlns:p="http://primefaces.org/ui"
-                template="/WEB-INF/templates/adminTemplate.xhtml">
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
 
-    <ui:define name="title">Quản lý Nhà cung cấp</ui:define>
+<ui:composition template="/WEB-INF/templates/adminTemplate.xhtml">
+    <ui:define name="title">Nhà Cung Cấp - AgriShop</ui:define>
+    <ui:define name="breadcrumb">
+        <h:link outcome="/admin/product.xhtml">Sản Phẩm</h:link>
+        <span class="separator">/</span>
+        <span class="active">Nhà Cung Cấp</span>
+    </ui:define>
+    <ui:define name="pageTitle">Đối Tác &amp; Nhà Cung Cấp</ui:define>
 
     <ui:define name="content">
         <h:form id="mainForm">
-            <p:card>
-                <div class="flex justify-content-between align-items-center mb-4">
-                    <h2 class="m-0 text-primary">Danh sách Nhà cung cấp</h2>
-                    <p:commandButton value="Thêm Mới" icon="pi pi-plus" actionListener="#{supplierBean.openNew}" 
-                                     update=":crudForm" oncomplete="PF('crudDialog').show()" 
-                                     styleClass="ui-button-success" />
+            <!-- Header Actions Row -->
+            <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="font-heading font-semibold text-xl text-gray-900 m-0">Hợp Tác Xã &amp; Nhà Cung Cấp</h2>
+                    <span class="text-xs text-500">Quản lý mạng lưới đối tác nông trại và nguồn cung ứng nông sản</span>
                 </div>
-                
-                <div class="flex justify-content-end mb-3">
-                    <span class="ui-input-icon-left">
-                        <i class="pi pi-search" />
-                        <p:inputText value="#{supplierBean.globalFilter}" placeholder="Tìm kiếm...">
-                            <p:ajax event="keyup" delay="500" update="dataTable" />
-                        </p:inputText>
-                    </span>
-                </div>
+                <p:commandButton value="Thêm Nhà Cung Cấp" icon="pi pi-plus" 
+                                 actionListener="#{supplierBean.openNew}" 
+                                 update=":crudForm:dialogTitle :crudForm:crudContent :crudForm:dialogFooter" oncomplete="PF('crudDialog').show()" 
+                                 styleClass="cta-btn text-xs px-3 py-2" />
+            </div>
 
-                <p:dataTable id="dataTable" value="#{supplierBean.lazyModel}" var="item" 
-                             lazy="true" paginator="true" rows="10" 
-                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="10,25,50"
-                             currentPageReportTemplate="Hiển thị {startRecord}-{endRecord} / tổng số {totalRecords}"
-                             emptyMessage="Không tìm thấy dữ liệu.">
+            <p:tabView id="supplierTabs" styleClass="admin-tabs">
+                <!-- Tab 1: Supplier Directory -->
+                <p:tab title="Danh Sách Nhà Cung Cấp">
+                    <!-- Table Container Box -->
+                    <div class="admin-table-box p-0 border-0">
+                        <!-- Toolbar Filter Section -->
+                        <div class="flex flex-wrap align-items-center justify-content-between gap-2 mb-3 pb-3 border-bottom-1 border-gray-100">
+                            <div class="ui-inputgroup" style="min-width: 240px;">
+                                <p:inputText value="#{supplierBean.globalFilter}" placeholder="Tìm theo tên, mã..." styleClass="w-full text-xs" />
+                                <p:commandButton icon="pi pi-search" actionListener="#{supplierBean.init}" update="dataTable" styleClass="ui-button-secondary text-xs" />
+                            </div>
 
-                    <p:column headerText="Mã NCC" sortBy="#{item.supplierCode}">
-                        <h:outputText value="#{item.supplierCode}" />
-                    </p:column>
+                            <p:commandButton icon="pi pi-refresh" actionListener="#{supplierBean.init}" 
+                                             update="dataTable" styleClass="ui-button-secondary ui-button-flat btn-toolbar-refresh text-xs" 
+                                             title="Tải lại bảng dữ liệu" />
+                        </div>
 
-                    <p:column headerText="Tên nhà cung cấp" sortBy="#{item.name}">
-                        <h:outputText value="#{item.name}" />
-                    </p:column>
+                        <!-- DataTable -->
+                        <p:dataTable id="dataTable" widgetVar="dtSuppliers" var="item" value="#{supplierBean.lazyModel}" 
+                                     lazy="true" paginator="true" rows="10" rowKey="#{item.id}"
+                                     paginatorPosition="bottom" emptyMessage="Chưa có nhà cung cấp nào."
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Hiển thị {startRecord} - {endRecord} / {totalRecords} đối tác"
+                                     rowsPerPageTemplate="10,20,50" rowIndexVar="index"
+                                     styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;">
 
-                    <p:column headerText="Số điện thoại">
-                        <h:outputText value="#{item.phone}" />
-                    </p:column>
+                            <p:column headerText="#" style="width: 3rem; text-align: center;">
+                                <span class="text-xs text-500">#{index + 1}</span>
+                            </p:column>
+                                     
+                            <p:column headerText="Mã NCC" sortBy="#{item.supplierCode}" style="width: 9rem;">
+                                <span class="text-xs font-mono text-gray-700 bg-stone-100 px-1.5 py-0.5 border-round-xs">
+                                    #{item.supplierCode}
+                                </span>
+                            </p:column>
 
-                    <p:column headerText="Thao tác" width="150" style="text-align: center;">
-                        <p:commandButton icon="pi pi-eye" styleClass="ui-button-info rounded-button ui-button-flat" 
-                                         actionListener="#{supplierBean.prepareView(item)}" 
-                                         update=":crudForm" oncomplete="PF('crudDialog').show()" 
-                                         title="Xem chi tiết" />
-                        <p:commandButton icon="pi pi-pencil" styleClass="ui-button-warning rounded-button ui-button-flat mx-2" 
-                                         actionListener="#{supplierBean.prepareEdit(item)}" 
-                                         update=":crudForm" oncomplete="PF('crudDialog').show()" 
-                                         title="Sửa" />
-                        <p:commandButton icon="pi pi-trash" styleClass="ui-button-danger rounded-button ui-button-flat" 
-                                         actionListener="#{supplierBean.delete(item)}" 
-                                         update=":mainForm:dataTable, :crudForm:messages" 
-                                         title="Xóa">
-                            <p:confirm header="Xác nhận" message="Bạn có chắc muốn xóa nhà cung cấp này?" icon="pi pi-exclamation-triangle" />
-                        </p:commandButton>
-                    </p:column>
-                </p:dataTable>
-            </p:card>
+                            <p:column headerText="Tên Nhà Cung Cấp" sortBy="#{item.name}">
+                                <div class="font-medium text-gray-900 text-xs">#{item.name}</div>
+                            </p:column>
+
+                            <p:column headerText="Số Điện Thoại" style="width: 11rem;">
+                                <span class="text-xs text-gray-700 font-mono">
+                                    #{item.phone}
+                                </span>
+                            </p:column>
+
+                            <p:column headerText="Thao Tác" style="width: 8.5rem; text-align: center; white-space: nowrap;">
+                                <div class="row-actions">
+                                    <p:commandButton icon="pi pi-eye" styleClass="row-action-btn btn-view" 
+                                                     actionListener="#{supplierBean.prepareView(item)}" 
+                                                     update=":crudForm:dialogTitle :crudForm:crudContent :crudForm:dialogFooter" oncomplete="PF('crudDialog').show()" 
+                                                     title="Chi tiết" />
+                                    <p:commandButton icon="pi pi-pencil" styleClass="row-action-btn btn-edit" 
+                                                     actionListener="#{supplierBean.prepareEdit(item)}" 
+                                                     update=":crudForm:dialogTitle :crudForm:crudContent :crudForm:dialogFooter" oncomplete="PF('crudDialog').show()" 
+                                                     title="Sửa" />
+                                    <p:commandButton icon="pi pi-trash" styleClass="row-action-btn btn-delete" 
+                                                     actionListener="#{supplierBean.delete(item)}" 
+                                                     update=":mainForm:supplierTabs:dataTable, :crudForm:messages" 
+                                                     title="Xóa">
+                                        <p:confirm header="Xác nhận xóa" message="Xóa nhà cung cấp '#{item.name}'?" icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
+                                </div>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </p:tab>
+
+                <!-- Tab 2: Supplier Performance Ranking -->
+                <p:tab title="Bảng Xếp Hạng &amp; Hiệu Suất Cung Ứng">
+                    <div class="mb-3">
+                        <div class="flex justify-content-between align-items-center pb-2 border-bottom-1 border-gray-100">
+                            <div>
+                                <span class="font-semibold text-sm text-gray-900">Hiệu Suất Cung Ứng &amp; Chất Lượng Nguồn Hàng</span>
+                                <div class="text-xs text-500">Tổng hợp phân tích: Tổng giá trị hàng nhập, số lượng sản phẩm phân phối, mặt hàng bán chạy và tỷ lệ đóng góp sản phẩm bán chạy</div>
+                            </div>
+                            <p:commandButton icon="pi pi-refresh" actionListener="#{supplierBean.loadPerformanceData}" 
+                                             update="perfTable" styleClass="ui-button-secondary text-xs" 
+                                             title="Làm mới bảng xếp hạng" />
+                        </div>
+                    </div>
+
+                    <p:dataTable id="perfTable" value="#{supplierBean.performanceList}" var="sp" 
+                                 styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;" emptyMessage="Chưa có dữ liệu hiệu suất nhà cung cấp."
+                                 rowIndexVar="idx">
+                        <p:column headerText="Thứ Hạng" style="width: 80px; text-align: center;">
+                            <span class="font-bold text-xs #{idx eq 0 ? 'text-amber-500' : (idx eq 1 ? 'text-blue-500' : (idx eq 2 ? 'text-orange-500' : 'text-gray-600'))}">
+                                <i class="pi #{idx lt 3 ? 'pi-trophy' : 'pi-bookmark'} text-xs mr-1"></i>##{idx + 1}
+                            </span>
+                        </p:column>
+                        <p:column headerText="Nhà Cung Cấp">
+                            <div class="font-bold text-xs text-gray-900">#{sp.supplierName}</div>
+                            <span class="text-xs text-500 font-mono">Mã: #{sp.supplierCode}</span>
+                        </p:column>
+                        <p:column headerText="Số SP Cung Cấp" style="width: 140px; text-align: center;">
+                            <span class="badge badge-info font-bold text-xs">#{sp.totalProductsSupplied} sản phẩm</span>
+                        </p:column>
+                        <p:column headerText="Tổng Giá Trị Nhập Hàng" style="width: 170px; text-align: right;">
+                            <span class="font-bold text-xs text-gray-900 font-mono">
+                                <h:outputText value="#{sp.totalImportValue}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>₫
+                            </span>
+                        </p:column>
+                        <p:column headerText="SP Bán Chạy Nhất" style="width: 200px;">
+                            <span class="text-xs font-semibold text-primary">#{sp.topSellingProductName}</span>
+                        </p:column>
+                        <p:column headerText="Tỷ Lệ SP Bán Chạy" style="width: 160px; text-align: center;">
+                            <div class="flex align-items-center justify-content-center gap-1">
+                                <span class="font-bold text-xs #{sp.bestSellerRatio ge 50.0 ? 'text-green-700' : (sp.bestSellerRatio ge 20.0 ? 'text-primary' : 'text-gray-600')}">
+                                    #{sp.bestSellerRatio}%
+                                </span>
+                                <i class="pi #{sp.bestSellerRatio ge 50.0 ? 'pi-arrow-circle-up text-green-700' : 'pi-minus text-gray-400'} text-xs"></i>
+                            </div>
+                        </p:column>
+                        <p:column headerText="Đánh Giá" style="width: 110px; text-align: center;">
+                            <span class="text-xs font-bold text-amber-500 flex align-items-center justify-content-center gap-1">
+                                <i class="pi pi-star-fill text-xs"></i>#{sp.rating}
+                            </span>
+                        </p:column>
+                    </p:dataTable>
+                </p:tab>
+            </p:tabView>
         </h:form>
 
-        <p:dialog id="crudDialog" header="Thông tin Nhà cung cấp" widgetVar="crudDialog" 
-                  modal="true" showEffect="fade" hideEffect="fade" resizable="false" width="500">
-            <h:form id="crudForm">
-                <p:messages id="messages" globalOnly="true" closable="true" />
-                <h:panelGroup id="crudPanel" layout="block" rendered="#{not empty supplierBean.currentItem}">
-                    <div class="field mb-3">
-                        <p:outputLabel for="supplierCode" value="Mã NCC" />
-                        <p:inputText id="supplierCode" value="#{supplierBean.currentItem.supplierCode}" required="true" 
-                                     requiredMessage="Mã NCC không được để trống" styleClass="w-full" disabled="#{supplierBean.viewMode}" />
-                        <p:message for="supplierCode" />
-                    </div>
-                    
-                    <div class="field mb-3">
-                        <p:outputLabel for="name" value="Tên nhà cung cấp" />
-                        <p:inputText id="name" value="#{supplierBean.currentItem.name}" required="true" 
-                                     requiredMessage="Tên không được để trống" styleClass="w-full" disabled="#{supplierBean.viewMode}" />
-                        <p:message for="name" />
-                    </div>
+        <!-- Supplier Dialog -->
+        <h:form id="crudForm">
+            <p:dialog id="crudDialog" widgetVar="crudDialog" 
+                      showEffect="fade" hideEffect="fade" modal="true" responsive="true" width="540" fitViewport="true">
+                <f:facet name="header">
+                    <h:outputText id="dialogTitle" value="#{supplierBean.viewMode ? 'Chi Tiết Nhà Cung Cấp' : (supplierBean.editMode ? 'Chỉnh Sửa Nhà Cung Cấp' : 'Thêm Nhà Cung Cấp Mới')}" />
+                </f:facet>
+                
+                <p:messages id="messages" globalOnly="true" closable="true" styleClass="mb-3" />
+                
+                <p:outputPanel id="crudContent" class="ui-fluid">
+                    <h:panelGroup rendered="#{not empty supplierBean.currentItem}">
+                        <div class="grid">
+                            <div class="col-12 sm:col-6 field mb-3">
+                                <label for="supplierCode" class="form-label">Mã NCC <span class="required-star">*</span></label>
+                                <h:panelGroup rendered="#{not supplierBean.viewMode}">
+                                    <p:inputText id="supplierCode" value="#{supplierBean.currentItem.supplierCode}" required="true" 
+                                                 requiredMessage="Mã NCC không được để trống" 
+                                                 validatorMessage="Mã NCC phải có dạng SUP-XXX (Ví dụ: SUP-01)" 
+                                                 styleClass="w-full text-xs">
+                                        <f:validateRegex pattern="^SUP-[a-zA-Z0-9]+$" />
+                                    </p:inputText>
+                                    <p:message for="supplierCode" styleClass="mt-1" />
+                                </h:panelGroup>
+                                <h:outputText rendered="#{supplierBean.viewMode}" value="#{supplierBean.currentItem.supplierCode}" 
+                                              styleClass="block font-mono text-xs bg-stone-50 p-2 border-round-xs" />
+                            </div>
+                            
+                            <div class="col-12 sm:col-6 field mb-3">
+                                <label for="name" class="form-label">Tên Nhà Cung Cấp <span class="required-star">*</span></label>
+                                <h:panelGroup rendered="#{not supplierBean.viewMode}">
+                                    <p:inputText id="name" value="#{supplierBean.currentItem.name}" required="true" 
+                                                 requiredMessage="Tên không được để trống" styleClass="w-full text-xs" 
+                                                 placeholder="Ví dụ: HTX Nông Sản Đà Lạt..." />
+                                    <p:message for="name" styleClass="mt-1" />
+                                </h:panelGroup>
+                                <h:outputText rendered="#{supplierBean.viewMode}" value="#{supplierBean.currentItem.name}" 
+                                              styleClass="block font-medium text-gray-900 text-xs bg-stone-50 p-2 border-round-xs" />
+                            </div>
 
-                    <div class="field mb-3">
-                        <p:outputLabel for="phone" value="Số điện thoại" />
-                        <p:inputText id="phone" value="#{supplierBean.currentItem.phone}" styleClass="w-full" disabled="#{supplierBean.viewMode}" />
-                    </div>
+                            <div class="col-12 field mb-3">
+                                <label for="phone" class="form-label">Số Điện Thoại</label>
+                                <h:panelGroup rendered="#{not supplierBean.viewMode}">
+                                    <p:inputText id="phone" value="#{supplierBean.currentItem.phone}" styleClass="w-full text-xs" 
+                                                 validatorMessage="Số điện thoại không hợp lệ (gồm 10-11 số, bắt đầu bằng 0)"
+                                                 placeholder="Ví dụ: 02633821234">
+                                        <f:validateRegex pattern="^$|^0[0-9]{9,10}$" />
+                                    </p:inputText>
+                                    <p:message for="phone" styleClass="mt-1" />
+                                </h:panelGroup>
+                                <h:outputText rendered="#{supplierBean.viewMode}" value="#{supplierBean.currentItem.phone}" 
+                                              styleClass="block text-xs bg-stone-50 p-2 border-round-xs" />
+                            </div>
 
-                    <div class="field mb-3">
-                        <p:outputLabel for="address" value="Địa chỉ" />
-                        <p:inputTextarea id="address" value="#{supplierBean.currentItem.address}" rows="3" styleClass="w-full" disabled="#{supplierBean.viewMode}" />
-                    </div>
+                            <div class="col-12 field mb-2">
+                                <label for="address" class="form-label">Địa Chỉ Nông Trại / Trụ Sở</label>
+                                <h:panelGroup rendered="#{not supplierBean.viewMode}">
+                                    <p:inputTextarea id="address" value="#{supplierBean.currentItem.address}" rows="2" 
+                                                     styleClass="w-full text-xs" placeholder="Địa chỉ chi tiết..." />
+                                </h:panelGroup>
+                                <h:outputText rendered="#{supplierBean.viewMode}" value="#{supplierBean.currentItem.address}" 
+                                              styleClass="block text-xs text-600 bg-stone-50 p-2 border-round-xs" />
+                            </div>
+                        </div>
+                    </h:panelGroup>
+                </p:outputPanel>
 
-                    <div class="flex justify-content-end mt-4">
-                        <p:commandButton value="Hủy" icon="pi pi-times" onclick="PF('crudDialog').hide()" type="button" 
-                                         styleClass="ui-button-secondary mr-2" />
-                        <p:commandButton value="Lưu" icon="pi pi-check" actionListener="#{supplierBean.save}" 
-                                         update="crudPanel, messages, :mainForm:dataTable" styleClass="ui-button-primary"
-                                         rendered="#{not supplierBean.viewMode}" />
-                    </div>
-                </h:panelGroup>
-            </h:form>
-        </p:dialog>
+                <f:facet name="footer">
+                    <h:panelGroup id="dialogFooter" layout="block" styleClass="flex justify-content-end gap-2 pt-1 #{supplierBean.viewMode ? 'hidden' : ''}">
+                        <p:commandButton value="Hủy Bỏ" type="button" onclick="PF('crudDialog').hide()" 
+                                         styleClass="ui-button-secondary text-xs" />
+                        <p:commandButton value="Lưu Dữ Liệu" icon="pi pi-check" actionListener="#{supplierBean.save}" 
+                                         update=":mainForm:supplierTabs:dataTable, :crudForm:messages, crudContent" 
+                                         styleClass="cta-btn text-xs px-3 py-2" rendered="#{not supplierBean.viewMode}" />
+                    </h:panelGroup>
+                </f:facet>
+            </p:dialog>
+        </h:form>
 
-        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" width="350">
-            <p:commandButton value="Không" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
-            <p:commandButton value="Có" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="360">
+            <div class="flex justify-content-end gap-2 mt-3">
+                <p:commandButton value="Hủy bỏ" type="button" styleClass="ui-confirmdialog-no ui-button-secondary text-xs"/>
+                <p:commandButton value="Xác Nhận Xóa" type="button" styleClass="ui-confirmdialog-yes ui-button-danger text-xs" />
+            </div>
         </p:confirmDialog>
     </ui:define>
 </ui:composition>
+</html>

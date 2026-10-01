@@ -31,6 +31,15 @@ public class User implements Serializable {
 
     @Column(length = 20)
     private String status;
+    
+    @Column(length = 20)
+    private String phone;
+
+    @Column(length = 255)
+    private String address;
+
+    @Column(name = "avatar_url", length = 255)
+    private String avatarUrl;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", insertable = false, updatable = false)
@@ -39,6 +48,15 @@ public class User implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    @Column(name = "is_email_verified")
+    private Boolean isEmailVerified = true;
+
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    @Column(name = "totp_enabled")
+    private Boolean totpEnabled = false;
 
     // Getters và Setters
     public Long getId() { return id; }
@@ -61,4 +79,16 @@ public class User implements Serializable {
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public Boolean getIsEmailVerified() { return isEmailVerified != null ? isEmailVerified : true; }
+    public void setIsEmailVerified(Boolean isEmailVerified) { this.isEmailVerified = isEmailVerified; }
+    public String getTotpSecret() { return totpSecret; }
+    public void setTotpSecret(String totpSecret) { this.totpSecret = totpSecret; }
+    public Boolean getTotpEnabled() { return totpEnabled != null ? totpEnabled : false; }
+    public void setTotpEnabled(Boolean totpEnabled) { this.totpEnabled = totpEnabled; }
 }

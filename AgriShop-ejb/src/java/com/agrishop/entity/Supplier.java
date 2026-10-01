@@ -6,6 +6,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "Suppliers")
+@Cacheable(true)
 public class Supplier implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

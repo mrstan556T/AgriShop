@@ -5,62 +5,139 @@
       xmlns:f="jakarta.faces.core"
       xmlns:p="http://primefaces.org/ui">
 <h:head>
-    <title>Đăng nhập - AgriShop</title>
+    <title>Đăng Nhập - AgriShop</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+    
+    <!-- PrimeFlex CDN -->
     <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.1/primeflex.min.css" />
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--surface-ground);
-            font-family: var(--font-family);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-panel {
-            width: 100%;
-            max-width: 400px;
-        }
-    </style>
+    
+    <!-- Theme & Storefront CSS -->
+    <h:outputStylesheet library="css" name="theme.css" />
+    <link rel="stylesheet" href="#{request.contextPath}/resources/css/storefront.css?v=#{session.lastAccessedTime}" />
 </h:head>
 <h:body>
-    <div class="login-panel p-3">
-        <h:form id="loginForm">
-            <p:card>
-                <f:facet name="title">
-                    <div class="text-center">
-                        <i class="pi pi-box text-primary" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <h2 class="m-0 text-primary">AgriShop</h2>
-                        <span class="text-500 font-normal text-sm block mt-2">Hệ thống Quản trị &amp; Cửa hàng</span>
+    <div class="auth-page-wrapper">
+        <div class="auth-split-card">
+            
+            <!-- Left Side: Editorial Botanical Storytelling -->
+            <div class="auth-visual-side">
+                <div>
+                    <div class="auth-visual-tag">
+                        <i class="pi pi-shield"></i>
+                        <span>Nông Sản Hữu Cơ Thuần Khiết</span>
                     </div>
-                </f:facet>
 
-                <p:messages id="messages" globalOnly="true" closable="true" />
+                    <h1 class="auth-visual-title">
+                        Trọn Vị Tự Nhiên Cho Gian Bếp Ấm
+                    </h1>
+                    
+                    <p class="auth-visual-desc">
+                        Tuyển chọn nông sản hữu cơ tươi non, trái cây ngọt lành và thực phẩm sạch thu hoạch trực tiếp từ các nông trại tiêu chuẩn VietGAP.
+                    </p>
 
-                <div class="field mt-3">
-                    <p:outputLabel for="username" value="Tài khoản" styleClass="block mb-2 font-bold" />
-                    <p:inputText id="username" value="#{loginBean.username}" required="true" 
-                                 requiredMessage="Vui lòng nhập tài khoản" styleClass="w-full" />
-                    <p:message for="username" />
+                    <div class="auth-badge-list">
+                        <div class="auth-badge-item">
+                            <div class="auth-badge-icon">
+                                <i class="pi pi-check"></i>
+                            </div>
+                            <span>100% Nguồn gốc tự nhiên &amp; VietGAP chuẩn mực</span>
+                        </div>
+                        <div class="auth-badge-item">
+                            <div class="auth-badge-icon">
+                                <i class="pi pi-clock"></i>
+                            </div>
+                            <span>Thu hoạch buổi sớm - Giao nhận tươi mới trong ngày</span>
+                        </div>
+                        <div class="auth-badge-item">
+                            <div class="auth-badge-icon">
+                                <i class="pi pi-sync"></i>
+                            </div>
+                            <span>Bảo hành tươi ngon - Đổi trả tận nơi trong 24 giờ</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="field mt-4">
-                    <p:outputLabel for="password" value="Mật khẩu" styleClass="block mb-2 font-bold" />
-                    <p:password id="password" value="#{loginBean.password}" required="true" 
-                                requiredMessage="Vui lòng nhập mật khẩu" toggleMask="true" styleClass="w-full" />
-                    <p:message for="password" />
+                <div class="pt-4 border-top-1 border-white-alpha-20 text-xs text-300">
+                    © 2026 AgriShop Co., Ltd. Trải nghiệm nông sản an lành.
+                </div>
+            </div>
+
+            <!-- Right Side: Luxury Authentication Form -->
+            <div class="auth-form-side">
+                <!-- Brand Badge -->
+                <h:link outcome="/index.xhtml" styleClass="auth-brand-badge">
+                    <div class="brand-box">
+                        <i class="pi pi-shopping-bag"></i>
+                    </div>
+                    <span>AgriShop</span>
+                </h:link>
+
+                <div class="auth-form-header">
+                    <h2>Chào Mừng Trở Lại</h2>
+                    <p>Đăng nhập tài khoản để tiếp tục mua sắm và quản lý đơn hàng</p>
                 </div>
 
-                <div class="mt-3 text-right">
-                    <a href="#" class="text-sm font-medium text-primary no-underline">Quên mật khẩu?</a>
-                </div>
+                <h:form id="loginForm">
+                    <p:messages id="messages" globalOnly="true" closable="true" styleClass="mb-4">
+                        <p:autoUpdate />
+                    </p:messages>
 
-                <p:commandButton value="Đăng nhập" action="#{loginBean.login()}" 
-                                 update="@form" styleClass="w-full mt-4 ui-button-primary" icon="pi pi-sign-in" />
-            </p:card>
-        </h:form>
+                    <!-- Username Field -->
+                    <div class="field mb-3">
+                        <label for="username" class="form-label">
+                            Tên đăng nhập
+                        </label>
+                        <div class="auth-input-group">
+                            <i class="pi pi-user auth-icon"></i>
+                            <p:inputText id="username" value="#{loginBean.username}" required="true" 
+                                         requiredMessage="Vui lòng nhập tên đăng nhập" 
+                                         placeholder="Nhập username của bạn" />
+                        </div>
+                        <p:message for="username" />
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="field mb-4">
+                        <div class="flex justify-content-between align-items-center mb-1">
+                            <label for="password" class="form-label m-0">
+                                Mật khẩu
+                            </label>
+                            <h:link outcome="/forgot-password.xhtml" value="Quên mật khẩu?" styleClass="auth-link text-xs" />
+                        </div>
+                        <div class="auth-input-group">
+                            <i class="pi pi-lock auth-icon"></i>
+                            <p:password id="password" value="#{loginBean.password}" required="true" 
+                                        requiredMessage="Vui lòng nhập mật khẩu" toggleMask="true" 
+                                        placeholder="Nhập mật khẩu của bạn" />
+                        </div>
+                        <p:message for="password" />
+                    </div>
+
+                    <!-- Submit Button -->
+                    <p:commandButton id="loginBtn" value="Đăng Nhập" action="#{loginBean.login()}" 
+                                     ajax="false" styleClass="auth-submit-btn mb-4" 
+                                     icon="pi pi-sign-in" />
+                    
+                    <div class="text-center pt-3 border-top-1 border-gray-200 text-xs mb-3">
+                        <span class="text-600">Chưa có tài khoản? </span>
+                        <h:link outcome="/register.xhtml" value="Đăng ký ngay" styleClass="auth-link" />
+                    </div>
+
+                    <div class="text-center">
+                        <h:link outcome="/index.xhtml" styleClass="auth-back-link">
+                            <i class="pi pi-arrow-left text-xs"></i>
+                            <span>Quay về trang chủ</span>
+                        </h:link>
+                    </div>
+                </h:form>
+            </div>
+
+        </div>
     </div>
 </h:body>
 </html>

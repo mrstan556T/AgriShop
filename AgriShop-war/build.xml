@@ -68,4 +68,10 @@
     nbproject/build-impl.xml file. 
 
     -->
+
+    <target name="-post-compile">
+        <delete quiet="true">
+            <fileset dir="${build.classes.dir}" includes="*.class"/>
+        </delete>
+    </target>
 </project>

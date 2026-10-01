@@ -9,6 +9,7 @@ import java.util.List;
 @Local
 public interface SupplierServiceLocal {
     List<SupplierDTO> getAllActiveSuppliers();
+    List<SupplierDTO> searchByName(String keyword);
     PageResponseDTO<SupplierDTO> getSuppliersWithPagination(PageRequestDTO request);
     void createSupplier(SupplierDTO dto);
     void updateSupplier(SupplierDTO dto);

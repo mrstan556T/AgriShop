@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Xác Thực Hai Lớp (2FA) - AgriShop Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.1/primeflex.min.css" />
+    <h:outputStylesheet library="css" name="theme.css" />
+    <link rel="stylesheet" href="#{request.contextPath}/resources/css/storefront.css?v=#{session.lastAccessedTime}" />
+</h:head>
+<h:body style="background: #0B1E16; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
+    
+    <div class="bg-white border-round-xl p-5 md:p-7 shadow-3" style="max-width: 540px; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+        
+        <!-- Header & Logo -->
+        <div class="text-center mb-4">
+            <div class="inline-flex align-items-center justify-content-center w-3rem h-3rem border-round-lg bg-primary text-white text-xl mb-2">
+                <i class="pi pi-shield"></i>
+            </div>
+            <h1 class="font-heading text-2xl font-bold text-gray-900 m-0">Xác Thực Quản Trị (2FA)</h1>
+            <p class="text-xs text-500 mt-1 mb-0">Bảo mật cấp doanh nghiệp cho tài khoản Quản trị viên (ADMIN)</p>
+        </div>
+
+        <h:form id="totpForm">
+            <p:messages id="messages" globalOnly="true" closable="true" styleClass="mb-4">
+                <p:autoUpdate />
+            </p:messages>
+
+            <!-- Khối hiển thị thiết lập lần đầu (Setup Mode) -->
+            <h:panelGroup rendered="#{admin2faBean.setupMode}">
+                <div class="bg-stone-50 border-1 border-gray-200 border-round-lg p-4 mb-4 text-center">
+                    <span class="inline-block bg-primary-reverse text-primary text-xs font-semibold px-2.5 py-1 border-round mb-2">
+                        Thiết lập lần đầu
+                    </span>
+                    <h3 class="text-sm font-semibold text-gray-800 m-0 mb-2">Quét mã QR bằng Google Authenticator</h3>
+                    <p class="text-xs text-600 mb-3 line-height-3">
+                        Mở ứng dụng <strong>Google Authenticator</strong> hoặc <strong>Microsoft Authenticator</strong> trên điện thoại, chọn <em>Quét mã QR</em> hoặc nhập mã khóa bí mật thủ công bên dưới:
+                    </p>
+                    
+                    <div class="flex justify-content-center my-3">
+                        <img src="#{admin2faBean.qrCodeUrl}" alt="2FA QR Code" 
+                             style="width: 190px; height: 190px; border-radius: 8px; border: 1px solid #E5E7EB; background: #fff; padding: 8px;" />
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="text-xs text-500 mb-1">Mã khóa bí mật (Secret Key):</div>
+                        <code class="bg-white px-3 py-1.5 border-1 border-gray-300 border-round text-primary font-bold text-sm tracking-wider select-all inline-block">
+                            #{admin2faBean.secretKey}
+                        </code>
+                    </div>
+                </div>
+            </h:panelGroup>
+
+            <!-- Nhập mã 6 chữ số -->
+            <div class="field mb-4">
+                <label for="totpCode" class="block text-center text-xs font-semibold text-gray-700 mb-2">
+                    Nhập mã 6 chữ số từ ứng dụng Authenticator
+                </label>
+                <div class="flex justify-content-center">
+                    <p:inputText id="totpCode" value="#{admin2faBean.totpCode}" required="true" 
+                                 requiredMessage="Vui lòng nhập 6 chữ số xác thực" 
+                                 maxlength="6" autocomplete="one-time-code"
+                                 placeholder="• • • • • •"
+                                 styleClass="text-center font-bold text-2xl tracking-widest text-primary"
+                                 style="width: 220px; height: 52px; font-size: 1.6rem !important; letter-spacing: 0.4rem !important;" />
+                </div>
+                <p:message for="totpCode" styleClass="text-center mt-1 text-xs" />
+            </div>
+
+            <!-- Nút bấm -->
+            <div class="flex flex-column gap-2">
+                <p:commandButton id="verifyBtn" value="Xác Thực &amp; Vào Quản Trị" 
+                                 action="#{admin2faBean.verify()}" 
+                                 ajax="false" 
+                                 styleClass="auth-submit-btn border-round-sm" 
+                                 style="height: 44px; display: inline-flex; align-items: center; justify-content: center;"
+                                 icon="pi pi-lock-open" />
+                
+                <p:commandButton id="cancelBtn" value="Hủy &amp; Quay lại Đăng Nhập" 
+                                 action="#{admin2faBean.cancel()}" 
+                                 ajax="false" 
+                                 styleClass="ui-button-flat text-xs text-500 hover:text-gray-900 border-round-sm" 
+                                 style="height: 40px; display: inline-flex; align-items: center; justify-content: center;"
+                                 icon="pi pi-arrow-left" immediate="true" />
+            </div>
+        </h:form>
+
+        <div class="text-center pt-4 border-top-1 border-gray-200 mt-4 text-xs text-400">
+            Hệ thống tự động đồng bộ thời gian chuẩn TOTP RFC 6238.
+        </div>
+    </div>
+
+</h:body>
+</html>

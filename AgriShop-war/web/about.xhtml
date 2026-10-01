@@ -1,0 +1,94 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">Về Chúng Tôi - Câu Chuyện AgriShop</ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-5">
+            
+            <!-- Breadcrumbs -->
+            <div class="flex align-items-center gap-2 text-xs text-500 mb-4">
+                <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="hover:text-primary" />
+                <i class="pi pi-angle-right text-xs"></i>
+                <span class="font-medium text-gray-800">Giới thiệu</span>
+            </div>
+
+            <!-- Hero Banner of About -->
+            <div class="hero-wrapper text-center my-4 py-6">
+                <span class="hero-badge">
+                    Câu Chuyện Của Chúng Tôi
+                </span>
+                <h1 class="hero-heading text-3xl md:text-5xl max-w-30rem mx-auto mb-3">
+                    Nông Nghiệp Thuần Khiết, <br /><span>Bền Vững &amp; Minh Bạch</span>
+                </h1>
+                <p class="hero-desc mx-auto text-sm md:text-base">
+                    AgriShop đồng hành cùng các hợp tác xã nông nghiệp công nghệ cao trên khắp Việt Nam nhằm đưa các sản phẩm hữu cơ tươi sạch, giữ trọn dưỡng chất tự nhiên đến từng gian bếp gia đình.
+                </p>
+            </div>
+
+            <!-- Vision & Quality Grid -->
+            <div class="grid my-6 align-items-stretch">
+                <div class="col-12 md:col-6">
+                    <div class="bg-white p-5 border-round-sm border-1 border-gray-200 h-full">
+                        <div class="text-xs font-semibold text-500 mb-2 uppercase tracking-wider">Tầm Nhìn</div>
+                        <h3 class="font-heading font-semibold text-xl text-gray-900 mb-2">Canh Tác Bền Vững</h3>
+                        <p class="text-xs text-600 line-height-3 m-0">
+                            Xây dựng hệ sinh thái nông nghiệp tuần hoàn, bảo vệ nguồn đất và nước ngầm sạch. Khuyến khích người nông dân gắn bó với phương thức trồng trọt sinh học thân thiện với môi trường.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-12 md:col-6">
+                    <div class="bg-white p-5 border-round-sm border-1 border-gray-200 h-full">
+                        <div class="text-xs font-semibold text-500 mb-2 uppercase tracking-wider">Cam Kết</div>
+                        <h3 class="font-heading font-semibold text-xl text-gray-900 mb-2">Tiêu Chuẩn Minh Bạch</h3>
+                        <p class="text-xs text-600 line-height-3 m-0">
+                            Mỗi lô sản phẩm thu hoạch đều được lấy mẫu kiểm định nghiêm ngặt, không lưu kho hóa chất. Khách hàng có thể truy xuất nguồn gốc nông trại và thời gian thu hái trực tiếp.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regional Partners -->
+            <div class="bg-white border-round-sm border-1 border-gray-200 p-5 my-6">
+                <div class="text-center mb-5">
+                    <span class="text-xs text-500 font-semibold uppercase tracking-wider">Vùng Trồng Tiêu Chuẩn</span>
+                    <h2 class="font-heading text-2xl font-semibold text-gray-900 m-0 mt-1">Các Vùng Canh Tác Trọng Điểm</h2>
+                </div>
+
+                <div class="grid text-center">
+                    <div class="col-12 sm:col-4 p-2">
+                        <div class="p-4 border-round-sm bg-stone-50 border-1 border-gray-200">
+                            <div class="font-heading font-semibold text-2xl text-gray-900 mb-1">Đà Lạt</div>
+                            <div class="text-xs text-500 font-medium">Rau củ ôn đới &amp; Dâu tây sạch</div>
+                        </div>
+                    </div>
+                    <div class="col-12 sm:col-4 p-2">
+                        <div class="p-4 border-round-sm bg-stone-50 border-1 border-gray-200">
+                            <div class="font-heading font-semibold text-2xl text-gray-900 mb-1">Đồng Bằng Sông Cửu Long</div>
+                            <div class="text-xs text-500 font-medium">Trái cây đặc sản &amp; Gạo ST25</div>
+                        </div>
+                    </div>
+                    <div class="col-12 sm:col-4 p-2">
+                        <div class="p-4 border-round-sm bg-stone-50 border-1 border-gray-200">
+                            <div class="font-heading font-semibold text-2xl text-gray-900 mb-1">Tây Nguyên</div>
+                            <div class="text-xs text-500 font-medium">Cà phê, Tiêu &amp; Mật ong hoa rừng</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Call -->
+            <div class="text-center py-5">
+                <h2 class="font-heading text-2xl font-semibold text-gray-900 mb-3">Trải Nghiệm Nông Sản Sạch Cùng Chúng Tôi</h2>
+                <p:button outcome="/store.xhtml" value="Khám Phá Cửa Hàng" icon="pi pi-arrow-right" 
+                          styleClass="cta-btn text-xs px-4 border-round-sm font-semibold" 
+                          style="height: 44px; display: inline-flex; align-items: center; justify-content: center;" />
+            </div>
+
+        </div>
+    </ui:define>
+</ui:composition>

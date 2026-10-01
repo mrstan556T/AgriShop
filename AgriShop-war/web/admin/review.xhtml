@@ -1,0 +1,222 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/adminTemplate.xhtml">
+    <ui:define name="title">Kiểm Duyệt Đánh Giá - AgriShop</ui:define>
+    <ui:define name="breadcrumb">
+        <h:link outcome="/admin/customer.xhtml">Khách Hàng</h:link>
+        <span class="separator">/</span>
+        <span class="active">Kiểm Duyệt Đánh Giá</span>
+    </ui:define>
+    <ui:define name="pageTitle">Kiểm Duyệt Nhận Xét &amp; Đánh Giá Nông Sản</ui:define>
+
+    <ui:define name="content">
+        <h:form id="mainForm">
+            <!-- Header Actions Row -->
+            <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="font-heading font-semibold text-xl text-gray-900 m-0">Kiểm Duyệt Đánh Giá Từ Khách Hàng</h2>
+                    <span class="text-xs text-500">Xem xét và quản lý hiển thị các phản hồi, nhận xét của người mua đối với nông sản</span>
+                </div>
+            </div>
+
+            <!-- Table Container Box -->
+            <div class="admin-table-box">
+                <!-- Toolbar Filter Section -->
+                <div class="flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom-1 border-gray-100">
+                    <div class="flex flex-wrap align-items-center gap-2">
+                        <!-- Search Box -->
+                        <div class="ui-inputgroup" style="width: 240px;">
+                            <p:inputText value="#{reviewBean.globalFilter}" placeholder="Tìm theo tên SP, người đánh giá..." styleClass="w-full text-xs" />
+                            <p:commandButton icon="pi pi-search" update="dataTable" styleClass="ui-button-secondary text-xs" />
+                        </div>
+                        
+                        <!-- Rating Filter -->
+                        <div style="width: 140px;">
+                            <p:selectOneMenu value="#{reviewBean.ratingFilter}" styleClass="w-full text-xs">
+                                <f:selectItem itemLabel="Tất cả số sao" itemValue="#{null}" />
+                                <f:selectItem itemLabel="5 Sao ★★★★★" itemValue="5" />
+                                <f:selectItem itemLabel="4 Sao ★★★★☆" itemValue="4" />
+                                <f:selectItem itemLabel="3 Sao ★★★☆☆" itemValue="3" />
+                                <f:selectItem itemLabel="2 Sao ★★☆☆☆" itemValue="2" />
+                                <f:selectItem itemLabel="1 Sao ★☆☆☆☆" itemValue="1" />
+                                <p:ajax update="dataTable" />
+                            </p:selectOneMenu>
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div style="width: 150px;">
+                            <p:selectOneMenu value="#{reviewBean.statusFilter}" styleClass="w-full text-xs">
+                                <f:selectItem itemLabel="Tất cả trạng thái" itemValue="#{null}" />
+                                <f:selectItem itemLabel="Hiển thị (APPROVED)" itemValue="APPROVED" />
+                                <f:selectItem itemLabel="Đang ẩn (HIDDEN)" itemValue="HIDDEN" />
+                                <p:ajax update="dataTable" />
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+
+                    <p:commandButton icon="pi pi-refresh" actionListener="#{reviewBean.resetFilters()}" 
+                                     update="dataTable @form" styleClass="ui-button-secondary ui-button-flat btn-toolbar-refresh text-xs" 
+                                     title="Tải lại bảng dữ liệu" />
+                </div>
+
+                <!-- DataTable -->
+                <p:dataTable id="dataTable" widgetVar="dtReviews" var="r" value="#{reviewBean.lazyModel}"
+                             lazy="true" paginator="true" rows="10" paginatorPosition="bottom" emptyMessage="Không tìm thấy đánh giá nào."
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             currentPageReportTemplate="Hiển thị {startRecord} - {endRecord} / {totalRecords} đánh giá"
+                             rowsPerPageTemplate="10,20,50" rowIndexVar="index" styleClass="ui-datatable-sm">
+
+                    <p:column headerText="#" style="width: 2.75rem; text-align: center;">
+                        <span class="text-xs text-500">#{index + 1}</span>
+                    </p:column>
+
+                    <!-- Product -->
+                    <p:column headerText="Sản Phẩm" style="min-width: 180px;">
+                        <div class="flex align-items-center gap-2">
+                            <h:panelGroup rendered="#{not empty r.productImageUrl}">
+                                <img src="#{r.productImageUrl.startsWith('http') ? r.productImageUrl : (r.productImageUrl.startsWith('/') ? request.contextPath.concat(r.productImageUrl) : request.contextPath.concat('/').concat(r.productImageUrl))}" 
+                                     style="width: 34px; height: 34px; object-fit: contain; border-radius: 4px; border: 1px solid #E2E8F0;" 
+                                     alt="#{r.productName}" />
+                            </h:panelGroup>
+                            <div>
+                                <div class="font-semibold text-xs text-gray-900">#{r.productName}</div>
+                                <span class="font-mono text-xs text-400">#{r.productCode}</span>
+                            </div>
+                        </div>
+                    </p:column>
+
+                    <!-- Reviewer -->
+                    <p:column headerText="Người Đánh Giá" style="min-width: 150px;">
+                        <div class="font-semibold text-xs text-gray-800">#{r.userName}</div>
+                        <span class="text-xs text-500">#{r.userEmail}</span>
+                    </p:column>
+
+                    <!-- Rating -->
+                    <p:column headerText="Đánh Giá" style="width: 110px; text-align: center;">
+                        <span class="text-amber-500 font-bold text-sm">
+                            <ui:repeat value="#{[1,2,3,4,5]}" var="star">
+                                <i class="#{star le r.rating ? 'pi pi-star-fill text-amber-500 text-xs' : 'pi pi-star text-gray-300 text-xs'}"></i>
+                            </ui:repeat>
+                        </span>
+                        <span class="text-xs font-semibold text-gray-700 ml-1">(#{r.rating}/5)</span>
+                    </p:column>
+
+                    <!-- Comment Content -->
+                    <p:column headerText="Nội Dung Nhận Xét" style="min-width: 250px;">
+                        <div class="text-xs text-gray-800 line-height-2 font-normal">
+                            #{r.comment}
+                        </div>
+                        <h:panelGroup rendered="#{not empty r.adminReply}">
+                            <div class="mt-2 p-2 bg-emerald-50 border-left-3 border-green-600 border-round-right-xs">
+                                <div class="flex align-items-center gap-1 text-xs font-semibold text-green-800">
+                                    <i class="pi pi-comments text-xs"></i> Phản Hồi Từ Ban Quản Trị:
+                                    <span class="text-500 font-normal ml-auto" style="font-size: 10px;">
+                                        <h:outputText value="#{r.adminReplyAt}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
+                                        </h:outputText>
+                                    </span>
+                                </div>
+                                <div class="text-xs text-gray-700 mt-1 italic">
+                                    "#{r.adminReply}"
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <!-- Created At -->
+                    <p:column headerText="Ngày Gửi" style="width: 130px;" styleClass="text-xs text-500">
+                        <h:outputText value="#{r.createdAt}">
+                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
+                        </h:outputText>
+                    </p:column>
+
+                    <!-- Status -->
+                    <p:column headerText="Trạng Thái" style="width: 110px; text-align: center;">
+                        <span class="badge #{r.status eq 'APPROVED' ? 'badge-success' : 'badge-danger'}">
+                            #{r.status eq 'APPROVED' ? 'Hiển thị' : 'Đang ẩn'}
+                        </span>
+                    </p:column>
+
+                    <!-- Actions -->
+                    <p:column headerText="Thao Tác" style="width: 110px; text-align: center;">
+                        <div class="flex justify-content-center gap-1">
+                            <p:commandButton icon="#{r.status eq 'APPROVED' ? 'pi pi-eye-slash' : 'pi pi-eye'}"
+                                             actionListener="#{reviewBean.toggleReviewStatus(r.id)}"
+                                             update=":mainForm:dataTable"
+                                             styleClass="p-button-sm #{r.status eq 'APPROVED' ? 'ui-button-outlined ui-button-warning' : 'ui-button-outlined ui-button-success'} p-1"
+                                             title="#{r.status eq 'APPROVED' ? 'Ẩn đánh giá này khỏi website' : 'Duyệt hiển thị đánh giá'}">
+                                <p:confirm header="Xác nhận" message="#{r.status eq 'APPROVED' ? 'Ẩn đánh giá này khỏi website khách hàng?' : 'Duyệt và hiển thị đánh giá này?'}" icon="pi pi-exclamation-triangle" />
+                            </p:commandButton>
+                            <p:commandButton icon="pi pi-reply"
+                                             actionListener="#{reviewBean.prepareReply(r)}"
+                                             update=":replyForm:replyDialogPanel"
+                                             oncomplete="PF('replyDialog').show()"
+                                             styleClass="p-button-sm ui-button-outlined ui-button-info p-1"
+                                             title="Phản hồi công khai cho đánh giá này" />
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </h:form>
+
+        <!-- Reply Dialog -->
+        <h:form id="replyForm">
+            <p:dialog id="replyDialog" widgetVar="replyDialog" header="Phản Hồi Đánh Giá Công Khai"
+                      modal="true" responsive="true" width="520" showEffect="fade" hideEffect="fade" fitViewport="true">
+                <p:messages id="dialogMessages" globalOnly="true" closable="true" styleClass="mb-3" />
+                <p:outputPanel id="replyDialogPanel" class="ui-fluid">
+                    <h:panelGroup rendered="#{not empty reviewBean.selectedReview}">
+                        <div class="mb-3 p-3 bg-stone-50 border-round-sm border-1 border-gray-200">
+                            <div class="flex justify-content-between align-items-center mb-1">
+                                <span class="font-bold text-xs text-gray-900">#{reviewBean.selectedReview.userName}</span>
+                                <span class="text-amber-500 font-bold text-xs">
+                                    <i class="pi pi-star-fill text-xs mr-1"></i>#{reviewBean.selectedReview.rating}/5
+                                </span>
+                            </div>
+                            <div class="text-xs text-500 mb-1">Sản phẩm: <strong>#{reviewBean.selectedReview.productName}</strong></div>
+                            <div class="text-xs text-gray-700 italic border-top-1 border-gray-200 pt-1 mt-1">
+                                "#{reviewBean.selectedReview.comment}"
+                            </div>
+                        </div>
+
+                        <div class="field mb-3">
+                            <label for="replyInput" class="block text-xs font-semibold text-gray-700 mb-1">
+                                Nội Dung Phản Hồi Từ Ban Quản Trị *
+                            </label>
+                            <p:inputTextarea id="replyInput" value="#{reviewBean.replyText}" rows="4"
+                                             required="true" requiredMessage="Vui lòng nhập nội dung phản hồi"
+                                             placeholder="Nhập lời cảm ơn hoặc giải đáp thắc mắc của khách hàng..."
+                                             styleClass="w-full text-xs" />
+                            <p:message for="replyInput" styleClass="mt-1" />
+                            <span class="text-400 text-xs mt-1 block">Phản hồi này sẽ được hiển thị công khai ngay dưới nhận xét tại trang chi tiết sản phẩm.</span>
+                        </div>
+                    </h:panelGroup>
+                </p:outputPanel>
+
+                <f:facet name="footer">
+                    <div class="flex justify-content-end gap-2 pt-1">
+                        <p:commandButton value="Đóng" type="button" onclick="PF('replyDialog').hide()" styleClass="ui-button-secondary text-xs px-3 py-2" />
+                        <p:commandButton value="Đăng Phản Hồi" icon="pi pi-send"
+                                         actionListener="#{reviewBean.submitReply()}"
+                                         update=":mainForm:dataTable, :replyForm:dialogMessages, replyDialogPanel"
+                                         styleClass="cta-btn text-xs px-3 py-2" />
+                    </div>
+                </f:facet>
+            </p:dialog>
+        </h:form>
+
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="360">
+            <div class="flex justify-content-end gap-2 mt-3">
+                <p:commandButton value="Hủy bỏ" type="button" styleClass="ui-confirmdialog-no ui-button-secondary text-xs"/>
+                <p:commandButton value="Xác Nhận" type="button" styleClass="ui-confirmdialog-yes ui-button-danger text-xs" />
+            </div>
+        </p:confirmDialog>
+    </ui:define>
+</ui:composition>
+</html>

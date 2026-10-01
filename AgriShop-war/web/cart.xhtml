@@ -1,0 +1,277 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">Giỏ Hàng Của Bạn - AgriShop</ui:define>
+
+
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-5">
+            
+            <!-- Breadcrumbs and Step Indicator -->
+            <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-5 gap-3">
+                <div>
+                    <div class="flex align-items-center gap-2 text-xs text-500 mb-1">
+                        <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="hover:text-primary" />
+                        <i class="pi pi-angle-right text-xs"></i>
+                        <span class="font-medium text-gray-800">Giỏ hàng</span>
+                    </div>
+                    <h1 class="font-heading text-2xl md:text-3xl font-semibold text-gray-900 m-0">
+                        Giỏ Hàng Của Bạn
+                        <h:panelGroup rendered="#{not empty cartBean.cart.items}">
+                            <span class="text-sm font-normal text-500 ml-2">(#{cartBean.cart.totalItems} món)</span>
+                        </h:panelGroup>
+                    </h1>
+                </div>
+
+                <!-- Shopping Steps -->
+                <div class="checkout-stepper">
+                    <div class="stepper-step active">
+                        <span class="stepper-num">1</span>
+                        <span>Giỏ hàng</span>
+                    </div>
+                    <i class="pi pi-angle-right stepper-arrow"></i>
+                    <div class="stepper-step">
+                        <span class="stepper-num">2</span>
+                        <span>Thanh toán</span>
+                    </div>
+                    <i class="pi pi-angle-right stepper-arrow"></i>
+                    <div class="stepper-step">
+                        <span class="stepper-num">3</span>
+                        <span>Hoàn tất</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin View Notice Banner -->
+            <h:panelGroup rendered="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}">
+                <div class="mb-4 p-3 border-round bg-blue-50 border-1 border-blue-200 text-blue-900 text-xs flex align-items-center gap-2">
+                    <i class="pi pi-shield text-base text-blue-600"></i>
+                    <span><strong>Chế độ Xem Quản Trị Viên:</strong> Bạn đang duyệt xem bằng tài khoản Quản trị viên — hãy đăng nhập bằng tài khoản khách hàng để trải nghiệm mua sắm đầy đủ.</span>
+                </div>
+            </h:panelGroup>
+
+            <h:form id="cartForm">
+                <!-- Empty Cart State -->
+                <h:panelGroup rendered="#{empty cartBean.cart.items}">
+                    <div class="bg-white border-round-md border-1 border-gray-200 text-center py-8 px-4 my-4 max-w-35rem mx-auto">
+                        <div class="w-5rem h-5rem border-circle bg-stone-50 border-1 border-gray-200 text-primary flex align-items-center justify-content-center mx-auto mb-3 text-3xl">
+                            <i class="pi pi-shopping-bag"></i>
+                        </div>
+                        <h2 class="font-heading text-2xl font-semibold text-gray-900 mb-2">Giỏ hàng của bạn đang trống</h2>
+                        <p class="text-xs text-600 max-w-25rem mx-auto mb-5 line-height-3">
+                            Hãy khám phá nguồn nông sản hữu cơ thuần khiết, trái cây ngọt lành và thực phẩm tươi sạch thu hoạch trực tiếp từ nông trại AgriShop.
+                        </p>
+                        <p:button outcome="/store.xhtml" value="Khám Phá Cửa Hàng Ngay" icon="pi pi-arrow-right" 
+                                  styleClass="cta-btn text-base px-4 py-2 font-medium" style="min-height: 44px; display: inline-flex; align-items: center;" />
+                    </div>
+                </h:panelGroup>
+
+                <!-- Non-empty Cart Items and Summary (Desktop 2-Column Grid) -->
+                <h:panelGroup rendered="#{not empty cartBean.cart.items}">
+                    <div class="cart-layout-grid">
+                        
+                        <!-- Left: Item List Table Card -->
+                        <div class="cart-items-card">
+                            <div class="cart-card-header">
+                                <div class="font-heading font-semibold text-base text-gray-900 flex align-items-center gap-2">
+                                    <span>Nông sản đã chọn</span>
+                                    <span class="text-xs font-normal text-500">(#{cartBean.cart.totalItems} sản phẩm)</span>
+                                </div>
+                                <div class="flex align-items-center gap-3">
+                                    <p:commandLink action="#{cartBean.clearCart()}" 
+                                                   process="@this"
+                                                   update=":cartForm @([id$=navForm]) :growlMessages" 
+                                                   styleClass="text-xs text-red-600 hover:text-red-800 flex align-items-center gap-1 no-underline font-medium">
+                                        <i class="pi pi-trash text-xs"></i> Làm trống giỏ
+                                    </p:commandLink>
+                                </div>
+                            </div>
+
+                            <!-- Table Head -->
+                            <div class="cart-table-head">
+                                <div>Sản Phẩm</div>
+                                <div>Đơn Giá</div>
+                                <div class="text-center">Số Lượng</div>
+                                <div class="text-right">Thành Tiền</div>
+                                <div></div>
+                            </div>
+
+                            <!-- Table Body Rows -->
+                            <ui:repeat id="cartRepeat" value="#{cartBean.cart.items}" var="item">
+                                <div class="cart-item-table-row">
+                                    <!-- Product Info -->
+                                    <div class="cart-prod-cell">
+                                        <h:panelGroup rendered="#{not empty item.productImageUrl}">
+                                            <img src="#{item.productImageUrl.startsWith('http') ? item.productImageUrl : request.contextPath.concat(item.productImageUrl)}" 
+                                                 class="cart-prod-thumb" alt="#{item.productName}" />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{empty item.productImageUrl}">
+                                            <div class="cart-prod-thumb-empty">
+                                                <i class="pi pi-image"></i>
+                                            </div>
+                                        </h:panelGroup>
+                                        
+                                        <div class="min-w-0">
+                                            <h:link outcome="/product-detail.xhtml" class="cart-prod-name" title="#{item.productName}">
+                                                <f:param name="id" value="#{item.productId}" />
+                                                #{item.productName}
+                                            </h:link>
+                                            <div class="cart-prod-meta">
+                                                <span>Đơn vị: <strong>#{item.productUnit}</strong></span>
+                                                <span>•</span>
+                                                <h:panelGroup rendered="#{item.availableQuantity gt 0}">
+                                                    <span class="text-green-700 font-medium flex align-items-center gap-1">
+                                                        <i class="pi pi-check text-xs"></i> Khả dụng: #{item.availableQuantity} #{item.productUnit}
+                                                    </span>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{item.availableQuantity le 0}">
+                                                    <span class="text-red-600 font-medium flex align-items-center gap-1">
+                                                        <i class="pi pi-exclamation-triangle text-xs"></i> Hết hàng
+                                                    </span>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Unit Price -->
+                                    <div class="cart-price-cell">
+                                        <h:outputText value="#{item.productPrice}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>₫
+                                    </div>
+
+                                    <!-- Quantity Selector with Clean [-] [+] buttons -->
+                                    <div class="text-center">
+                                        <div class="cart-qty-widget">
+                                            <p:commandButton id="btnDecreaseQty"
+                                                             icon="pi pi-minus" 
+                                                             styleClass="cart-qty-btn ui-button-flat"
+                                                             action="#{cartBean.decreaseQuantity(item.id)}"
+                                                             process="@this"
+                                                             update=":cartForm @([id$=navForm]) :growlMessages" 
+                                                             disabled="#{item.quantity le 1 or (item.unitType eq 'WEIGHT' and item.quantity le 0.5)}"
+                                                             title="Giảm số lượng" />
+                                            <span class="cart-qty-value">
+                                                <h:outputText value="#{item.quantity}">
+                                                    <f:convertNumber pattern="#,##0.##" />
+                                                </h:outputText>
+                                            </span>
+                                            <p:commandButton id="btnIncreaseQty"
+                                                             icon="pi pi-plus" 
+                                                             styleClass="cart-qty-btn ui-button-flat"
+                                                             action="#{cartBean.increaseQuantity(item.id)}"
+                                                             process="@this"
+                                                             update=":cartForm @([id$=navForm]) :growlMessages" 
+                                                             disabled="#{item.availableQuantity ne null and item.availableQuantity gt 0 and item.quantity ge item.availableQuantity}"
+                                                             title="Tăng số lượng" />
+                                        </div>
+                                    </div>
+
+                                    <!-- Item Subtotal -->
+                                    <div class="text-right cart-subtotal-cell">
+                                        <h:outputText value="#{item.itemTotal}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>₫
+                                    </div>
+
+                                    <!-- Remove Button -->
+                                    <div class="cart-remove-cell">
+                                        <p:commandButton id="btnRemoveItem"
+                                                         icon="pi pi-trash" 
+                                                         styleClass="cart-remove-btn ui-button-flat"
+                                                         action="#{cartBean.removeItem(item.id)}"
+                                                         process="@this"
+                                                         update=":cartForm @([id$=navForm]) :growlMessages" 
+                                                         title="Xóa sản phẩm này" />
+                                    </div>
+                                </div>
+                            </ui:repeat>
+
+                            <!-- Bottom Action Row -->
+                            <div class="cart-card-footer">
+                                <h:link outcome="/store.xhtml" class="ui-button ui-button-secondary text-sm px-4 py-2 no-underline font-medium" style="min-height: 40px; display: inline-flex; align-items: center;">
+                                    <i class="pi pi-arrow-left mr-2 text-xs"></i> Tiếp tục chọn nông sản
+                                </h:link>
+                                <span class="text-xs text-500 hidden sm:inline-flex align-items-center gap-1">
+                                    <i class="pi pi-shield text-primary"></i> Đóng gói sinh học giữ ẩm tự nhiên
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Right: Order Summary Sticky Card -->
+                        <div class="cart-summary-card">
+                            <h3 class="cart-summary-title">Tóm Tắt Đơn Hàng</h3>
+
+                            <div class="cart-summary-row">
+                                <span>Tạm tính (#{cartBean.cart.totalItems} món):</span>
+                                <span class="font-semibold text-gray-900">
+                                    <h:outputText value="#{cartBean.cart.totalAmount}">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputText>₫
+                                </span>
+                            </div>
+
+                            <div class="cart-summary-row">
+                                <span>Phí giao hàng:</span>
+                                <span class="text-green-700 font-semibold flex align-items-center gap-1">
+                                    <i class="pi pi-check text-xs"></i> Miễn phí
+                                </span>
+                            </div>
+
+                            <div class="cart-summary-row">
+                                <span>Thuế GTGT:</span>
+                                <span class="text-gray-500 text-xs">Đã bao gồm VAT</span>
+                            </div>
+
+                            <!-- Total Row -->
+                            <div class="cart-summary-row total">
+                                <span class="font-heading font-semibold text-base text-gray-900">Tổng thanh toán:</span>
+                                <span class="cart-summary-total-val">
+                                    <h:outputText value="#{cartBean.cart.totalAmount}">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputText>₫
+                                </span>
+                            </div>
+
+                            <div class="text-xs text-400 mb-3 line-height-2">
+                                (Đã bao gồm chi phí đóng gói bảo quản sinh học)
+                            </div>
+
+                            <!-- Checkout CTA -->
+                            <p:commandButton action="#{cartBean.proceedToCheckout()}" value="Tiến Hành Thanh Toán" icon="pi pi-arrow-right" 
+                                             styleClass="cart-checkout-btn w-full text-center" 
+                                             disabled="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}"
+                                             title="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN' ? 'Tài khoản Quản trị viên không thể thanh toán đặt hàng' : 'Tiến Hành Thanh Toán'}" />
+
+                            <!-- Trust Badges inside Summary -->
+                            <div class="cart-trust-box">
+                                <div class="cart-trust-item">
+                                    <i class="pi pi-verified"></i>
+                                    <span>100% Nông sản hữu cơ chuẩn VietGAP</span>
+                                </div>
+                                <div class="cart-trust-item">
+                                    <i class="pi pi-clock"></i>
+                                    <span>Giao hàng tươi mới hỏa tốc trong ngày</span>
+                                </div>
+                                <div class="cart-trust-item">
+                                    <i class="pi pi-sync"></i>
+                                    <span>Bảo hành tươi ngon - Đổi trả trong 24h</span>
+                                </div>
+                                <div class="cart-trust-item">
+                                    <i class="pi pi-lock"></i>
+                                    <span>Thanh toán khi nhận hàng (COD) tiện lợi</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </h:panelGroup>
+            </h:form>
+        </div>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,621 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/adminTemplate.xhtml">
+    <ui:define name="title">Quản Lý Kho Hàng &amp; Tồn Kho - AgriShop</ui:define>
+    <ui:define name="breadcrumb">
+        <h:link outcome="/admin/inventory.xhtml">Kho Hàng</h:link>
+        <span class="separator">/</span>
+        <span class="active">Quản Lý Tồn Kho</span>
+    </ui:define>
+    <ui:define name="pageTitle">Quản Lý Tồn Kho &amp; Báo Cáo Hiệu Quả</ui:define>
+
+    <ui:define name="content">
+        <!-- Top KPI Cards Row -->
+        <div class="grid mb-4">
+            <!-- KPI 1: Total Stock Quantity -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Tổng Lượng Tồn Kho</div>
+                        <div class="kpi-number">
+                            <h:outputText value="#{inventoryBean.totalInventoryQuantity}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>
+                        </div>
+                        <div class="text-xs text-500 mt-2 flex align-items-center gap-1">
+                            <i class="pi pi-box text-xs text-primary"></i>
+                            <span>Sản phẩm đang sẵn sàng bán</span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon-box">
+                        <i class="pi pi-inbox text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 2: Inventory Valuation (Tiền hàng tồn kho) -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Giá Trị Kho Hàng (Vốn Tồn)</div>
+                        <div class="kpi-number text-primary">
+                            <h:outputText value="#{inventoryBean.totalInventoryValue}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>₫
+                        </div>
+                        <div class="text-xs text-500 mt-2 flex align-items-center gap-1">
+                            <i class="pi pi-dollar text-xs text-primary"></i>
+                            <span>Tính theo giá vốn nhập</span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon-box">
+                        <i class="pi pi-wallet text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 3: Low Stock Warning -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Mặt Hàng Sắp Hết (≤ 5)</div>
+                        <div class="kpi-number #{inventoryBean.lowStockCount gt 0 ? 'text-amber-600' : 'text-gray-900'}">
+                            <h:outputText value="#{inventoryBean.lowStockCount}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>
+                        </div>
+                        <div class="text-xs text-500 mt-2 flex align-items-center gap-1">
+                            <i class="pi pi-exclamation-triangle text-xs text-amber-600"></i>
+                            <span>Cần lên kế hoạch nhập thêm</span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon-box">
+                        <i class="pi pi-clock text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 4: Out of Stock Alert -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Mặt Hàng Đã Hết (0)</div>
+                        <div class="kpi-number #{inventoryBean.outOfStockCount gt 0 ? 'text-red-600' : 'text-gray-900'}">
+                            <h:outputText value="#{inventoryBean.outOfStockCount}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>
+                        </div>
+                        <div class="text-xs text-500 mt-2 flex align-items-center gap-1">
+                            <i class="pi pi-times-circle text-xs #{inventoryBean.outOfStockCount gt 0 ? 'text-red-600' : 'text-green-600'}"></i>
+                            <span>#{inventoryBean.outOfStockCount gt 0 ? 'Đang tạm dừng hiển thị bán' : 'Kho hàng đầy đủ'}</span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon-box">
+                        <i class="pi pi-ban text-sm"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Toolbar -->
+        <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center gap-3 mb-4">
+            <div>
+                <h2 class="font-heading text-lg font-bold text-gray-900 m-0">Tình Trạng Kho Hàng &amp; Báo Cáo Lời / Lỗ</h2>
+                <span class="text-xs text-500">Đối soát chính xác số lượng đã nhập, đã bán, tồn kho thực tế và lợi nhuận từng sản phẩm</span>
+            </div>
+            <p:commandButton value="Tạo Phiếu Nhập Hàng" icon="pi pi-plus"
+                             actionListener="#{inventoryBean.prepareNewImport()}"
+                             update=":importDialogForm:importDialogPanel"
+                             oncomplete="PF('importDialog').show()"
+                             styleClass="cta-btn text-xs px-3 py-2" />
+        </div>
+
+        <!-- Global Messages -->
+        <p:messages id="messages" globalOnly="true" showDetail="true" closable="true" styleClass="mb-3" />
+
+        <!-- Main Content: Inventory Table & P&L Report -->
+        <h:form id="mainForm">
+            <div class="bg-white border-round-sm border-1 border-gray-200 overflow-hidden mb-5">
+                <div class="p-3 bg-stone-50 border-bottom-1 border-gray-200 flex justify-content-between align-items-center">
+                    <span class="font-semibold text-xs text-gray-800 uppercase tracking-wider">
+                        <i class="pi pi-chart-line text-xs mr-1 text-primary"></i> Bảng Hiệu Quả Kinh Doanh &amp; Tồn Kho Từng Sản Phẩm
+                    </span>
+                    <p:commandButton icon="pi pi-refresh" title="Làm mới dữ liệu"
+                                     actionListener="#{inventoryBean.loadData()}"
+                                     update=":mainForm :messages"
+                                     styleClass="ui-button-secondary text-xs" />
+                </div>
+
+                <p:dataTable id="inventoryTable" value="#{inventoryBean.reportList}" var="p"
+                             emptyMessage="Chưa có dữ liệu sản phẩm"
+                             styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;"
+                             rowKey="#{p.id}"
+                             paginator="true" rows="10" paginatorPosition="bottom"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
+
+                    <!-- 1. Row Toggler (Expand/Collapse Details) -->
+                    <p:column style="width: 3.5rem; text-align: center;" headerText="Chi tiết">
+                        <p:rowToggler />
+                    </p:column>
+
+                    <!-- 2. Product Column: Thumbnail + Name + Code + Category + Unit -->
+                    <p:column headerText="Sản Phẩm" style="min-width: 260px;" styleClass="text-xs">
+                        <div class="flex align-items-center gap-2.5">
+                            <h:panelGroup rendered="#{not empty p.imageUrl}">
+                                <img src="#{p.imageUrl.startsWith('http') ? p.imageUrl : (p.imageUrl.startsWith('/') ? request.contextPath.concat(p.imageUrl) : request.contextPath.concat('/').concat(p.imageUrl))}"
+                                     style="width: 44px; height: 44px; min-width: 44px; min-height: 44px; max-width: 44px; max-height: 44px; flex-shrink: 0; object-fit: cover; border-radius: 8px; border: 1px solid #E5E7EB;"
+                                     class="bg-stone-50"
+                                     alt="#{p.name}"
+                                     onerror="this.onerror=null; this.src='#{request.contextPath}/assets/images/placeholder-product.svg';" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{empty p.imageUrl}">
+                                <div style="width: 44px; height: 44px; min-width: 44px; min-height: 44px; max-width: 44px; max-height: 44px; flex-shrink: 0; border-radius: 8px; border: 1px solid #E5E7EB; background: #F3F4F6; display: flex; align-items: center; justify-content: center; color: #9CA3AF;">
+                                    <i class="pi pi-image text-sm"></i>
+                                </div>
+                            </h:panelGroup>
+                            <div class="overflow-hidden" style="min-width: 0; flex: 1;">
+                                <div class="font-semibold text-gray-900 text-sm line-height-2 mb-1" title="#{p.name}">
+                                    #{p.name}
+                                </div>
+                                <div class="flex align-items-center gap-1.5 flex-wrap">
+                                    <span class="font-mono text-xs bg-stone-100 text-gray-700 px-1.5 py-0.5 border-round-xs">
+                                        #{p.productCode}
+                                    </span>
+                                    <span class="text-xs text-500">#{p.categoryName}</span>
+                                    <span class="text-xs text-400">• ĐVT: <strong class="text-stone-600">#{p.unit}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </p:column>
+
+                    <!-- 3. Supplier -->
+                    <p:column headerText="Nhà Cung Cấp" style="width: 14rem;" styleClass="text-xs">
+                        <h:panelGroup rendered="#{not empty p.supplierName}">
+                            <span class="inline-flex align-items-center gap-1.5 px-2 py-1 bg-stone-100 text-gray-700 border-round-sm text-xs font-medium">
+                                <i class="pi pi-building text-xs text-400"></i>
+                                <span>#{p.supplierName}</span>
+                            </span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{empty p.supplierName}">
+                            <span class="text-xs text-400 italic">Chưa gán NCC</span>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <!-- 4. Available Stock (Prominent Number + Subtext) -->
+                    <p:column headerText="Tồn Khả Dụng" style="width: 11rem; text-align: right;" styleClass="text-xs">
+                        <div>
+                            <span class="text-base font-bold #{p.availableQuantity le 0 ? 'text-red-600' : (p.availableQuantity le p.minStock ? 'text-amber-600' : 'text-green-700')}">
+                                <h:outputText value="#{p.availableQuantity}">
+                                    <f:convertNumber pattern="#,##0.##" />
+                                </h:outputText> #{p.unit}
+                            </span>
+                        </div>
+                        <div class="text-xs text-500 mt-0.5">
+                            <span>Tồn: <strong>#{p.stockQuantity}</strong></span>
+                            <span class="mx-1 text-300">|</span>
+                            <span class="#{p.reservedQuantity gt 0 ? 'text-orange-600 font-semibold' : 'text-400'}">Giữ: #{p.reservedQuantity}</span>
+                        </div>
+                    </p:column>
+
+                    <!-- 5. Status & Suggestion Badge -->
+                    <p:column headerText="Trạng Thái &amp; Gợi Ý" style="width: 12rem; text-align: center;" styleClass="text-xs">
+                        <h:panelGroup rendered="#{p.stockStatus eq 'IN_STOCK'}">
+                            <span class="badge badge-success">
+                                <i class="pi pi-check-circle text-xs mr-1"></i>Còn hàng
+                            </span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{p.stockStatus eq 'LOW_STOCK'}">
+                            <div>
+                                <span class="badge badge-warning">
+                                    <i class="pi pi-exclamation-triangle text-xs mr-1"></i>Sắp hết
+                                </span>
+                                <h:panelGroup rendered="#{not empty p.suggestedRestockQuantity and p.suggestedRestockQuantity gt 0}">
+                                    <div class="mt-1">
+                                        <span class="badge badge-info" style="font-size: 10px;" title="Tốc độ bán 30 ngày: #{p.averageDailySale30d} #{p.unit}/ngày">
+                                            <i class="pi pi-bolt text-xs mr-0.5"></i>Gợi ý: +#{p.suggestedRestockQuantity} #{p.unit}
+                                        </span>
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{p.stockStatus eq 'OUT_OF_STOCK'}">
+                            <div>
+                                <span class="badge badge-danger">
+                                    <i class="pi pi-times-circle text-xs mr-1"></i>Hết hàng
+                                </span>
+                                <h:panelGroup rendered="#{not empty p.suggestedRestockQuantity and p.suggestedRestockQuantity gt 0}">
+                                    <div class="mt-1">
+                                        <span class="badge badge-info" style="font-size: 10px;" title="Tốc độ bán 30 ngày: #{p.averageDailySale30d} #{p.unit}/ngày">
+                                            <i class="pi pi-bolt text-xs mr-0.5"></i>Gợi ý: +#{p.suggestedRestockQuantity} #{p.unit}
+                                        </span>
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <!-- 6. Actions -->
+                    <p:column headerText="Thao Tác" style="width: 9rem; text-align: center;" styleClass="text-xs">
+                        <div class="flex gap-1 justify-content-center">
+                            <p:commandButton icon="pi pi-plus" value="Nhập"
+                                             actionListener="#{inventoryBean.prepareQuickImport(p)}"
+                                             update=":importDialogForm:importDialogPanel"
+                                             oncomplete="PF('importDialog').show()"
+                                             styleClass="p-button-sm ui-button-secondary text-xs p-1" title="Nhập hàng cho sản phẩm này" />
+                            <p:commandButton icon="pi pi-sliders-h"
+                                             actionListener="#{inventoryBean.prepareAdjustment(p)}"
+                                             update=":adjustDialogForm:adjustDialogPanel"
+                                             oncomplete="PF('adjustDialog').show()"
+                                             styleClass="p-button-sm ui-button-outlined ui-button-warning text-xs p-1" title="Kiểm kê / Điều chỉnh tồn" />
+                        </div>
+                    </p:column>
+
+                    <!-- 7. Expanded Row Details (3-Card Layout) -->
+                    <p:rowExpansion>
+                        <div class="p-3 bg-stone-50 border-round-sm border-1 border-gray-200 m-2">
+                            <div class="grid">
+                                <!-- Card 1: Tồn kho & Định mức -->
+                                <div class="col-12 md:col-4">
+                                    <div class="bg-white p-3 border-round-sm border-1 border-gray-200 h-full shadow-xs">
+                                        <div class="flex align-items-center gap-1.5 text-xs font-bold text-gray-800 uppercase tracking-wider mb-2.5 pb-1 border-bottom-1 border-gray-100">
+                                            <i class="pi pi-box text-xs text-primary"></i>
+                                            <span>Chi Tiết Tồn Kho &amp; Định Mức</span>
+                                        </div>
+                                        <div class="grid text-xs">
+                                            <div class="col-6 py-1 text-500">Tồn thực tế kho:</div>
+                                            <div class="col-6 py-1 text-right font-bold text-gray-900">
+                                                #{p.stockQuantity} #{p.unit}
+                                            </div>
+                                            <div class="col-6 py-1 text-500">Đang giữ đơn hàng:</div>
+                                            <div class="col-6 py-1 text-right font-semibold #{p.reservedQuantity gt 0 ? 'text-orange-600' : 'text-gray-700'}">
+                                                #{p.reservedQuantity} #{p.unit}
+                                            </div>
+                                            <div class="col-6 py-1 text-500">Khả dụng xuất bán:</div>
+                                            <div class="col-6 py-1 text-right font-bold #{p.availableQuantity le 0 ? 'text-red-600' : 'text-green-700'}">
+                                                #{p.availableQuantity} #{p.unit}
+                                            </div>
+                                            <div class="col-6 py-1 text-500">Định mức an toàn (Min):</div>
+                                            <div class="col-6 py-1 text-right font-medium text-stone-600">
+                                                #{p.minStock} #{p.unit}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card 2: Tài chính & Lợi nhuận -->
+                                <div class="col-12 md:col-4">
+                                    <div class="bg-white p-3 border-round-sm border-1 border-gray-200 h-full shadow-xs">
+                                        <div class="flex align-items-center gap-1.5 text-xs font-bold text-gray-800 uppercase tracking-wider mb-2.5 pb-1 border-bottom-1 border-gray-100">
+                                            <i class="pi pi-dollar text-xs text-primary"></i>
+                                            <span>Tài Chính &amp; Hiệu Quả Lợi Nhuận</span>
+                                        </div>
+                                        <div class="grid text-xs">
+                                            <div class="col-6 py-1 text-500">Đơn giá vốn nhập:</div>
+                                            <div class="col-6 py-1 text-right text-gray-700 font-mono">
+                                                <h:outputText value="#{p.costPrice}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                            </div>
+                                            <div class="col-6 py-1 text-500">Đơn giá bán niêm yết:</div>
+                                            <div class="col-6 py-1 text-right text-gray-900 font-bold font-mono">
+                                                <h:outputText value="#{p.price}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                            </div>
+                                            <div class="col-6 py-1 text-500">Biên đơn vị (Bán - Vốn):</div>
+                                            <div class="col-6 py-1 text-right font-semibold #{p.price gt p.costPrice ? 'text-green-700' : 'text-red-600'} font-mono">
+                                                <h:outputText value="#{p.price - p.costPrice}">
+                                                    <f:convertNumber pattern="#,##0" />
+                                                </h:outputText>₫
+                                            </div>
+                                            <div class="col-6 py-1 text-500">Tổng Lời / Lỗ tích lũy:</div>
+                                            <div class="col-6 py-1 text-right font-bold font-mono">
+                                                <h:panelGroup rendered="#{p.profit ge 0}">
+                                                    <span class="text-green-700 bg-green-50 px-1.5 py-0.5 border-round-xs">
+                                                        +<h:outputText value="#{p.profit}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                                    </span>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{p.profit lt 0}">
+                                                    <span class="text-red-700 bg-red-50 px-1.5 py-0.5 border-round-xs">
+                                                        <h:outputText value="#{p.profit}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                                    </span>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card 3: Vận hành & Cung ứng -->
+                                <div class="col-12 md:col-4">
+                                    <div class="bg-white p-3 border-round-sm border-1 border-gray-200 h-full shadow-xs">
+                                        <div class="flex align-items-center gap-1.5 text-xs font-bold text-gray-800 uppercase tracking-wider mb-2.5 pb-1 border-bottom-1 border-gray-100">
+                                            <i class="pi pi-sync text-xs text-primary"></i>
+                                            <span>Vận Hành &amp; Cung Ứng</span>
+                                        </div>
+                                        <div class="grid text-xs">
+                                            <div class="col-6 py-1 text-500">Tổng đã nhập:</div>
+                                            <div class="col-6 py-1 text-right text-gray-800">
+                                                #{p.totalImported} #{p.unit}
+                                            </div>
+                                            <div class="col-6 py-1 text-500">Tổng đã xuất bán:</div>
+                                            <div class="col-6 py-1 text-right text-gray-800">
+                                                #{p.totalSold} #{p.unit}
+                                            </div>
+                                            <div class="col-6 py-1 text-500">Bán bình quân 30 ngày:</div>
+                                            <div class="col-6 py-1 text-right text-stone-600 font-medium">
+                                                #{p.averageDailySale30d} #{p.unit}/ngày
+                                            </div>
+                                            <div class="col-6 py-1 text-500">Gợi ý nhập thêm:</div>
+                                            <div class="col-6 py-1 text-right">
+                                                <h:panelGroup rendered="#{not empty p.suggestedRestockQuantity and p.suggestedRestockQuantity gt 0}">
+                                                    <span class="text-xs font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 border-round-xs">
+                                                        +#{p.suggestedRestockQuantity} #{p.unit}
+                                                    </span>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{empty p.suggestedRestockQuantity or p.suggestedRestockQuantity le 0}">
+                                                    <span class="text-xs text-400">Tồn kho tối ưu</span>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </p:rowExpansion>
+                </p:dataTable>
+            </div>
+
+            <!-- Section 2: Stock Movement Audit History -->
+            <div class="bg-white border-round-sm border-1 border-gray-200 overflow-hidden">
+                <div class="p-3 bg-stone-50 border-bottom-1 border-gray-200 flex justify-content-between align-items-center">
+                    <span class="font-semibold text-xs text-gray-800 uppercase tracking-wider">
+                        <i class="pi pi-history text-xs mr-1 text-primary"></i> Nhật Ký Biến Động Kho (Nhập Hàng, Bán Hàng &amp; Hoàn Trả)
+                    </span>
+                    <span class="text-xs text-500">50 giao dịch gần nhất</span>
+                </div>
+
+                <p:dataTable id="historyTable" value="#{inventoryBean.transactionHistory}" var="tx"
+                             emptyMessage="Chưa có lịch sử giao dịch kho"
+                             styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;"
+                             paginator="true" rows="10" paginatorPosition="bottom"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
+
+                    <!-- Date & Time -->
+                    <p:column headerText="Thời Gian" style="width: 150px;" styleClass="text-xs text-500">
+                        <h:outputText value="#{tx.createdAt}">
+                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" timeZone="Asia/Ho_Chi_Minh" />
+                        </h:outputText>
+                    </p:column>
+
+                    <!-- Transaction Type -->
+                    <p:column headerText="Loại GD" style="width: 120px;" styleClass="text-xs text-center">
+                        <h:panelGroup rendered="#{tx.transactionType eq 'IMPORT'}">
+                            <span class="status-pill pill-delivered font-semibold">
+                                <i class="pi pi-arrow-down-left text-xs mr-1"></i> Nhập Hàng
+                            </span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{tx.transactionType eq 'SALE'}">
+                            <span class="status-pill pill-pending font-semibold">
+                                <i class="pi pi-arrow-up-right text-xs mr-1"></i> Xuất Bán
+                            </span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{tx.transactionType eq 'RETURN'}">
+                            <span class="status-pill pill-confirmed font-semibold">
+                                <i class="pi pi-replay text-xs mr-1"></i> Hủy Hoàn Kho
+                            </span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{tx.transactionType eq 'ADJUSTMENT'}">
+                            <span class="status-pill pill-shipped font-semibold">
+                                <i class="pi pi-sliders-h text-xs mr-1"></i> Điều Chỉnh
+                            </span>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <!-- Product -->
+                    <p:column headerText="Sản Phẩm" style="min-width: 180px;" styleClass="text-xs">
+                        <span class="font-semibold text-gray-900">#{tx.productName}</span>
+                        <span class="text-400 text-xs block font-mono">#{tx.productCode}</span>
+                    </p:column>
+
+                    <!-- Quantity Changed -->
+                    <p:column headerText="Biến Động" style="width: 120px;" styleClass="text-xs text-center">
+                        <h:panelGroup rendered="#{tx.quantityChanged gt 0}">
+                            <span class="font-bold text-green-700 text-sm font-mono">+<h:outputText value="#{tx.quantityChanged}"><f:convertNumber pattern="#,##0.##" /></h:outputText> #{tx.unit}</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{tx.quantityChanged lt 0}">
+                            <span class="font-bold text-red-600 text-sm font-mono"><h:outputText value="#{tx.quantityChanged}"><f:convertNumber pattern="#,##0.##" /></h:outputText> #{tx.unit}</span>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <!-- Unit Cost -->
+                    <p:column headerText="Đơn Giá Vốn" style="width: 120px;" styleClass="text-xs text-right font-mono">
+                        <h:outputText value="#{tx.unitCost}">
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputText>₫
+                    </p:column>
+
+                    <!-- User Performer -->
+                    <p:column headerText="Người Thực Hiện" style="width: 130px;" styleClass="text-xs text-500">
+                        #{tx.userName}
+                    </p:column>
+
+                    <!-- Supplier -->
+                    <p:column headerText="Nhà Cung Cấp" style="width: 140px;" styleClass="text-xs text-500">
+                        #{not empty tx.supplierName ? tx.supplierName : '—'}
+                    </p:column>
+
+                    <!-- Reason -->
+                    <p:column headerText="Lý Do / Ghi Chú" style="min-width: 200px;" styleClass="text-xs text-600">
+                        #{tx.reason}
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </h:form>
+
+        <!-- Stock Import Dialog -->
+        <p:dialog id="importDialog" widgetVar="importDialog" modal="true" responsive="true"
+                  header="Phiếu Nhập Hàng Vào Kho" width="540" fitViewport="true"
+                  showEffect="fade" hideEffect="fade" closeOnEscape="true">
+            <h:form id="importDialogForm">
+                <p:outputPanel id="importDialogPanel" styleClass="p-2">
+                    <div class="grid">
+                        <!-- Product Selection (p:autoComplete with suggestions) -->
+                        <div class="col-12 field mb-3">
+                            <label for="prodSelect" class="form-label">
+                                Sản Phẩm Nhập Kho <span class="required-star">*</span>
+                            </label>
+                            <p:autoComplete id="prodSelect" value="#{inventoryBean.selectedProduct}"
+                                            completeMethod="#{inventoryBean.completeProduct}"
+                                            var="p" itemLabel="#{p.name} (#{p.productCode}) - Tồn: #{p.stockQuantity} #{p.unit}"
+                                            itemValue="#{p}" converter="#{productConverter}"
+                                            dropdown="true" forceSelection="true"
+                                            placeholder="Gõ tên hoặc mã sản phẩm để gợi ý..."
+                                            styleClass="w-full text-xs" inputStyleClass="w-full text-xs"
+                                            required="true" requiredMessage="Vui lòng chọn sản phẩm">
+                                <p:ajax event="itemSelect" listener="#{inventoryBean.onProductSelected()}" update="suppSelect costInput" />
+                            </p:autoComplete>
+                            <p:message for="prodSelect" styleClass="mt-1" />
+                        </div>
+
+                        <!-- Supplier Selection (p:autoComplete with suggestions) -->
+                        <div class="col-12 field mb-3">
+                            <label for="suppSelect" class="form-label">
+                                Nhà Cung Cấp Lô Hàng
+                            </label>
+                            <p:autoComplete id="suppSelect" value="#{inventoryBean.selectedSupplier}"
+                                            completeMethod="#{inventoryBean.completeSupplier}"
+                                            var="s" itemLabel="#{s.name} (#{s.supplierCode})" itemValue="#{s}"
+                                            converter="#{supplierConverter}"
+                                            dropdown="true" forceSelection="true"
+                                            placeholder="Gõ tên hoặc mã NCC để gợi ý..."
+                                            styleClass="w-full text-xs" inputStyleClass="w-full text-xs">
+                                <p:ajax event="itemSelect" process="@this" />
+                            </p:autoComplete>
+                        </div>
+
+                        <!-- Import Quantity -->
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="qtyInput" class="form-label">
+                                Số Lượng Nhập <span class="required-star">*</span>
+                            </label>
+                            <p:inputNumber id="qtyInput" value="#{inventoryBean.importQuantity}"
+                                           minValue="0.01" decimalPlaces="2"
+                                           inputStyleClass="w-full text-xs" required="true"
+                                           requiredMessage="Vui lòng nhập số lượng" />
+                            <p:message for="qtyInput" styleClass="mt-1" />
+                        </div>
+
+                        <!-- Import Cost Price -->
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="costInput" class="form-label">
+                                Đơn Giá Vốn Nhập (VNĐ) <span class="required-star">*</span>
+                            </label>
+                            <p:inputNumber id="costInput" value="#{inventoryBean.importCostPrice}"
+                                           minValue="0" decimalPlaces="0" symbol=" ₫" symbolPosition="s"
+                                           inputStyleClass="w-full text-xs" required="true"
+                                           requiredMessage="Vui lòng nhập đơn giá vốn" />
+                            <p:message for="costInput" styleClass="mt-1" />
+                        </div>
+
+                        <!-- Reason / Note -->
+                        <div class="col-12 field mb-3">
+                            <label for="reasonInput" class="form-label">
+                                Ghi Chú / Lý Do / Số Hóa Đơn Nhập
+                            </label>
+                            <p:inputText id="reasonInput" value="#{inventoryBean.importReason}"
+                                         styleClass="w-full text-xs" placeholder="Ví dụ: Nhập bổ sung lô hàng VietGAP từ HTX..." />
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="col-12 border-top-1 border-gray-200 pt-3 flex justify-content-end gap-2">
+                            <p:commandButton value="Hủy Bỏ" type="button" onclick="PF('importDialog').hide()"
+                                             styleClass="ui-button-secondary text-xs" />
+                            <p:commandButton value="Xác Nhận Nhập Kho" icon="pi pi-check"
+                                             actionListener="#{inventoryBean.executeStockImport()}"
+                                             process="@form"
+                                             update="importDialogPanel :mainForm :messages"
+                                             styleClass="cta-btn text-xs px-3 py-2" />
+                        </div>
+                    </div>
+                </p:outputPanel>
+            </h:form>
+        </p:dialog>
+
+        <!-- Stock Adjustment Dialog (Kiểm kê / Điều chỉnh tồn kho) -->
+        <p:dialog id="adjustDialog" widgetVar="adjustDialog" modal="true" responsive="true"
+                  header="Kiểm Kê &amp; Điều Chỉnh Tồn Kho" width="500" fitViewport="true"
+                  showEffect="fade" hideEffect="fade" closeOnEscape="true">
+            <h:form id="adjustDialogForm">
+                <p:outputPanel id="adjustDialogPanel" styleClass="p-2">
+                    <div class="grid">
+                        <!-- Product Name -->
+                        <div class="col-12 field mb-3">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Sản Phẩm</label>
+                            <div class="p-2 bg-stone-100 border-round-xs text-xs font-semibold text-gray-900">
+                                #{inventoryBean.adjustmentProductName}
+                            </div>
+                        </div>
+
+                        <!-- Current Stock -->
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Tồn Kho Hiện Tại</label>
+                            <div class="p-2 bg-stone-100 border-round-xs text-xs font-bold text-gray-700">
+                                #{inventoryBean.adjustmentCurrentStock}
+                            </div>
+                        </div>
+
+                        <!-- Adjustment Type -->
+                        <div class="col-12 sm:col-6 field mb-3">
+                            <label for="adjustType" class="block text-xs font-semibold text-gray-700 mb-1">
+                                Loại Điều Chỉnh <span class="text-red-500">*</span>
+                            </label>
+                            <p:selectOneMenu id="adjustType" value="#{inventoryBean.adjustmentType}" styleClass="w-full text-xs">
+                                <f:selectItem itemLabel="= Khớp thực tế (CORRECTION)" itemValue="CORRECTION" />
+                                <f:selectItem itemLabel="+ Bổ sung thêm (ADD)" itemValue="ADD" />
+                                <f:selectItem itemLabel="- Xuất giảm / Hỏng (REMOVE)" itemValue="REMOVE" />
+                            </p:selectOneMenu>
+                        </div>
+
+                        <!-- New Quantity or Delta Quantity -->
+                        <div class="col-12 field mb-3">
+                            <label for="adjustQtyInput" class="block text-xs font-semibold text-gray-700 mb-1">
+                                Số Lượng <span class="text-red-500">*</span>
+                            </label>
+                            <p:inputNumber id="adjustQtyInput" value="#{inventoryBean.adjustmentQuantity}"
+                                           minValue="0" decimalPlaces="2"
+                                           inputStyleClass="w-full text-xs" required="true"
+                                           requiredMessage="Vui lòng nhập số lượng" />
+                            <p:message for="adjustQtyInput" styleClass="mt-1" />
+                        </div>
+
+                        <!-- Mandatory Reason -->
+                        <div class="col-12 field mb-3">
+                            <label for="adjustReasonInput" class="block text-xs font-semibold text-gray-700 mb-1">
+                                Lý Do Điều Chỉnh <span class="text-red-500">*</span>
+                            </label>
+                            <p:inputText id="adjustReasonInput" value="#{inventoryBean.adjustmentReason}"
+                                         required="true" requiredMessage="Vui lòng nhập lý do điều chỉnh tồn kho"
+                                         styleClass="w-full text-xs" 
+                                         placeholder="Ví dụ: Kiểm kê định kỳ, hàng dập nát hủy bỏ..." />
+                            <p:message for="adjustReasonInput" styleClass="mt-1" />
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="col-12 border-top-1 border-gray-200 pt-3 flex justify-content-end gap-2">
+                            <p:commandButton value="Hủy Bỏ" type="button" onclick="PF('adjustDialog').hide()"
+                                             styleClass="ui-button-secondary text-xs" />
+                            <p:commandButton value="Lưu Điều Chỉnh" icon="pi pi-check"
+                                             actionListener="#{inventoryBean.executeStockAdjustment()}"
+                                             process="@form"
+                                             update="adjustDialogPanel :mainForm :messages"
+                                             styleClass="cta-btn text-xs px-3 py-2" />
+                        </div>
+                    </div>
+                </p:outputPanel>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>
+</html>

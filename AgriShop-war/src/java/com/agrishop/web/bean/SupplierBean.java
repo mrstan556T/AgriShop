@@ -23,8 +23,14 @@ public class SupplierBean extends AbstractCrudBean<SupplierDTO> implements Seria
     @EJB
     private SupplierServiceLocal supplierService;
 
+    @EJB
+    private com.agrishop.service.DashboardServiceLocal dashboardService;
+
+    private List<com.agrishop.dto.SupplierPerformanceDTO> performanceList;
+
     @PostConstruct
     public void init() {
+        loadPerformanceData();
         lazyModel = new LazyDataModel<SupplierDTO>() {
             @Override
             public int count(Map<String, FilterMeta> filterBy) {
@@ -58,6 +64,15 @@ public class SupplierBean extends AbstractCrudBean<SupplierDTO> implements Seria
 
     @Override
     protected void performSave() throws Exception {
+        if (currentItem.getSupplierCode() == null || currentItem.getSupplierCode().trim().isEmpty()) {
+            throw new com.agrishop.exception.BusinessException("Mã nhà cung cấp không được để trống");
+        }
+        if (currentItem.getName() == null || currentItem.getName().trim().isEmpty()) {
+            throw new com.agrishop.exception.BusinessException("Tên nhà cung cấp không được để trống");
+        }
+        if (currentItem.getPhone() != null && !currentItem.getPhone().trim().isEmpty() && !currentItem.getPhone().trim().matches("^0[0-9]{9,10}$")) {
+            throw new com.agrishop.exception.BusinessException("Số điện thoại không hợp lệ (gồm 10-11 số, bắt đầu bằng 0)");
+        }
         if (editMode) {
             supplierService.updateSupplier(currentItem);
         } else {
@@ -73,5 +88,19 @@ public class SupplierBean extends AbstractCrudBean<SupplierDTO> implements Seria
     @Override
     protected String getItemName() {
         return "Nhà cung cấp";
+    }
+
+    public void loadPerformanceData() {
+        try {
+            if (dashboardService != null) {
+                this.performanceList = dashboardService.getSupplierPerformanceRanking();
+            }
+        } catch (Exception e) {
+            this.performanceList = new java.util.ArrayList<>();
+        }
+    }
+
+    public List<com.agrishop.dto.SupplierPerformanceDTO> getPerformanceList() {
+        return performanceList;
     }
 }

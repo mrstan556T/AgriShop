@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+<f:metadata>
+    <f:viewParam name="token" value="#{accountActivationBean.token}" />
+    <f:viewAction action="#{accountActivationBean.processActivation}" />
+</f:metadata>
+<h:head>
+    <title>Kích Hoạt Tài Khoản - AgriShop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.1/primeflex.min.css" />
+    <h:outputStylesheet library="css" name="theme.css" />
+    <link rel="stylesheet" href="#{request.contextPath}/resources/css/storefront.css?v=#{session.lastAccessedTime}" />
+</h:head>
+<h:body>
+    <div class="auth-page-wrapper">
+        <div class="bg-white border-1 border-gray-200 border-round-xl p-5 md:p-7 text-center shadow-2" style="max-width: 520px; width: 100%; margin: 2rem auto;">
+            
+            <div class="mb-4">
+                <h:link outcome="/index.xhtml" styleClass="inline-flex align-items-center gap-2 no-underline text-gray-900 font-bold text-xl">
+                    <div class="w-2.5rem h-2.5rem border-round bg-primary text-white flex align-items-center justify-content-center">
+                        <i class="pi pi-shopping-bag"></i>
+                    </div>
+                    <span>AgriShop</span>
+                </h:link>
+            </div>
+
+            <!-- Trạng thái: Thành công -->
+            <h:panelGroup rendered="#{accountActivationBean.activated == true}">
+                <div class="w-5rem h-5rem border-circle bg-green-50 border-2 border-green-500 text-green-600 flex align-items-center justify-content-center mx-auto mb-4 text-3xl">
+                    <i class="pi pi-check"></i>
+                </div>
+                <h1 class="font-heading text-2xl font-bold text-gray-900 mb-2">Kích Hoạt Thành Công!</h1>
+                <p class="text-sm text-600 line-height-3 mb-5">
+                    #{accountActivationBean.message}
+                </p>
+                <p:button outcome="/login.xhtml" value="Đăng Nhập Mua Sắm Ngay" 
+                          styleClass="auth-submit-btn" icon="pi pi-sign-in" 
+                          style="height: 44px; display: inline-flex; align-items: center; justify-content: center;" />
+            </h:panelGroup>
+
+            <!-- Trạng thái: Thất bại / Hết hạn -->
+            <h:panelGroup rendered="#{accountActivationBean.activated == false}">
+                <div class="w-5rem h-5rem border-circle bg-red-50 border-2 border-red-500 text-red-600 flex align-items-center justify-content-center mx-auto mb-4 text-3xl">
+                    <i class="pi pi-times"></i>
+                </div>
+                <h1 class="font-heading text-2xl font-bold text-gray-900 mb-2">Kích Hoạt Không Thành Công</h1>
+                <p class="text-sm text-600 line-height-3 mb-5">
+                    #{accountActivationBean.message}
+                </p>
+                <div class="flex flex-column sm:flex-row gap-3 justify-content-center">
+                    <p:button outcome="/register.xhtml" value="Đăng Ký Tài Khoản Mới" 
+                              styleClass="ui-button-outlined border-round-sm" icon="pi pi-user-plus" 
+                              style="height: 44px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; padding: 0 1.25rem;" />
+                    <p:button outcome="/login.xhtml" value="Về Trang Đăng Nhập" 
+                              styleClass="auth-submit-btn border-round-sm" icon="pi pi-arrow-left" 
+                              style="height: 44px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; padding: 0 1.25rem;" />
+                </div>
+            </h:panelGroup>
+
+            <div class="pt-4 border-top-1 border-gray-200 mt-5 text-xs text-500">
+                Cần trợ giúp? Hotline: <strong class="text-primary">1900 6868</strong> hoặc email <strong>support@agrishop.vn</strong>
+            </div>
+        </div>
+    </div>
+</h:body>
+</html>

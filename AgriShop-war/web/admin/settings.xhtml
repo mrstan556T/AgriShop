@@ -1,0 +1,121 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/adminTemplate.xhtml">
+
+    <ui:define name="title">Cấu Hình Hệ Thống - AgriShop</ui:define>
+    <ui:define name="breadcrumb">
+        <h:link outcome="/admin/settings.xhtml">Hệ Thống</h:link>
+        <span class="separator">/</span>
+        <span class="active">Cấu Hình Vận Hành</span>
+    </ui:define>
+    <ui:define name="pageTitle">Cấu Hình Tham Số Nghiệp Vụ</ui:define>
+
+    <ui:define name="content">
+        <h:form id="settingsForm">
+            <!-- Header Section -->
+            <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="font-heading font-semibold text-xl text-gray-900 m-0">Tham Số Vận Hành &amp; Chính Sách Bán Hàng</h2>
+                    <span class="text-xs text-500">Tùy chỉnh linh hoạt ngưỡng miễn phí giao hàng, cước phí và chính sách đổi trả nông sản mà không cần hardcode</span>
+                </div>
+                <div>
+                    <p:commandButton value="Lưu Cấu Hình" icon="pi pi-save" 
+                                     action="#{systemSettingBean.saveSettings()}" 
+                                     update="@form :growlMessages" 
+                                     styleClass="cta-btn text-xs px-3 py-2 shadow-xs" />
+                </div>
+            </div>
+
+            <!-- Settings Cards Grid -->
+            <div class="grid">
+                
+                <!-- Group 1: Vận Chuyển & Đóng Gói -->
+                <div class="col-12 lg:col-6">
+                    <div class="admin-table-box p-4 h-full">
+                        <div class="flex align-items-center gap-2 mb-3 pb-2 border-bottom-1 border-gray-100">
+                            <div class="w-2rem h-2rem border-round-sm bg-green-50 text-green-700 flex align-items-center justify-content-center text-sm">
+                                <i class="pi pi-truck"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-heading font-semibold text-sm text-gray-900 m-0">Chính Sách Vận Chuyển &amp; Giao Nhận</h3>
+                                <span class="text-xs text-500">Cấu hình tính phí tự động tại bước Checkout của khách hàng</span>
+                            </div>
+                        </div>
+
+                        <!-- 1. Ngưỡng Freeship -->
+                        <div class="field mb-4">
+                            <label for="freeship" class="block font-medium text-xs text-gray-800 mb-1">
+                                Ngưỡng Miễn Phí Vận Chuyển (VNĐ) <span class="text-red-500">*</span>
+                            </label>
+                            <p:inputNumber id="freeship" value="#{systemSettingBean.freeShippingThreshold}" 
+                                           symbol=" ₫" symbolPosition="s" decimalPlaces="0" thousandSeparator="." 
+                                           styleClass="w-full text-xs font-mono" required="true" 
+                                           requiredMessage="Vui lòng nhập ngưỡng miễn phí giao hàng" />
+                            <small class="text-500 text-xs block mt-1 line-height-2">
+                                Khi đơn hàng có tổng tiền hàng nông sản đạt từ số tiền này trở lên, hệ thống sẽ tự động áp dụng <strong>Miễn phí vận chuyển (0₫)</strong>.
+                            </small>
+                        </div>
+
+                        <!-- 2. Cước Phí Giao Hàng Tiêu Chuẩn -->
+                        <div class="field mb-2">
+                            <label for="shippingFee" class="block font-medium text-xs text-gray-800 mb-1">
+                                Phí Giao Hàng &amp; Bảo Quản Tiêu Chuẩn (VNĐ) <span class="text-red-500">*</span>
+                            </label>
+                            <p:inputNumber id="shippingFee" value="#{systemSettingBean.shippingFee}" 
+                                           symbol=" ₫" symbolPosition="s" decimalPlaces="0" thousandSeparator="." 
+                                           styleClass="w-full text-xs font-mono" required="true" 
+                                           requiredMessage="Vui lòng nhập cước phí giao hàng tiêu chuẩn" />
+                            <small class="text-500 text-xs block mt-1 line-height-2">
+                                Mức phí cộng thêm khi đơn hàng chưa đạt ngưỡng freeship (đã bao gồm thùng xốp giữ nhiệt và đá khô bảo quản độ tươi của rau củ).
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group 2: Hậu Mãi & Đổi Trả -->
+                <div class="col-12 lg:col-6">
+                    <div class="admin-table-box p-4 h-full">
+                        <div class="flex align-items-center gap-2 mb-3 pb-2 border-bottom-1 border-gray-100">
+                            <div class="w-2rem h-2rem border-round-sm bg-blue-50 text-blue-700 flex align-items-center justify-content-center text-sm">
+                                <i class="pi pi-replay"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-heading font-semibold text-sm text-gray-900 m-0">Chính Sách Khiếu Nại &amp; Đổi Trả</h3>
+                                <span class="text-xs text-500">Giới hạn thời gian bảo vệ quyền lợi người tiêu dùng</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. Thời Hạn Đổi Trả -->
+                        <div class="field mb-4">
+                            <label for="returnDays" class="block font-medium text-xs text-gray-800 mb-1">
+                                Thời Hạn Cho Phép Yêu Cầu Đổi Trả (Ngày) <span class="text-red-500">*</span>
+                            </label>
+                            <p:inputNumber id="returnDays" value="#{systemSettingBean.returnWindowDays}" 
+                                           symbol=" ngày" symbolPosition="s" decimalPlaces="0" 
+                                           minValue="1" maxValue="90" styleClass="w-full text-xs font-mono" 
+                                           required="true" requiredMessage="Vui lòng nhập thời hạn đổi trả" />
+                            <small class="text-500 text-xs block mt-1 line-height-2">
+                                Số ngày tối đa tính từ thời điểm đơn hàng giao thành công (<code>DELIVERED</code>) để khách hàng có thể gửi yêu cầu khiếu nại chất lượng nông sản.
+                            </small>
+                        </div>
+
+                        <!-- Info Box -->
+                        <div class="p-3 border-round-sm bg-stone-50 border-1 border-gray-200 mt-3">
+                            <div class="flex align-items-center gap-2 mb-1">
+                                <i class="pi pi-shield text-green-700 text-xs"></i>
+                                <span class="font-semibold text-xs text-gray-800">Cam Kết Chất Lượng Nông Sản</span>
+                            </div>
+                            <p class="text-xs text-500 m-0 line-height-2">
+                                Đối với nông sản tươi sống dễ hỏng, khuyến nghị cấu hình thời hạn từ <strong>3 đến 7 ngày</strong> để đảm bảo khả năng kiểm định và xử lý kho chính xác nhất.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

@@ -41,7 +41,18 @@ public class CategoryRepository implements CategoryRepositoryLocal {
 
     @Override
     public void delete(Category category) {
-        em.merge(category);
+        if (category != null) {
+            em.remove(em.contains(category) ? category : em.merge(category));
+        }
+    }
+
+    @Override
+    public List<Category> searchByName(String keyword) {
+        String searchPattern = "%" + (keyword == null ? "" : keyword.toLowerCase().trim()) + "%";
+        return em.createQuery("SELECT c FROM Category c WHERE c.isDeleted = false AND LOWER(c.name) LIKE :kw", Category.class)
+                 .setParameter("kw", searchPattern)
+                 .setMaxResults(20)
+                 .getResultList();
     }
 
     @Override

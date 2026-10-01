@@ -9,6 +9,7 @@ import java.util.List;
 @Local
 public interface CategoryServiceLocal {
     List<CategoryDTO> getAllActiveCategories();
+    List<CategoryDTO> searchByName(String keyword);
     PageResponseDTO<CategoryDTO> getCategoriesWithPagination(PageRequestDTO request);
     void createCategory(CategoryDTO dto);
     void updateCategory(CategoryDTO dto);

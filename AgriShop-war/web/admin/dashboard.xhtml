@@ -7,72 +7,534 @@
       xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="/WEB-INF/templates/adminTemplate.xhtml">
-    <ui:define name="title">Dashboard - AgriShop</ui:define>
-    <ui:define name="pageTitle">Tổng quan (Dashboard)</ui:define>
+    <ui:define name="title">Dashboard - Quản Trị AgriShop</ui:define>
+    <ui:define name="breadcrumb"><span class="active">Dashboard</span></ui:define>
+    <ui:define name="pageTitle">Tổng Quan Hệ Thống &amp; Hiệu Quả Tài Chính</ui:define>
 
     <ui:define name="content">
-        <div class="grid">
-            <div class="col-12 md:col-6 lg:col-3">
-                <p:card styleClass="mb-3" style="border-left: 5px solid var(--primary-color);">
-                    <div class="flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <span class="block text-500 font-medium mb-3">Sản phẩm</span>
-                            <div class="text-900 font-medium text-xl">Đang tải...</div>
-                        </div>
-                        <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width:2.5rem;height:2.5rem">
-                            <i class="pi pi-shopping-bag text-blue-500 text-xl"></i>
-                        </div>
+        <!-- Date Filter Toolbar (Enterprise Dashboard Requirement) -->
+        <h:form id="filterForm" styleClass="mb-4">
+            <div class="flex flex-column sm:flex-row justify-content-between align-items-center bg-white p-3 border-round-md border-1 border-gray-200 shadow-xs gap-3">
+                <div class="flex align-items-center gap-2">
+                    <div class="w-2rem h-2rem border-round-sm bg-green-50 flex align-items-center justify-content-center text-primary">
+                        <i class="pi pi-calendar text-sm"></i>
                     </div>
-                </p:card>
+                    <div>
+                        <span class="font-semibold text-gray-900 text-xs block">Khoảng Thời Gian Báo Cáo</span>
+                        <span class="text-xs text-500">Tự động cập nhật toàn bộ chỉ số tài chính &amp; kho hàng</span>
+                    </div>
+                </div>
+                <div class="flex align-items-center gap-2">
+                    <p:selectOneMenu id="dateFilter" value="#{dashboardBean.dateFilter}" styleClass="w-12rem text-xs" style="height: 36px;">
+                        <f:selectItem itemLabel="30 Ngày Gần Nhất" itemValue="30_DAYS" />
+                        <f:selectItem itemLabel="Hôm Nay" itemValue="TODAY" />
+                        <f:selectItem itemLabel="7 Ngày Gần Nhất" itemValue="7_DAYS" />
+                        <f:selectItem itemLabel="Tháng Này" itemValue="THIS_MONTH" />
+                        <f:selectItem itemLabel="Toàn Thời Gian" itemValue="ALL" />
+                        <p:ajax listener="#{dashboardBean.onDateFilterChange}" update="@all" />
+                    </p:selectOneMenu>
+                    <p:commandButton icon="pi pi-refresh" title="Làm mới số liệu" action="#{dashboardBean.onDateFilterChange}" update="@all" 
+                                     styleClass="ui-button-outlined ui-button-secondary btn-toolbar-refresh text-xs" />
+                </div>
             </div>
-            
-            <div class="col-12 md:col-6 lg:col-3">
-                <p:card styleClass="mb-3" style="border-left: 5px solid #22c55e;">
-                    <div class="flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <span class="block text-500 font-medium mb-3">Doanh thu</span>
-                            <div class="text-900 font-medium text-xl">Đang tải...</div>
+        </h:form>
+
+        <!-- Row 1: 4 Core Financial KPI Cards -->
+        <div class="grid mb-4">
+            <!-- Metric 1: Revenue -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Doanh Thu Thuần (Net Sales)</div>
+                        <div class="kpi-number text-primary">
+                            <h:outputText value="#{dashboardBean.totalRevenue}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>₫
                         </div>
-                        <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width:2.5rem;height:2.5rem">
-                            <i class="pi pi-dollar text-green-500 text-xl"></i>
+                        <div class="text-xs text-500 mt-2 flex align-items-center gap-1">
+                            <i class="pi pi-check-circle text-xs text-primary"></i>
+                            <span>Đơn hàng đã giao thành công</span>
                         </div>
                     </div>
-                </p:card>
+                    <div class="kpi-icon-box">
+                        <i class="pi pi-dollar text-sm"></i>
+                    </div>
+                </div>
             </div>
-            
-            <div class="col-12 md:col-6 lg:col-3">
-                <p:card styleClass="mb-3" style="border-left: 5px solid #f59e0b;">
-                    <div class="flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <span class="block text-500 font-medium mb-3">Đơn hàng mới</span>
-                            <div class="text-900 font-medium text-xl">Đang tải...</div>
+
+            <!-- Metric 2: COGS (Giá vốn hàng bán) -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Tổng Giá Vốn (COGS)</div>
+                        <div class="kpi-number text-orange-600">
+                            <h:outputText value="#{dashboardBean.totalCost}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>₫
                         </div>
-                        <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width:2.5rem;height:2.5rem">
-                            <i class="pi pi-shopping-cart text-orange-500 text-xl"></i>
+                        <div class="text-xs text-500 mt-2 flex align-items-center gap-1">
+                            <i class="pi pi-tag text-xs text-orange-600"></i>
+                            <span>Vốn xuất bán thực tế</span>
                         </div>
                     </div>
-                </p:card>
+                    <div class="kpi-icon-box">
+                        <i class="pi pi-shopping-bag text-sm"></i>
+                    </div>
+                </div>
             </div>
-            
-            <div class="col-12 md:col-6 lg:col-3">
-                <p:card styleClass="mb-3" style="border-left: 5px solid #ef4444;">
-                    <div class="flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <span class="block text-500 font-medium mb-3">Khách hàng</span>
-                            <div class="text-900 font-medium text-xl">Đang tải...</div>
+
+            <!-- Metric 3: Gross Profit (Lời / Lỗ) -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Lợi Nhuận Gộp (Lời / Lỗ)</div>
+                        <div class="kpi-number #{dashboardBean.totalProfit ge 0 ? 'text-green-700' : 'text-red-600'}">
+                            #{dashboardBean.totalProfit ge 0 ? '+' : ''}<h:outputText value="#{dashboardBean.totalProfit}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>₫
                         </div>
-                        <div class="flex align-items-center justify-content-center bg-red-100 border-round" style="width:2.5rem;height:2.5rem">
-                            <i class="pi pi-users text-red-500 text-xl"></i>
+                        <div class="text-xs text-500 mt-2 flex align-items-center gap-1">
+                            <i class="pi pi-arrow-up-right text-xs #{dashboardBean.totalProfit ge 0 ? 'text-green-700' : 'text-red-600'}"></i>
+                            <span class="font-semibold #{dashboardBean.totalProfit ge 0 ? 'text-green-700' : 'text-red-600'}">
+                                #{dashboardBean.profitMargin}%
+                            </span>
+                            <span>tỷ suất lợi nhuận</span>
                         </div>
                     </div>
-                </p:card>
+                    <div class="kpi-icon-box">
+                        <i class="pi pi-chart-line text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric 4: Inventory Asset Valuation -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Giá Trị Kho Hàng (Vốn Tồn)</div>
+                        <div class="kpi-number">
+                            <h:outputText value="#{dashboardBean.totalInventoryValue}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>₫
+                        </div>
+                        <div class="text-xs text-500 mt-2 flex align-items-center gap-1">
+                            <i class="pi pi-inbox text-xs text-gray-600"></i>
+                            <span>#{dashboardBean.totalInventoryQuantity} món đang tồn kho</span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon-box">
+                        <i class="pi pi-wallet text-sm"></i>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <p:card>
-            <h3>Hệ thống Quản trị đã sẵn sàng</h3>
-            <p>Chọn các chức năng bên Menu trái để thao tác với dữ liệu. Giao diện được tối ưu hóa cho tốc độ và trải nghiệm.</p>
-        </p:card>
+
+        <!-- Row 2: Operational & Alert Cards -->
+        <div class="grid mb-4">
+            <!-- Metric 5: Total Orders -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Tổng Đơn Đặt Hàng</div>
+                        <div class="kpi-number">
+                            <h:outputText value="#{dashboardBean.totalOrders}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>
+                        </div>
+                        <div class="text-xs text-500 mt-1">Toàn bộ đơn hàng hệ thống</div>
+                    </div>
+                    <div class="kpi-icon-box"><i class="pi pi-shopping-cart text-sm"></i></div>
+                </div>
+            </div>
+
+            <!-- Metric 6: Total Products -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Mặt Hàng Kinh Doanh</div>
+                        <div class="kpi-number">
+                            <h:outputText value="#{dashboardBean.totalProducts}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>
+                        </div>
+                        <div class="text-xs text-500 mt-1">Nông sản đang phân phối</div>
+                    </div>
+                    <div class="kpi-icon-box"><i class="pi pi-box text-sm"></i></div>
+                </div>
+            </div>
+
+            <!-- Metric 7: Low Stock Warning -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Sắp Hết Hàng (≤ 5)</div>
+                        <div class="kpi-number #{dashboardBean.lowStockCount gt 0 ? 'text-amber-600' : 'text-gray-900'}">
+                            <h:outputText value="#{dashboardBean.lowStockCount}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>
+                        </div>
+                        <div class="text-xs text-500 mt-1">Cần nhập thêm vào kho</div>
+                    </div>
+                    <div class="kpi-icon-box"><i class="pi pi-exclamation-triangle text-sm"></i></div>
+                </div>
+            </div>
+
+            <!-- Metric 8: Out of Stock Alert -->
+            <div class="col-12 sm:col-6 lg:col-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Đã Hết Hàng (0)</div>
+                        <div class="kpi-number #{dashboardBean.outOfStockCount gt 0 ? 'text-red-600' : 'text-green-700'}">
+                            <h:outputText value="#{dashboardBean.outOfStockCount}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>
+                        </div>
+                        <div class="text-xs text-500 mt-1">#{dashboardBean.outOfStockCount gt 0 ? 'Tạm dừng cho khách mua' : 'Kho hàng đầy đủ'}</div>
+                    </div>
+                    <div class="kpi-icon-box"><i class="pi pi-ban text-sm"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Low Stock Alert with 30-day Velocity Restock Suggestions -->
+        <h:panelGroup layout="block" rendered="#{not empty dashboardBean.lowStockProductsWithSuggestions}" styleClass="mb-4">
+            <div class="bg-amber-50 border-round-sm p-3 border-1 border-amber-300">
+                <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-3 gap-2">
+                    <div class="flex align-items-center gap-2">
+                        <i class="pi pi-exclamation-triangle text-amber-600 text-lg"></i>
+                        <div>
+                            <span class="font-bold text-sm text-gray-900">Cảnh Báo Tồn Kho Thấp &amp; Gợi Ý Số Lượng Nhập Hàng (Dựa Trên Tốc Độ Bán 30 Ngày)</span>
+                            <div class="text-xs text-600">Thuật toán tự động ước tính nhu cầu nhập bù cho 30 ngày tới căn cứ vào tốc độ bán thực tế của từng mặt hàng.</div>
+                        </div>
+                    </div>
+                    <h:link outcome="/admin/inventory.xhtml" styleClass="ui-button ui-button-warning text-xs p-2 no-underline text-center border-round-sm flex align-items-center gap-1">
+                        <i class="pi pi-plus-circle text-xs"></i> Đến Quản Lý Kho Nhập Hàng
+                    </h:link>
+                </div>
+                <div class="grid">
+                    <ui:repeat value="#{dashboardBean.lowStockProductsWithSuggestions}" var="lsp">
+                        <div class="col-12 sm:col-6 lg:col-4">
+                            <div class="bg-white p-3 border-round-sm border-1 border-amber-200 shadow-sm flex flex-column justify-content-between h-full">
+                                <div>
+                                    <div class="flex justify-content-between align-items-start mb-1">
+                                        <span class="font-semibold text-xs text-gray-900">#{lsp.name}</span>
+                                        <span class="badge badge-danger text-xs font-bold">Tồn: #{lsp.stockQuantity} #{lsp.unit}</span>
+                                    </div>
+                                    <div class="text-xs text-500 mb-2">Định mức an toàn: #{lsp.minStock} #{lsp.unit}</div>
+                                    <div class="text-xs text-600 mb-1">
+                                        <i class="pi pi-chart-line text-xs mr-1 text-primary"></i>Tốc độ bán 30 ngày: 
+                                        <strong>
+                                            <h:outputText value="#{lsp.averageDailySale30d}">
+                                                <f:convertNumber pattern="#,##0.0" />
+                                            </h:outputText> #{lsp.unit}/ngày
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-2 border-top-1 border-gray-100 flex justify-content-between align-items-center">
+                                    <span class="text-xs font-bold text-green-700 bg-green-50 px-2 py-1 border-round border-1 border-green-200">
+                                        <i class="pi pi-arrow-circle-up text-xs mr-1"></i>Gợi ý nhập: +#{lsp.suggestedRestockQuantity} #{lsp.unit}
+                                    </span>
+                                    <h:link outcome="/admin/inventory.xhtml" styleClass="text-xs text-primary font-semibold no-underline hover:underline">
+                                        Nhập kho &#8594;
+                                    </h:link>
+                                </div>
+                            </div>
+                        </div>
+                    </ui:repeat>
+                </div>
+            </div>
+        </h:panelGroup>
+
+        <!-- Charts & Top Products Row -->
+        <div class="grid">
+            <!-- Left Chart Container: Financial Comparison -->
+            <div class="col-12 lg:col-7">
+                <div class="bg-white border-round-sm p-4 border-1 border-gray-200 h-full">
+                    <div class="flex justify-content-between align-items-center mb-4 pb-3 border-bottom-1 border-gray-100">
+                        <div>
+                            <h3 class="font-heading text-base font-semibold text-gray-900 m-0">
+                                Đối Soát Tài Chính: Doanh Thu - Giá Vốn - Lợi Nhuận
+                            </h3>
+                            <span class="text-xs text-500">Biểu đồ cơ cấu tài chính các đơn hàng thành công</span>
+                        </div>
+                        <span class="text-xs font-medium text-500 border-1 border-gray-200 px-2 py-1 border-round-sm">ĐVT: VNĐ</span>
+                    </div>
+
+                    <div style="min-height: 300px;">
+                        <p:barChart model="#{dashboardBean.revenueChartModel}" style="width: 100%; height: 300px;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Top Profitable Products & Quick Actions -->
+            <div class="col-12 lg:col-5">
+                <div class="bg-white border-round-sm p-4 border-1 border-gray-200 h-full flex flex-column justify-content-between">
+                    <div>
+                        <div class="flex justify-content-between align-items-center mb-3 pb-3 border-bottom-1 border-gray-100">
+                            <h3 class="font-heading text-base font-semibold text-gray-900 m-0">
+                                Top Sản Phẩm Sinh Lời Cao Nhất
+                            </h3>
+                            <span class="text-xs text-500">Lãi gộp</span>
+                        </div>
+
+                        <!-- List Top Products -->
+                        <div class="flex flex-column gap-2.5 mb-4">
+                            <ui:repeat value="#{dashboardBean.topProfitableProducts}" var="tp">
+                                <div class="p-2.5 border-round-sm border-1 border-gray-100 bg-stone-50 flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="font-semibold text-xs text-gray-900">#{tp.name}</div>
+                                        <div class="text-xs text-500">Đã bán: #{tp.totalSold} #{tp.unit} • Tồn: #{tp.stockQuantity}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-xs font-bold text-green-700">
+                                            +<h:outputText value="#{tp.profit}">
+                                                <f:convertNumber pattern="#,##0" />
+                                            </h:outputText>₫
+                                        </div>
+                                        <div class="text-xs text-400">
+                                            Doanh thu: <h:outputText value="#{tp.revenue}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                        </div>
+                                    </div>
+                                </div>
+                            </ui:repeat>
+                            <h:panelGroup rendered="#{empty dashboardBean.topProfitableProducts}">
+                                <div class="text-xs text-500 text-center p-4">Chưa có dữ liệu lợi nhuận từ đơn hàng giao dịch.</div>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+
+                    <!-- Quick Action Shortcuts -->
+                    <div class="pt-3 border-top-1 border-gray-100">
+                        <span class="text-xs font-medium text-500 uppercase tracking-wider block mb-2">Thao tác kho &amp; hàng hóa</span>
+                        <div class="grid">
+                            <div class="col-6">
+                                <h:link outcome="/admin/inventory.xhtml" class="ui-button cta-btn text-xs p-2 no-underline text-center border-round-sm flex align-items-center justify-content-center gap-1.5 w-full">
+                                    <i class="pi pi-inbox text-xs"></i> Nhập Hàng &amp; Kho
+                                </h:link>
+                            </div>
+                            <div class="col-6">
+                                <h:link outcome="/admin/product.xhtml" class="ui-button ui-button-secondary text-xs p-2 no-underline text-center border-round-sm flex align-items-center justify-content-center gap-1.5 w-full">
+                                    <i class="pi pi-box text-xs"></i> Quản Lý Sản Phẩm
+                                </h:link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Inventory Turnover Analysis & Tied-Up Capital Warning -->
+        <div class="mt-4">
+            <h:form id="turnoverForm">
+                <p:outputPanel id="turnoverSection" styleClass="bg-white border-round-sm p-4 border-1 border-gray-200">
+                    <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-4 pb-3 border-bottom-1 border-gray-100 gap-2">
+                        <div>
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-sync text-primary text-base"></i>
+                                <h3 class="font-heading text-base font-semibold text-gray-900 m-0">
+                                    Báo Cáo Vòng Quay Tồn Kho (Inventory Turnover) &amp; Cảnh Báo Ứ Đọng Vốn
+                                </h3>
+                            </div>
+                            <span class="text-xs text-500">
+                                Công thức: Hệ số vòng quay = Tổng xuất bán / Tồn kho bình quân. Hệ số càng cao hàng bán càng chạy; hệ số &lt; 1.0 cảnh báo nguy cơ tồn kho ứ đọng vốn.
+                            </span>
+                        </div>
+                        <div class="flex align-items-center gap-2">
+                            <span class="text-xs font-semibold text-gray-700">Kỳ đánh giá:</span>
+                            <p:selectOneButton value="#{dashboardBean.turnoverPeriod}" styleClass="text-xs">
+                                <f:selectItem itemLabel="Theo Tháng" itemValue="MONTH" />
+                                <f:selectItem itemLabel="Theo Quý" itemValue="QUARTER" />
+                                <p:ajax listener="#{dashboardBean.onTurnoverPeriodChange}" update="turnoverSection" />
+                            </p:selectOneButton>
+                        </div>
+                    </div>
+
+                    <div class="grid">
+                        <!-- Turnover Bar Chart -->
+                        <div class="col-12 lg:col-7">
+                            <div class="p-2 border-round-sm border-1 border-gray-100 bg-stone-50 mb-3 md:mb-0">
+                                <div class="flex justify-content-between align-items-center mb-2 px-2 pt-1">
+                                    <span class="text-xs font-bold text-gray-800">Biểu Đồ Hệ Số Vòng Quay Từng Mặt Hàng</span>
+                                    <div class="flex items-center gap-2 text-xs">
+                                        <span class="inline-block w-2rem text-center border-round text-white font-bold" style="background:#ef4444; font-size:10px;">&lt; 1.0</span> <span class="text-500 text-xs">Chậm</span>
+                                        <span class="inline-block w-2rem text-center border-round text-white font-bold ml-1" style="background:#3b82f6; font-size:10px;">1.0-2.5</span> <span class="text-500 text-xs">Ổn</span>
+                                        <span class="inline-block w-2rem text-center border-round text-white font-bold ml-1" style="background:#10b981; font-size:10px;">&gt; 2.5</span> <span class="text-500 text-xs">Nhanh</span>
+                                    </div>
+                                </div>
+                                <div style="min-height: 280px;">
+                                    <p:barChart model="#{dashboardBean.turnoverChartModel}" style="width: 100%; height: 280px;" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tied-up Capital & Slow-Moving Alert List -->
+                        <div class="col-12 lg:col-5">
+                            <!-- KPI Card Tied Up Capital -->
+                            <div class="p-3 border-round-sm border-1 border-red-200 bg-red-50 mb-3 flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-xs font-bold text-red-700 uppercase tracking-wider block">Tổng Vốn Bị Ứ Đọng (Hàng Chậm Luân Chuyển)</span>
+                                    <div class="text-xl font-bold text-red-800 mt-1">
+                                        <h:outputText value="#{dashboardBean.totalTiedUpCapital}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>₫
+                                    </div>
+                                    <div class="text-xs text-red-600 mt-0.5">Giá trị hàng có hệ số &lt; 1.0 trong kỳ đánh giá</div>
+                                </div>
+                                <div class="w-2.5rem h-2.5rem border-round-circle bg-red-100 flex align-items-center justify-content-center text-red-600">
+                                    <i class="pi pi-exclamation-circle text-lg"></i>
+                                </div>
+                            </div>
+
+                            <!-- List Slow-moving Items -->
+                            <div class="flex flex-column gap-2" style="max-height: 230px; overflow-y: auto;">
+                                <ui:repeat value="#{dashboardBean.turnoverReportList}" var="item">
+                                    <div class="p-2.5 border-round-sm border-1 #{item.slowMoving ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-white'} flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="font-semibold text-xs text-gray-900 flex align-items-center gap-1">
+                                                #{item.productName}
+                                                <h:panelGroup rendered="#{item.slowMoving}">
+                                                    <span class="badge badge-danger text-xs font-bold" style="font-size:10px;">Ứ đọng vốn</span>
+                                                </h:panelGroup>
+                                            </div>
+                                            <div class="text-xs text-500">
+                                                Xuất: #{item.totalSoldInPeriod} • Bình quân kho: #{item.averageStock} #{item.unit}
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-xs font-bold #{item.slowMoving ? 'text-red-600' : 'text-primary'}">
+                                                Vòng quay: #{item.turnoverRatio}x
+                                            </div>
+                                            <div class="text-xs text-500">
+                                                Vốn tồn: <h:outputText value="#{item.tiedUpCapital}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ui:repeat>
+                                <h:panelGroup rendered="#{empty dashboardBean.turnoverReportList}">
+                                    <div class="text-xs text-500 text-center p-3">Chưa có đủ số liệu tồn kho &amp; xuất bán trong kỳ này.</div>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </div>
+                </p:outputPanel>
+            </h:form>
+        </div>
+
+        <!-- Section: Supplier Performance Ranking -->
+        <div class="mt-4">
+            <div class="bg-white border-round-sm p-4 border-1 border-gray-200">
+                <div class="flex justify-content-between align-items-center mb-3 pb-3 border-bottom-1 border-gray-100">
+                    <div>
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-star-fill text-amber-500 text-base"></i>
+                            <h3 class="font-heading text-base font-semibold text-gray-900 m-0">
+                                Bảng Xếp Hạng &amp; Hiệu Suất Nhà Cung Cấp
+                            </h3>
+                        </div>
+                        <span class="text-xs text-500">Đánh giá theo tổng giá trị cung ứng, số mã sản phẩm và tỷ lệ sản phẩm đóng góp bán chạy trên thị trường</span>
+                    </div>
+                    <h:link outcome="/admin/supplier.xhtml" class="text-xs font-semibold text-green-700 hover:text-green-800 no-underline flex align-items-center gap-1">
+                        <span>Chi tiết nhà cung cấp</span>
+                        <i class="pi pi-arrow-right text-xs"></i>
+                    </h:link>
+                </div>
+
+                <p:dataTable value="#{dashboardBean.supplierPerformanceList}" var="sp" 
+                             styleClass="ui-datatable-sm" emptyMessage="Chưa có dữ liệu nhà cung cấp."
+                             rowIndexVar="idx">
+                    <p:column headerText="Thứ Hạng" style="width: 80px; text-align: center;">
+                        <span class="font-bold text-xs #{idx eq 0 ? 'text-amber-500' : (idx eq 1 ? 'text-blue-500' : (idx eq 2 ? 'text-orange-500' : 'text-gray-600'))}">
+                            <i class="pi #{idx lt 3 ? 'pi-trophy' : 'pi-bookmark'} text-xs mr-1"></i>##{idx + 1}
+                        </span>
+                    </p:column>
+                    <p:column headerText="Nhà Cung Cấp">
+                        <div class="font-bold text-xs text-gray-900">#{sp.supplierName}</div>
+                        <span class="text-xs text-500">Mã: #{sp.supplierCode}</span>
+                    </p:column>
+                    <p:column headerText="Mặt Hàng Cung Cấp" style="width: 140px; text-align: center;">
+                        <span class="badge badge-info font-bold text-xs">#{sp.totalProductsSupplied} sản phẩm</span>
+                    </p:column>
+                    <p:column headerText="Tổng Giá Trị Nhập" style="width: 160px; text-align: right;">
+                        <span class="font-bold text-xs text-gray-900">
+                            <h:outputText value="#{sp.totalImportValue}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>₫
+                        </span>
+                    </p:column>
+                    <p:column headerText="SP Bán Chạy Nhất" style="width: 200px;">
+                        <span class="text-xs font-semibold text-primary">#{sp.topSellingProductName}</span>
+                    </p:column>
+                    <p:column headerText="Tỷ Lệ SP Bán Chạy" style="width: 150px; text-align: center;">
+                        <div class="flex align-items-center justify-content-center gap-1">
+                            <span class="font-bold text-xs #{sp.bestSellerRatio ge 50.0 ? 'text-green-700' : (sp.bestSellerRatio ge 20.0 ? 'text-primary' : 'text-gray-600')}">
+                                #{sp.bestSellerRatio}%
+                            </span>
+                            <i class="pi #{sp.bestSellerRatio ge 50.0 ? 'pi-arrow-circle-up text-green-700' : 'pi-minus text-gray-400'} text-xs"></i>
+                        </div>
+                    </p:column>
+                    <p:column headerText="Uy Tín" style="width: 110px; text-align: center;">
+                        <span class="text-xs font-bold text-amber-500 flex align-items-center justify-content-center gap-1">
+                            <i class="pi pi-star-fill text-xs"></i>#{sp.rating}
+                        </span>
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </div>
+
+        <!-- Row: Recent Orders Table -->
+        <div class="mt-4">
+            <div class="bg-white border-round-sm p-4 border-1 border-gray-200">
+                <div class="flex justify-content-between align-items-center mb-3 pb-3 border-bottom-1 border-gray-100">
+                    <div>
+                        <h3 class="font-heading text-base font-semibold text-gray-900 m-0">
+                            Đơn Hàng Gần Đây
+                        </h3>
+                        <span class="text-xs text-500">5 giao dịch mới nhất phát sinh trên hệ thống</span>
+                    </div>
+                    <h:link outcome="/admin/order.xhtml" class="text-xs font-semibold text-green-700 hover:text-green-800 no-underline flex align-items-center gap-1">
+                        <span>Xem tất cả</span>
+                        <i class="pi pi-arrow-right text-xs"></i>
+                    </h:link>
+                </div>
+
+                <p:dataTable value="#{dashboardBean.recentOrders}" var="ro" 
+                             styleClass="ui-datatable-sm" emptyMessage="Chưa có đơn hàng nào."
+                             tableStyle="width: 100%; table-layout: fixed;">
+                    <p:column headerText="Mã Đơn" style="width: 140px;">
+                        <span class="font-mono font-semibold text-xs text-gray-800 bg-stone-100 px-1 py-0.5 border-round-xs">
+                            #{ro.orderCode}
+                        </span>
+                    </p:column>
+                    <p:column headerText="Khách Hàng">
+                        <span class="text-xs font-medium text-gray-900">#{ro.customerName}</span>
+                    </p:column>
+                    <p:column headerText="Ngày Đặt" style="width: 140px; text-align: center;">
+                        <span class="text-xs text-500 font-mono">
+                            <h:outputText value="#{ro.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
+                            </h:outputText>
+                        </span>
+                    </p:column>
+                    <p:column headerText="Tổng Tiền" style="width: 130px; text-align: right;">
+                        <span class="font-semibold text-xs text-gray-900 font-mono">
+                            <h:outputText value="#{ro.totalAmount}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>₫
+                        </span>
+                    </p:column>
+                    <p:column headerText="Trạng Thái" style="width: 130px; text-align: center;">
+                        <span class="status-pill pill-#{ro.status.toLowerCase()}">
+                            #{ro.status eq 'PENDING' ? 'Chờ duyệt' : (ro.status eq 'PROCESSING' ? 'Đang xử lý' : (ro.status eq 'SHIPPED' ? 'Đang giao' : (ro.status eq 'DELIVERED' ? 'Đã giao' : 'Đã hủy')))}
+                        </span>
+                    </p:column>
+                    <p:column headerText="Thao Tác" style="width: 70px; text-align: center;">
+                        <h:link outcome="/admin/order.xhtml" styleClass="row-action-btn btn-view inline-flex align-items-center justify-content-center no-underline" title="Xem chi tiết đơn">
+                            <i class="pi pi-eye text-xs"></i>
+                        </h:link>
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </div>
     </ui:define>
 </ui:composition>
 </html>

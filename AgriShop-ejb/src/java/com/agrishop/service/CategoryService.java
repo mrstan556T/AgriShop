@@ -26,6 +26,12 @@ public class CategoryService implements CategoryServiceLocal {
     }
 
     @Override
+    public List<CategoryDTO> searchByName(String keyword) {
+        List<Category> categories = categoryRepository.searchByName(keyword);
+        return categories.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    @Override
     public PageResponseDTO<CategoryDTO> getCategoriesWithPagination(PageRequestDTO request) {
         List<Category> categories = categoryRepository.findWithPagination(request);
         long totalRecords = categoryRepository.countWithPagination(request);

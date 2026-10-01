@@ -7,6 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "Categories")
+@Cacheable(true)
 public class Category implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -35,6 +35,9 @@ public class Coupon implements Serializable {
     @Column(name = "usage_limit")
     private Integer usageLimit;
 
+    @Column(name = "used_count")
+    private Integer usedCount = 0;
+
     @Column(length = 20)
     private String status;
 
@@ -62,6 +65,8 @@ public class Coupon implements Serializable {
     public void setEndDate(Date endDate) { this.endDate = endDate; }
     public Integer getUsageLimit() { return usageLimit; }
     public void setUsageLimit(Integer usageLimit) { this.usageLimit = usageLimit; }
+    public Integer getUsedCount() { return usedCount != null ? usedCount : 0; }
+    public void setUsedCount(Integer usedCount) { this.usedCount = usedCount; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public Date getCreatedAt() { return createdAt; }

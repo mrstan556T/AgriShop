@@ -7,99 +7,157 @@
       xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="/WEB-INF/templates/adminTemplate.xhtml">
-    <ui:define name="title">Danh mục - AgriShop</ui:define>
-    <ui:define name="pageTitle">Quản lý Danh mục</ui:define>
+    <ui:define name="title">Quản Lý Danh Mục - AgriShop</ui:define>
+    <ui:define name="breadcrumb">
+        <h:link outcome="/admin/product.xhtml">Sản Phẩm</h:link>
+        <span class="separator">/</span>
+        <span class="active">Danh Mục</span>
+    </ui:define>
+    <ui:define name="pageTitle">Danh Mục Nông Sản</ui:define>
 
     <ui:define name="content">
         <h:form id="mainForm">
-            <p:card>
-                <!-- Toolbar -->
-                <p:toolbar styleClass="mb-4">
-                    <p:toolbarGroup>
-                        <p:commandButton value="Thêm Mới" icon="pi pi-plus" actionListener="#{categoryBean.openNew()}"
-                                         update=":crudForm:crudContent" oncomplete="PF('crudDialog').show()"
-                                         styleClass="ui-button-success mr-2" />
-                    </p:toolbarGroup>
-                    <p:toolbarGroup align="right">
-                        <div class="ui-inputgroup">
-                            <p:inputText value="#{categoryBean.globalFilter}" placeholder="Tìm kiếm..." />
-                            <p:commandButton icon="pi pi-search" update="dataTable" />
-                            <p:commandButton icon="pi pi-refresh" actionListener="#{categoryBean.init()}" update="dataTable @previous" styleClass="ui-button-secondary" />
-                        </div>
-                    </p:toolbarGroup>
-                </p:toolbar>
+            <!-- Header Actions Row -->
+            <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="font-heading font-semibold text-xl text-gray-900 m-0">Phân Loại Nông Sản</h2>
+                    <span class="text-xs text-500">Quản lý các nhóm danh mục hàng hóa trên hệ thống cửa hàng</span>
+                </div>
+                <p:commandButton value="Thêm Danh Mục" icon="pi pi-plus" 
+                                 actionListener="#{categoryBean.openNew()}"
+                                 update=":crudForm:dialogTitle :crudForm:crudContent :crudForm:dialogFooter" oncomplete="PF('crudDialog').show()"
+                                 styleClass="cta-btn text-xs px-3 py-2" />
+            </div>
+
+            <!-- Table Container Box -->
+            <div class="admin-table-box">
+                <!-- Toolbar Filter Section -->
+                <div class="flex flex-wrap align-items-center justify-content-between gap-2 mb-3 pb-3 border-bottom-1 border-gray-100">
+                    <div class="ui-inputgroup" style="min-width: 240px;">
+                        <p:inputText value="#{categoryBean.globalFilter}" placeholder="Tìm theo tên, mã..." styleClass="w-full text-xs" />
+                        <p:commandButton icon="pi pi-search" actionListener="#{categoryBean.init()}" update="dataTable" styleClass="ui-button-secondary text-xs" />
+                    </div>
+
+                    <p:commandButton icon="pi pi-refresh" actionListener="#{categoryBean.init()}" 
+                                     update="dataTable" styleClass="ui-button-secondary ui-button-flat btn-toolbar-refresh text-xs" 
+                                     title="Tải lại bảng dữ liệu" />
+                </div>
 
                 <!-- DataTable -->
-                <p:dataTable id="dataTable" var="cat" value="#{categoryBean.lazyModel}" 
-                             lazy="true" paginator="true" rows="10" paginatorPosition="bottom"
+                <p:dataTable id="dataTable" widgetVar="dtCategories" var="cat" value="#{categoryBean.lazyModel}"
+                             lazy="true" paginator="true" rows="10" rowKey="#{cat.id}"
+                             paginatorPosition="bottom" emptyMessage="Chưa có danh mục nào."
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="5,10,20" emptyMessage="Không có dữ liệu."
-                             rowIndexVar="index" styleClass="mt-2">
+                             currentPageReportTemplate="Hiển thị {startRecord} - {endRecord} / {totalRecords} danh mục"
+                             rowsPerPageTemplate="10,20,50" rowIndexVar="index"
+                             styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;">
                              
-                    <p:column headerText="STT" style="width:3rem; text-align:center;">
-                        <h:outputText value="#{index + 1}" />
+                    <p:column headerText="#" style="width: 3rem; text-align: center;">
+                        <span class="text-xs text-500">#{index + 1}</span>
                     </p:column>
                     
-                    <p:column headerText="Mã" sortBy="#{cat.code}" style="width:8rem;">
-                        <h:outputText value="#{cat.code}" />
+                    <p:column headerText="Mã Danh Mục" sortBy="#{cat.code}" style="width: 10rem;">
+                        <span class="text-xs font-mono text-gray-700 bg-stone-100 px-1.5 py-0.5 border-round-xs">
+                            #{cat.code}
+                        </span>
                     </p:column>
                     
-                    <p:column headerText="Tên Danh mục" sortBy="#{cat.name}">
-                        <h:outputText value="#{cat.name}" styleClass="font-bold" />
+                    <p:column headerText="Tên Danh Mục" sortBy="#{cat.name}" style="width: 16rem;">
+                        <span class="font-medium text-gray-900 text-xs">#{cat.name}</span>
                     </p:column>
                     
-                    <p:column headerText="Mô tả">
-                        <h:outputText value="#{cat.description}" />
+                    <p:column headerText="Mô Tả Chi Tiết">
+                        <span class="text-xs text-500">#{cat.description}</span>
                     </p:column>
                     
-                    <p:column headerText="Thao tác" style="width:10rem; text-align:center;">
-                        <p:commandButton icon="pi pi-eye" actionListener="#{categoryBean.prepareView(cat)}" 
-                                         update=":crudForm:crudContent" oncomplete="PF('crudDialog').show()"
-                                         styleClass="ui-button-info rounded-button mr-2" title="Xem chi tiết" />
-                        <p:commandButton icon="pi pi-pencil" actionListener="#{categoryBean.prepareEdit(cat)}" 
-                                         update=":crudForm:crudContent" oncomplete="PF('crudDialog').show()"
-                                         styleClass="ui-button-warning rounded-button mr-2" title="Sửa" />
-                        <p:commandButton icon="pi pi-trash" actionListener="#{categoryBean.delete(cat)}" 
-                                         update=":mainForm:dataTable" styleClass="ui-button-danger rounded-button">
-                            <p:confirm header="Xác nhận" message="Bạn muốn xóa danh mục này?" icon="pi pi-exclamation-triangle" />
-                        </p:commandButton>
+                    <p:column headerText="Thao Tác" style="width: 8.5rem; text-align: center; white-space: nowrap;">
+                        <div class="row-actions">
+                            <p:commandButton icon="pi pi-eye" actionListener="#{categoryBean.prepareView(cat)}" 
+                                             update=":crudForm:dialogTitle :crudForm:crudContent :crudForm:dialogFooter" oncomplete="PF('crudDialog').show()" 
+                                             styleClass="row-action-btn btn-view" title="Chi tiết" />
+                            <p:commandButton icon="pi pi-pencil" actionListener="#{categoryBean.prepareEdit(cat)}" 
+                                             update=":crudForm:dialogTitle :crudForm:crudContent :crudForm:dialogFooter" oncomplete="PF('crudDialog').show()" 
+                                             styleClass="row-action-btn btn-edit" title="Sửa" />
+                            <p:commandButton icon="pi pi-trash" actionListener="#{categoryBean.delete(cat)}" 
+                                             update=":mainForm:dataTable" styleClass="row-action-btn btn-delete" title="Xóa">
+                                 <p:confirm header="Xác nhận xóa" message="Xóa danh mục '#{cat.name}'?" icon="pi pi-exclamation-triangle" />
+                            </p:commandButton>
+                        </div>
                     </p:column>
                 </p:dataTable>
-            </p:card>
+            </div>
         </h:form>
 
-        <!-- Dialog Thêm/Sửa -->
+        <!-- Category Dialog -->
         <h:form id="crudForm">
-            <p:dialog id="crudDialog" widgetVar="crudDialog" header="#{categoryBean.editMode ? 'Chi tiết Danh mục' : 'Danh mục Mới'}" 
-                      showEffect="fade" hideEffect="fade" modal="true" responsive="true" width="450">
-                <p:messages id="messages" closable="true" />
+            <p:dialog id="crudDialog" widgetVar="crudDialog" 
+                      showEffect="fade" hideEffect="fade" modal="true" responsive="true" width="500" fitViewport="true">
+                <f:facet name="header">
+                    <h:outputText id="dialogTitle" value="#{categoryBean.viewMode ? 'Chi Tiết Danh Mục' : (categoryBean.editMode ? 'Chỉnh Sửa Danh Mục' : 'Thêm Danh Mục Mới')}" />
+                </f:facet>
+                
+                <p:messages id="messages" globalOnly="true" closable="true" styleClass="mb-3" />
+                
                 <p:outputPanel id="crudContent" class="ui-fluid">
-                    <div class="field">
-                        <p:outputLabel for="code" value="Mã Danh mục" />
-                        <p:inputText id="code" value="#{categoryBean.currentItem.code}" required="true" disabled="#{categoryBean.viewMode}" />
+                    <div class="field mb-3">
+                        <label for="code" class="form-label">Mã Danh Mục <span class="required-star">*</span></label>
+                        <h:panelGroup rendered="#{not categoryBean.viewMode}">
+                            <p:inputText id="code" value="#{categoryBean.currentItem.code}" required="true" 
+                                         requiredMessage="Vui lòng nhập mã danh mục" 
+                                         validatorMessage="Mã phải có định dạng CAT-XXX (Ví dụ: CAT-001)" 
+                                         disabled="#{categoryBean.editMode}" styleClass="w-full text-xs">
+                                <f:validateRegex pattern="^CAT-[a-zA-Z0-9]+$" />
+                            </p:inputText>
+                            <p:message for="code" styleClass="mt-1" />
+                        </h:panelGroup>
+                        <h:outputText rendered="#{categoryBean.viewMode}" value="#{categoryBean.currentItem.code}" 
+                                      styleClass="block font-mono text-xs bg-stone-50 p-2 border-round-xs" />
                     </div>
-                    <div class="field mt-3">
-                        <p:outputLabel for="name" value="Tên Danh mục" />
-                        <p:inputText id="name" value="#{categoryBean.currentItem.name}" required="true" disabled="#{categoryBean.viewMode}" />
+
+                    <div class="field mb-3">
+                        <label for="name" class="form-label">Tên Danh Mục <span class="required-star">*</span></label>
+                        <h:panelGroup rendered="#{not categoryBean.viewMode}">
+                            <p:inputText id="name" value="#{categoryBean.currentItem.name}" required="true" 
+                                         requiredMessage="Vui lòng nhập tên danh mục" 
+                                         validatorMessage="Tên danh mục phải từ 2 đến 100 ký tự"
+                                         styleClass="w-full text-xs" placeholder="Ví dụ: Rau củ hữu cơ">
+                                <f:validateLength minimum="2" maximum="100" />
+                            </p:inputText>
+                            <p:message for="name" styleClass="mt-1" />
+                        </h:panelGroup>
+                        <h:outputText rendered="#{categoryBean.viewMode}" value="#{categoryBean.currentItem.name}" 
+                                      styleClass="block font-medium text-gray-900 text-xs bg-stone-50 p-2 border-round-xs" />
                     </div>
-                    <div class="field mt-3">
-                        <p:outputLabel for="desc" value="Mô tả" />
-                        <p:inputTextarea id="desc" value="#{categoryBean.currentItem.description}" rows="3" disabled="#{categoryBean.viewMode}" />
+
+                    <div class="field mb-2">
+                        <label for="desc" class="form-label">Mô Tả</label>
+                        <h:panelGroup rendered="#{not categoryBean.viewMode}">
+                            <p:inputTextarea id="desc" value="#{categoryBean.currentItem.description}" rows="3" 
+                                             styleClass="w-full text-xs" placeholder="Mô tả nhóm nông sản..." />
+                        </h:panelGroup>
+                        <h:outputText rendered="#{categoryBean.viewMode}" value="#{categoryBean.currentItem.description}" 
+                                      styleClass="block text-xs text-600 bg-stone-50 p-2 border-round-xs min-h-3rem" />
                     </div>
                 </p:outputPanel>
-                
+
                 <f:facet name="footer">
-                    <p:commandButton value="Lưu" icon="pi pi-check" actionListener="#{categoryBean.save()}" 
-                                     update="crudContent messages" process="crudContent @this" rendered="#{not categoryBean.viewMode}" />
-                    <p:commandButton value="Đóng" icon="pi pi-times" onclick="PF('crudDialog').hide()" 
-                                     class="ui-button-secondary" type="button" />
+                    <h:panelGroup id="dialogFooter" layout="block" styleClass="flex justify-content-end gap-2 pt-1 #{categoryBean.viewMode ? 'hidden' : ''}">
+                        <p:commandButton value="Hủy Bỏ" type="button" onclick="PF('crudDialog').hide()" 
+                                         styleClass="ui-button-secondary text-xs" />
+                        <p:commandButton value="Lưu Dữ Liệu" icon="pi pi-check" actionListener="#{categoryBean.save()}" 
+                                         update="crudContent messages :mainForm:dataTable" 
+                                         styleClass="cta-btn text-xs px-3 py-2" rendered="#{not categoryBean.viewMode}" />
+                    </h:panelGroup>
                 </f:facet>
             </p:dialog>
         </h:form>
 
-        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
-            <p:commandButton value="Hủy" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
-            <p:commandButton value="Đồng ý" type="button" styleClass="ui-confirmdialog-yes" />
+        <!-- Global Confirm Dialog -->
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="360">
+            <div class="flex justify-content-end gap-2 mt-3">
+                <p:commandButton value="Hủy bỏ" type="button" styleClass="ui-confirmdialog-no ui-button-secondary text-xs"/>
+                <p:commandButton value="Xác Nhận Xóa" type="button" styleClass="ui-confirmdialog-yes ui-button-danger text-xs" />
+            </div>
         </p:confirmDialog>
     </ui:define>
 </ui:composition>

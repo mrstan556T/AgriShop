@@ -1,0 +1,173 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">AgriShop - Nông Sản Sạch &amp; Thực Phẩm Hữu Cơ</ui:define>
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-4">
+            
+            <!-- Editorial Hero Section -->
+            <div class="hero-wrapper">
+                <div class="grid align-items-center">
+                    <div class="col-12 lg:col-7">
+                        <div class="hero-badge">
+                            <i class="pi pi-check-circle text-xs"></i>
+                            <span>Nông Sản Hữu Cơ Tuyển Chọn Chuẩn VietGAP</span>
+                        </div>
+                        <h1 class="hero-heading">
+                            Thuần Khiết Tự Nhiên, <br />
+                            <span>Trọn Vẹn Bữa Cơm Gia Đình</span>
+                        </h1>
+                        <p class="hero-desc">
+                            Tuyển chọn rau củ hữu cơ tươi non, trái cây ngọt lành chín cây và thực phẩm sạch thu hoạch trực tiếp từ các hợp tác xã nông trại đạt chuẩn. Giao nhận trong ngày, giữ trọn độ tươi ngon.
+                        </p>
+                        <div class="flex flex-wrap gap-3 mb-4">
+                            <p:button outcome="/store.xhtml" value="Khám Phá Cửa Hàng" icon="pi pi-arrow-right" 
+                                      styleClass="cta-btn text-base px-4 py-2 font-medium" style="min-height: 44px; display: inline-flex; align-items: center;" />
+                            <p:button outcome="/about.xhtml" value="Câu Chuyện Nông Trại" 
+                                      styleClass="ui-button-secondary text-base px-4 py-2 font-medium" style="min-height: 44px; display: inline-flex; align-items: center;" />
+                        </div>
+
+                        <!-- Trust Metrics (Understated & Editorial) -->
+                        <div class="flex flex-wrap gap-5 pt-4 border-top-1 border-gray-200 mt-4">
+                            <div>
+                                <div class="font-heading font-semibold text-2xl text-gray-900">100%</div>
+                                <span class="text-xs text-500 font-medium uppercase tracking-wider">Hữu Cơ &amp; VietGAP</span>
+                            </div>
+                            <div>
+                                <div class="font-heading font-semibold text-2xl text-gray-900">24 Giờ</div>
+                                <span class="text-xs text-500 font-medium uppercase tracking-wider">Từ Vườn Đến Bàn Ăn</span>
+                            </div>
+                            <div>
+                                <div class="font-heading font-semibold text-2xl text-gray-900">20,000+</div>
+                                <span class="text-xs text-500 font-medium uppercase tracking-wider">Khách Hàng Tin Dùng</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real Hero Visual Presentation -->
+                    <div class="col-12 lg:col-5 hidden lg:block">
+                        <div class="hero-image-card">
+                            <img src="#{request.contextPath}/assets/images/hero-basket.jpg" alt="Nông sản hữu cơ tươi sạch" class="hero-image" />
+                            <div class="hero-image-overlay-badge">
+                                <div class="flex align-items-center gap-2">
+                                    <span class="hero-organic-dot"></span>
+                                    <span class="font-semibold text-xs text-gray-900">Thu Hoạch Sáng Nay</span>
+                                </div>
+                                <span class="text-xs text-500">Chuẩn VietGAP 100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Value Proposition (Quiet Luxury Minimal 4 Pillars) -->
+            <div class="grid mb-6">
+                <div class="col-12 sm:col-6 lg:col-3">
+                    <div class="feature-box">
+                        <div class="feature-icon-circle">
+                            <i class="pi pi-shield"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-heading font-semibold text-base mb-1 text-gray-900">Chuẩn VietGAP</h4>
+                            <p class="text-xs text-600 m-0 line-height-2">Canh tác sinh học an toàn, không phân bón hóa học dư lượng.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 sm:col-6 lg:col-3">
+                    <div class="feature-box">
+                        <div class="feature-icon-circle">
+                            <i class="pi pi-clock"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-heading font-semibold text-base mb-1 text-gray-900">Giao Trong Ngày</h4>
+                            <p class="text-xs text-600 m-0 line-height-2">Đóng gói giữ ẩm sinh học, sản phẩm luôn giòn ngọt tươi mới.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 sm:col-6 lg:col-3">
+                    <div class="feature-box">
+                        <div class="feature-icon-circle">
+                            <i class="pi pi-sync"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-heading font-semibold text-base mb-1 text-gray-900">Đổi Trả 24 Giờ</h4>
+                            <p class="text-xs text-600 m-0 line-height-2">Cam kết bồi hoàn hoặc đổi mới nếu nông sản không đạt chuẩn.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 sm:col-6 lg:col-3">
+                    <div class="feature-box">
+                        <div class="feature-icon-circle">
+                            <i class="pi pi-heart"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-heading font-semibold text-base mb-1 text-gray-900">Tận Nông Trại</h4>
+                            <p class="text-xs text-600 m-0 line-height-2">Trực tiếp từ hợp tác xã đến căn bếp, minh bạch nguồn gốc.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Categories Section (Connected to Database) -->
+            <h:panelGroup rendered="#{not empty storefrontBean.categories}">
+                <div class="my-6">
+                    <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-end mb-4">
+                        <div>
+                            <span class="text-xs text-500 font-semibold uppercase tracking-wider">Danh Mục Tuyển Chọn</span>
+                            <h2 class="font-heading text-2xl sm:text-3xl font-semibold text-gray-900 m-0 mt-1">Nông Sản Theo Mùa</h2>
+                        </div>
+                        <h:link outcome="/store.xhtml" class="text-sm font-semibold text-primary flex align-items-center gap-1 mt-2 sm:mt-0">
+                            Xem tất cả sản phẩm <i class="pi pi-arrow-right text-xs"></i>
+                        </h:link>
+                    </div>
+
+                    <div class="grid">
+                        <ui:repeat value="#{storefrontBean.categories}" var="cat">
+                            <div class="col-6 sm:col-4 md:col-3 lg:col-2">
+                                <h:link outcome="/store.xhtml" styleClass="category-card-item">
+                                    <f:param name="catId" value="#{cat.id}" />
+                                    <div class="category-card-icon">
+                                        <i class="pi pi-th-large"></i>
+                                    </div>
+                                    <h4 class="font-heading font-semibold text-sm m-0 text-gray-900">#{cat.name}</h4>
+                                    <span class="text-xs text-500 mt-1">Khám phá</span>
+                                </h:link>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </div>
+            </h:panelGroup>
+
+            <!-- Featured Products Grid (Sản Phẩm Tươi Mới Tuyển Chọn) -->
+            <h:form id="featuredProductsForm" styleClass="my-8">
+                <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-end mb-4">
+                    <div>
+                        <span class="text-xs text-500 font-semibold uppercase tracking-wider">Tuyển Chọn Nổi Bật</span>
+                        <h2 class="font-heading text-2xl sm:text-3xl font-semibold text-gray-900 m-0 mt-1">Nông Sản Tươi Mới Vừa Thu Hoạch</h2>
+                    </div>
+                    <h:link outcome="/store.xhtml" class="text-sm font-semibold text-primary flex align-items-center gap-1 mt-2 sm:mt-0">
+                        Xem tất cả sản phẩm <i class="pi pi-arrow-right text-xs"></i>
+                    </h:link>
+                </div>
+
+                <div class="grid">
+                    <ui:repeat value="#{storefrontBean.trendingProducts}" var="prod">
+                        <div class="col-12 sm:col-6 md:col-4 lg:col-3 p-2">
+                            <ui:include src="/WEB-INF/components/productCard.xhtml">
+                                <ui:param name="prod" value="#{prod}" />
+                            </ui:include>
+                        </div>
+                    </ui:repeat>
+                </div>
+            </h:form>
+
+
+
+        </div>
+    </ui:define>
+</ui:composition>

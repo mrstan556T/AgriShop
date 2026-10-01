@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/WEB-INF/templates/adminTemplate.xhtml">
+    <ui:define name="title">Biến Động Kho Hàng - AgriShop</ui:define>
+    <ui:define name="breadcrumb">
+        <h:link outcome="/admin/inventory.xhtml">Kho Hàng</h:link>
+        <span class="separator">/</span>
+        <span class="active">Biến Động Kho</span>
+    </ui:define>
+    <ui:define name="pageTitle">Nhật Ký Biến Động Tồn Kho</ui:define>
+
+    <ui:define name="content">
+        <h:form id="mainForm">
+            <!-- Header Actions Row -->
+            <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="font-heading font-semibold text-xl text-gray-900 m-0">Lịch Sử Nhập - Xuất - Điều Chỉnh Kho</h2>
+                    <span class="text-xs text-500">Ghi nhận toàn bộ biến động tồn kho minh bạch, phục vụ đối soát và kiểm toán kho</span>
+                </div>
+                <div class="flex gap-2">
+                    <h:link outcome="/admin/inventory.xhtml" class="ui-button ui-button-secondary text-xs px-3 py-2 no-underline flex align-items-center gap-1">
+                        <i class="pi pi-arrow-left text-xs"></i>
+                        <span>Quay lại Tồn Kho</span>
+                    </h:link>
+                    <p:commandButton value="Làm mới" icon="pi pi-refresh" actionListener="#{inventoryBean.loadData()}" 
+                                     update="dataTable" styleClass="ui-button-outlined text-xs px-3 py-2" />
+                </div>
+            </div>
+
+            <!-- Table Container Box -->
+            <div class="admin-table-box">
+                <p:dataTable id="dataTable" value="#{inventoryBean.transactionHistory}" var="tx"
+                             emptyMessage="Chưa có lịch sử giao dịch kho nào"
+                             styleClass="ui-datatable-sm" tableStyle="width: 100%; table-layout: fixed;"
+                             paginator="true" rows="15" paginatorPosition="bottom"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,15,30,50"
+                             currentPageReportTemplate="Hiển thị {startRecord} - {endRecord} / {totalRecords} bản ghi">
+
+                    <!-- Date & Time -->
+                    <p:column headerText="Thời Gian" style="width: 150px;" styleClass="text-xs text-500">
+                        <h:outputText value="#{tx.createdAt}">
+                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" timeZone="Asia/Ho_Chi_Minh" />
+                        </h:outputText>
+                    </p:column>
+
+                    <!-- Transaction Type -->
+                    <p:column headerText="Loại Giao Dịch" style="width: 130px;" styleClass="text-xs text-center">
+                        <h:panelGroup rendered="#{tx.transactionType eq 'IMPORT'}">
+                            <span class="badge badge-success">
+                                <i class="pi pi-arrow-down-left text-xs"></i> Nhập Hàng
+                            </span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{tx.transactionType eq 'SALE'}">
+                            <span class="badge badge-warning">
+                                <i class="pi pi-arrow-up-right text-xs"></i> Xuất Bán
+                            </span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{tx.transactionType eq 'RETURN'}">
+                            <span class="badge badge-info">
+                                <i class="pi pi-replay text-xs"></i> Hoàn Kho
+                            </span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{tx.transactionType.startsWith('ADJUST')}">
+                            <span class="badge badge-primary">
+                                <i class="pi pi-sliders-h text-xs"></i> Điều Chỉnh
+                            </span>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <!-- Product Code & Name -->
+                    <p:column headerText="Sản Phẩm" style="min-width: 200px;" styleClass="text-xs">
+                        <span class="font-semibold text-gray-900">#{tx.productName}</span>
+                        <span class="font-mono text-gray-500 text-xs block">#{tx.productCode}</span>
+                    </p:column>
+
+                    <!-- Quantity Changed -->
+                    <p:column headerText="Số Lượng Biến Động" style="width: 130px;" styleClass="text-xs text-center font-bold">
+                        <h:panelGroup rendered="#{tx.quantityChanged gt 0}">
+                            <span class="text-green-700 font-bold text-sm">+#{tx.quantityChanged} #{tx.unit}</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{tx.quantityChanged lt 0}">
+                            <span class="text-red-600 font-bold text-sm">#{tx.quantityChanged} #{tx.unit}</span>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{tx.quantityChanged eq 0}">
+                            <span class="text-gray-500 font-bold text-sm">0 #{tx.unit}</span>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <!-- Unit Cost -->
+                    <p:column headerText="Đơn Giá Vốn" style="width: 120px;" styleClass="text-xs text-right">
+                        <h:outputText value="#{tx.unitCost}">
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputText>₫
+                    </p:column>
+
+                    <!-- Performer -->
+                    <p:column headerText="Người Thực Hiện" style="width: 140px;" styleClass="text-xs text-500">
+                        #{tx.userName}
+                    </p:column>
+
+                    <!-- Supplier -->
+                    <p:column headerText="Nhà Cung Cấp" style="width: 150px;" styleClass="text-xs text-500">
+                        #{not empty tx.supplierName ? tx.supplierName : '—'}
+                    </p:column>
+
+                    <!-- Reason -->
+                    <p:column headerText="Lý Do / Ghi Chú" style="min-width: 220px;" styleClass="text-xs text-600">
+                        #{tx.reason}
+                    </p:column>
+                </p:dataTable>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

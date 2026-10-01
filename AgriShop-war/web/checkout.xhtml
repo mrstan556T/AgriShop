@@ -1,0 +1,341 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/customerTemplate.xhtml">
+
+    <ui:define name="title">Thanh Toán Đơn Hàng - AgriShop</ui:define>
+
+
+
+    <ui:define name="content">
+        <div class="container mx-auto px-4 lg:px-8 py-5">
+            
+            <!-- Breadcrumbs and Step Indicator -->
+            <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-5 gap-3">
+                <div>
+                    <div class="flex align-items-center gap-2 text-xs text-500 mb-1">
+                        <h:link outcome="/index.xhtml" value="Trang chủ" styleClass="hover:text-primary" />
+                        <i class="pi pi-angle-right text-xs"></i>
+                        <h:link outcome="/cart.xhtml" value="Giỏ hàng" styleClass="hover:text-primary" />
+                        <i class="pi pi-angle-right text-xs"></i>
+                        <span class="font-medium text-gray-800">Thanh toán</span>
+                    </div>
+                    <h1 class="font-heading text-2xl md:text-3xl font-semibold text-gray-900 m-0">Xác Nhận Đơn Hàng</h1>
+                </div>
+
+                <!-- Shopping Steps -->
+                <div class="checkout-stepper">
+                    <h:link outcome="/cart.xhtml" styleClass="stepper-step completed">
+                        <span class="stepper-num"><i class="pi pi-check" style="font-size: 0.6rem;"></i></span>
+                        <span>Giỏ hàng</span>
+                    </h:link>
+                    <i class="pi pi-angle-right stepper-arrow"></i>
+                    <div class="stepper-step active">
+                        <span class="stepper-num">2</span>
+                        <span>Thanh toán</span>
+                    </div>
+                    <i class="pi pi-angle-right stepper-arrow"></i>
+                    <div class="stepper-step">
+                        <span class="stepper-num">3</span>
+                        <span>Hoàn tất</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin View Notice Banner -->
+            <h:panelGroup rendered="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}">
+                <div class="mb-4 p-3 border-round bg-blue-50 border-1 border-blue-200 text-blue-900 text-xs flex align-items-center gap-2">
+                    <i class="pi pi-shield text-base text-blue-600"></i>
+                    <span><strong>Chế độ Xem Quản Trị Viên:</strong> Bạn đang duyệt xem bằng tài khoản Quản trị viên — hãy đăng nhập bằng tài khoản khách hàng để trải nghiệm mua sắm đầy đủ.</span>
+                </div>
+            </h:panelGroup>
+
+            <!-- Error fallback if cart empty or user not logged in -->
+            <h:panelGroup rendered="#{empty loginBean.currentUser or empty cartBean.cart.items}">
+                <div class="bg-white text-center py-8 px-4 border-round-md border-1 border-gray-200 max-w-30rem mx-auto my-6">
+                    <div class="w-4rem h-4rem border-circle bg-stone-50 border-1 border-gray-200 text-gray-400 flex align-items-center justify-content-center mx-auto mb-3 text-2xl">
+                        <i class="pi pi-shopping-bag"></i>
+                    </div>
+                    <h2 class="font-heading text-xl font-semibold text-gray-900 mb-2">Chưa thể tiến hành thanh toán</h2>
+                    <p class="text-xs text-500 mb-4 line-height-3">
+                        Giỏ hàng của bạn đang trống hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập và chọn nông sản trước khi thanh toán.
+                    </p>
+                    <div class="flex justify-content-center gap-2">
+                        <p:button outcome="/store.xhtml" value="Xem Cửa Hàng" styleClass="ui-button-secondary text-sm px-4 py-2 font-medium" style="min-height: 40px;" />
+                        <h:panelGroup rendered="#{empty loginBean.currentUser}">
+                            <p:button outcome="/login.xhtml" value="Đăng Nhập Ngay" styleClass="cta-btn text-sm px-4 py-2 font-medium" style="min-height: 40px;" />
+                        </h:panelGroup>
+                    </div>
+                </div>
+            </h:panelGroup>
+
+            <!-- Checkout Form Content -->
+            <h:panelGroup rendered="#{not empty loginBean.currentUser and not empty cartBean.cart.items}">
+                <h:form id="checkoutForm">
+                    <div class="checkout-layout-grid">
+                        
+                        <!-- Left Column: Shipping and Payment -->
+                        <div>
+                            
+                            <!-- 1. Shipping Details -->
+                            <div class="checkout-section-card">
+                                <h3 class="checkout-section-title">
+                                    1. Thông Tin Nhận Hàng
+                                </h3>
+
+                                <div class="form-field mb-3">
+                                    <label for="address" class="form-label">
+                                        Địa chỉ nhận hàng chi tiết <span class="required-star">*</span>
+                                    </label>
+                                    <p:inputTextarea id="address" value="#{checkoutBean.shippingAddress}" rows="3" 
+                                                     class="w-full" required="true" 
+                                                     requiredMessage="Vui lòng nhập địa chỉ giao hàng" 
+                                                     validatorMessage="Địa chỉ nhận hàng phải từ 5 đến 255 ký tự"
+                                                     placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố...">
+                                        <f:validateLength minimum="5" maximum="255" />
+                                    </p:inputTextarea>
+                                    <p:message for="address" />
+                                </div>
+
+                                <div class="form-field mb-3">
+                                    <label for="phone" class="form-label">
+                                        Số điện thoại người nhận <span class="required-star">*</span>
+                                    </label>
+                                    <p:inputText id="phone" value="#{checkoutBean.phone}" 
+                                                 class="w-full" required="true" 
+                                                 requiredMessage="Vui lòng nhập số điện thoại người nhận" 
+                                                 validatorMessage="Số điện thoại không hợp lệ (gồm 10-11 số, bắt đầu bằng số 0)"
+                                                 placeholder="Ví dụ: 0912345678">
+                                        <f:validateRegex pattern="^0[0-9]{9,10}$" />
+                                    </p:inputText>
+                                    <p:message for="phone" />
+                                </div>
+                            </div>
+
+                            <!-- 2. Payment Method -->
+                            <div class="checkout-section-card">
+                                <h3 class="checkout-section-title">
+                                    2. Hình Thức Thanh Toán
+                                </h3>
+
+                                <div class="payment-options flex flex-column gap-3 mb-3">
+                                    <p:selectOneRadio id="paymentMethod" value="#{checkoutBean.paymentMethod}" layout="responsive" columns="1" styleClass="w-full">
+                                        <f:selectItems value="#{checkoutBean.paymentMethodOptions}" />
+                                    </p:selectOneRadio>
+                                </div>
+
+                                <!-- Gợi ý nội dung chuyển khoản VietQR -->
+                                <h:panelGroup layout="block" rendered="#{checkoutBean.vietQrPaymentEnabled}" class="p-3 border-1 border-green-200 border-round-sm bg-green-50 flex align-items-start gap-3">
+                                    <i class="pi pi-qrcode text-primary text-lg flex-shrink-0 mt-1"></i>
+                                    <div>
+                                        <div class="font-medium text-xs text-gray-900 mb-1">Hướng dẫn VietQR / Chuyển khoản MB Bank</div>
+                                        <ol class="text-xs text-500 m-0 pl-3 line-height-3">
+                                            <li>Chọn &quot;Chuyển khoản VietQR&quot; rồi nhấn <b>Xác Nhận Đặt Hàng</b></li>
+                                            <li>Hệ thống sinh mã QR — bạn quét bằng app ngân hàng bất kỳ</li>
+                                            <li>Nội dung chuyển khoản: <b>AGRI &lt;Mã đơn hàng&gt;</b> (tự điền sẵn)</li>
+                                            <li>Sau khi ngân hàng xác nhận, trang tự động chuyển sang Hoàn Tất</li>
+                                        </ol>
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+
+                        </div>
+
+                        <!-- Right Column: Order Review and Placement -->
+                        <div>
+                            <div class="checkout-summary-card">
+                                <h3 class="cart-summary-title flex align-items-center justify-content-between">
+                                    <span>Đơn Hàng Của Bạn</span>
+                                    <span class="text-xs font-normal text-500">(#{cartBean.cart.totalItems} món)</span>
+                                </h3>
+
+                                <!-- Item List Preview -->
+                                <div class="overflow-y-auto pr-1 mb-3" style="max-height: 240px;">
+                                    <ui:repeat value="#{cartBean.cart.items}" var="item">
+                                        <div class="flex align-items-center justify-content-between py-2 border-bottom-1 border-gray-100">
+                                            <div class="flex align-items-center gap-2 pr-2" style="flex: 1;">
+                                                <h:panelGroup rendered="#{not empty item.productImageUrl}">
+                                                    <img src="#{item.productImageUrl.startsWith('http') ? item.productImageUrl : request.contextPath.concat(item.productImageUrl)}" 
+                                                         style="width: 42px; height: 42px; border-radius: 6px; object-fit: contain; background: #FAFAF9; border: 1px solid #E5E7EB; padding: 2px;" alt="#{item.productName}" />
+                                                </h:panelGroup>
+                                                <div class="min-w-0">
+                                                    <div class="font-medium text-xs text-gray-900 text-overflow-ellipsis overflow-hidden white-space-nowrap">
+                                                        #{item.productName}
+                                                    </div>
+                                                    <div class="text-xs text-400 mt-0.5">
+                                                        SL: <h:outputText value="#{item.quantity}"><f:convertNumber pattern="#,##0.##" /></h:outputText> #{item.productUnit}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="font-semibold text-xs text-gray-800 flex-shrink-0">
+                                                <h:outputText value="#{item.itemTotal}">
+                                                    <f:convertNumber pattern="#,##0" />
+                                                </h:outputText>₫
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+
+                                <!-- Coupon Section -->
+                                <div class="my-3 pt-3 border-top-1 border-gray-100">
+                                    <div class="ui-inputgroup">
+                                        <p:inputText id="couponInput" value="#{checkoutBean.couponCode}" 
+                                                     placeholder="Nhập mã giảm giá..." 
+                                                     disabled="#{not empty checkoutBean.appliedCouponCode}"
+                                                     styleClass="w-full" />
+                                        <h:panelGroup rendered="#{empty checkoutBean.appliedCouponCode}">
+                                            <p:commandButton id="applyCouponBtn" value="Áp Dụng" action="#{checkoutBean.applyCoupon()}" 
+                                                             process="@this couponInput"
+                                                             update="@form :growlMessages" 
+                                                             styleClass="btn-secondary"
+                                                             style="height: 40px; padding: 0 16px;" />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not empty checkoutBean.appliedCouponCode}">
+                                            <p:commandButton icon="pi pi-times" action="#{checkoutBean.removeCoupon()}" 
+                                                             process="@this"
+                                                             update="@form :growlMessages" 
+                                                             styleClass="ui-button-danger ui-button-outlined" 
+                                                             style="height: 40px; padding: 0 16px;"
+                                                             title="Gỡ mã giảm giá" />
+                                        </h:panelGroup>
+                                    </div>
+                                    <h:panelGroup rendered="#{not empty checkoutBean.appliedCouponCode}">
+                                        <div class="text-xs text-green-700 mt-1 flex align-items-center gap-1 font-medium">
+                                            <i class="pi pi-check-circle"></i> Đã áp dụng mã: #{checkoutBean.appliedCouponCode}
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Calculation Rows -->
+                                <div class="cart-summary-row">
+                                    <span>Tạm tính:</span>
+                                    <span class="font-medium text-gray-800">
+                                        <h:outputText value="#{cartBean.cart.totalAmount}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                    </span>
+                                </div>
+                                <h:panelGroup rendered="#{checkoutBean.discountAmount gt 0}">
+                                    <div class="cart-summary-row text-green-700">
+                                        <span>Giảm giá (#{checkoutBean.appliedCouponCode}):</span>
+                                        <span class="font-medium">
+                                            -<h:outputText value="#{checkoutBean.discountAmount}"><f:convertNumber pattern="#,##0" /></h:outputText>₫
+                                        </span>
+                                    </div>
+                                </h:panelGroup>
+                                <div class="cart-summary-row">
+                                    <span>Phí vận chuyển:</span>
+                                    <span class="font-medium text-green-700">Miễn phí giao hàng</span>
+                                </div>
+                                <div class="cart-summary-row">
+                                    <span>Thuế GTGT:</span>
+                                    <span class="text-gray-500 text-xs">Đã bao gồm VAT</span>
+                                </div>
+
+                                <!-- Final Total -->
+                                <div class="cart-summary-row total">
+                                    <span class="font-heading font-semibold text-base text-gray-900">Tổng thanh toán:</span>
+                                    <span class="cart-summary-total-val">
+                                        <h:outputText value="#{checkoutBean.finalTotal}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>₫
+                                    </span>
+                                </div>
+
+                                <!-- Action Button -->
+                                <p:commandButton id="placeOrderBtn" value="Xác Nhận Đặt Hàng" 
+                                                 action="#{checkoutBean.placeOrder()}" 
+                                                 update="@form :growlMessages"
+                                                 styleClass="checkout-btn-submit" 
+                                                 icon="pi pi-check" 
+                                                 disabled="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN'}"
+                                                 title="#{loginBean.currentUser != null and loginBean.currentUser.role eq 'ADMIN' ? 'Tài khoản Quản trị viên không thể đặt hàng' : 'Xác Nhận Đặt Hàng'}" />
+
+                                <!-- ══════════════════════════════════════════════
+                                     PANEL QR VIETQR — hiện sau khi placeOrder()
+                                     chỉ visible khi showQrPanel = true
+                                     ══════════════════════════════════════════ -->
+                                <h:panelGroup rendered="#{checkoutBean.showQrPanel}" layout="block" id="vietqrPanel">
+                                    <div class="vietqr-panel">
+                                        <div class="vietqr-header">
+                                            <i class="pi pi-qrcode"></i> Quét mã QR để thanh toán
+                                        </div>
+                                        <div class="vietqr-body">
+                                            <!-- QR code sinh tự động từ vietqr.io -->
+                                            <div class="vietqr-qr-wrap">
+                                                <img src="#{checkoutBean.vietQrUrl}"
+                                                     alt="Mã QR chuyển khoản AgriShop"
+                                                     class="vietqr-qr-img"
+                                                     onerror="this.src='https://img.vietqr.io/image/MB-0000000000-compact2.png'"/>
+                                            </div>
+
+                                            <!-- Thông tin tài khoản thụ hưởng -->
+                                            <div class="vietqr-info-box">
+                                                <div class="vietqr-info-row">
+                                                    <span class="vietqr-label">Ngân hàng</span>
+                                                    <span class="vietqr-value">MB Bank (MBB)</span>
+                                                </div>
+                                                <div class="vietqr-info-row">
+                                                    <span class="vietqr-label">Số tài khoản</span>
+                                                    <span class="vietqr-value font-mono font-bold">0000000000</span>
+                                                </div>
+                                                <div class="vietqr-info-row">
+                                                    <span class="vietqr-label">Chủ tài khoản</span>
+                                                    <span class="vietqr-value">AGRISHOP COMPANY</span>
+                                                </div>
+                                                <div class="vietqr-info-row">
+                                                    <span class="vietqr-label">Số tiền</span>
+                                                    <span class="vietqr-value font-bold text-primary">
+                                                        <h:outputText value="#{checkoutBean.finalTotal}">
+                                                            <f:convertNumber pattern="#,##0" />
+                                                        </h:outputText>₫
+                                                    </span>
+                                                </div>
+                                                <div class="vietqr-info-row vietqr-content-row">
+                                                    <span class="vietqr-label">Nội dung CK</span>
+                                                    <span class="vietqr-value font-mono font-bold text-accent">
+                                                        AGRI #{checkoutBean.pendingOrderCode}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Trạng thái chờ thanh toán + polling -->
+                                            <div class="vietqr-status" id="vietqrStatus">
+                                                <div class="vietqr-spinner">
+                                                    <i class="pi pi-spin pi-spinner"></i>
+                                                    Đang chờ xác nhận từ ngân hàng…
+                                                </div>
+                                                <!-- Poll mỗi 3 giây, tắt khi paymentConfirmed = true -->
+                                                <p:poll id="paymentPoll"
+                                                        interval="3"
+                                                        listener="#{checkoutBean.checkPaymentStatus()}"
+                                                        update="vietqrPanel :growlMessages"
+                                                        oncomplete="if(#{checkoutBean.paymentConfirmed}) {
+                                                            document.getElementById('vietqrStatus').innerHTML='&lt;div class=vietqr-paid&gt;&lt;i class=pi\ pi-check-circle&gt;&lt;/i&gt; Thanh toán thành công! Đang chuyển hướng…&lt;/div&gt;';
+                                                            setTimeout(function(){ window.location=contextPath+'/order-success.xhtml'; }, 1800);
+                                                            PF('paymentPoll').stop();
+                                                        }"
+                                                        stop="#{checkoutBean.paymentConfirmed}" />
+                                            </div>
+
+                                            <div class="text-xs text-400 text-center mt-2">
+                                                <i class="pi pi-lock mr-1"></i>
+                                                Giao dịch bảo mật — Xác nhận tự động qua SePay
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <div class="mt-3 pt-2 border-top-1 border-gray-100 text-center text-xs text-400">
+                                    <i class="pi pi-lock mr-1 text-xs"></i> Đảm bảo thông tin đặt hàng an toàn tuyệt đối
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </h:form>
+            </h:panelGroup>
+
+        </div>
+    </ui:define>
+</ui:composition>
